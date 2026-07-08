@@ -1,0 +1,61 @@
+entryDocs:
+  required:
+    - README.md
+    - README_ZH.md
+    - CHANGELOG.md
+    - LICENSE
+  optional:
+    - AGENTS.md
+    - CLAUDE.md
+    - GEMINI.md
+    - CONTRIBUTING.md
+    - SECURITY.md
+
+docs:
+  bases:
+    - id: main
+      root: docs
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: index
+          regex: "^INDEX\\.md$"
+          role: index
+          numbered: false
+
+i18n:
+  rootLang: en
+  languages: [zh]
+  requireDocsParity: true
+  requireNumberParity: true
+
+concepts:
+  dir: concept
+  requireConceptFile: true
+  failOnOrphanConcept: warn
+
+language:
+  en:
+    maxCjkRatio: 0.05
+  zh:
+    minCjkRatio: 0.15
+
+adapters:
+  markdownlint:
+    enabled: true
+    command: markdownlint-cli2
+    args:
+      - README.md
+      - README_ZH.md
+      - CHANGELOG.md
+      - "docs/**/*.md"
+
+suppressions: []
+
+ignore:
+  paths:
+    - target/**

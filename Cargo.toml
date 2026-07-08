@@ -1,0 +1,25 @@
+[package]
+name = "docs-hygiene"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Policy-as-code hygiene checker for repository documentation structure, i18n parity, and concept integrity."
+license = "MIT"
+readme = "README.md"
+keywords = ["docs", "lint", "markdown", "cli", "policy"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.51", features = ["derive"] }
+globset = "0.4.18"
+regex = "1.12.2"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+serde_yaml = "0.9.34"
+walkdir = "2.5.0"
+
+[dev-dependencies]
+assert_cmd = "2.1.1"
+predicates = "3.1.3"
+tempfile = "3.23.0"
