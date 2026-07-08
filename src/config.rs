@@ -61,6 +61,8 @@ pub struct DocsBaseConfig {
     pub require_continuous_numbering: Option<bool>,
     #[serde(default)]
     pub max_lines: Option<usize>,
+    #[serde(default)]
+    pub ignore: Vec<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

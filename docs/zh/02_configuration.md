@@ -21,7 +21,7 @@ entryDocs:
 
 ## 文档结构
 
-`docs.bases` 控制文档契约区域。docs base 对 Markdown 文件采用默认拒绝策略：每个被检查的 `.md` 文件都必须匹配某个配置的 pattern，或被 `ignore.paths` 排除。
+`docs.bases` 控制文档契约区域。docs base 对 Markdown 文件采用默认拒绝策略：每个被检查的 `.md` 文件都必须匹配某个配置的 pattern，或被全局 `ignore.paths`、当前 base 自己的 `ignore` 排除。
 
 ```yaml
 docs:
@@ -30,6 +30,8 @@ docs:
       root: docs
       requireContinuousNumbering: true
       maxLines: 500
+      ignore:
+        - docs/adr/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -47,14 +49,16 @@ docs:
 
 ## 多 Base
 
-不同文档区域可以使用不同命名规则。
+不同文档区域可以使用不同命名规则。当父级 docs base 包含子级 docs base 时，可以用父级 base 的 `ignore` 排除子树，避免同一批文件被检查两次。
 
 ```yaml
 docs:
   bases:
     - id: guide
-      root: docs/guide
+      root: docs
       requireContinuousNumbering: true
+      ignore:
+        - docs/adr/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -126,6 +130,8 @@ suppressions:
 
 `ignore.paths` 接受相对仓库根目录的 glob 模式。
 Docs Hygiene 的内置 policy engine 只检查每个 docs base 根目录下的 Markdown 文件；其他扩展名会被忽略。生成目录、归档、fixtures，或任何不应纳入当前文档契约的子树，都可以通过 `ignore.paths` 排除。
+
+`docs.bases[].ignore` 只对单个 docs base 生效。父级文档目录里包含 ADR、用户故事等独立检查子树时，优先用它排除这些子树。
 
 ```yaml
 ignore:

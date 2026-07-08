@@ -130,6 +130,7 @@ struct NormalizedBase {
     patterns: Vec<FilenamePatternConfig>,
     require_continuous_numbering: bool,
     max_lines: Option<usize>,
+    ignore: Vec<String>,
 }
 
 pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
@@ -180,6 +181,7 @@ fn collect_docs(
             continue;
         }
         let patterns = compile_patterns(&base.patterns)?;
+        let base_ignore = build_base_ignore(&base)?;
         for entry in WalkDir::new(&docs_root) {
             let entry = entry?;
             if !entry.file_type().is_file() {
@@ -188,6 +190,7 @@ fn collect_docs(
             let path = entry.path();
             let rel = path.strip_prefix(root).unwrap_or(path);
             if ignore.is_match(rel)
+                || base_ignore.is_match(rel)
                 || path.extension().and_then(|value| value.to_str()) != Some("md")
             {
                 continue;
@@ -635,6 +638,7 @@ fn normalized_bases(config: &Config) -> Vec<NormalizedBase> {
                     .require_continuous_numbering
                     .unwrap_or(config.docs.require_continuous_numbering),
                 max_lines: base.max_lines.or(config.docs.max_lines),
+                ignore: base.ignore.clone(),
             })
             .collect();
     }
@@ -645,6 +649,7 @@ fn normalized_bases(config: &Config) -> Vec<NormalizedBase> {
         patterns: default_patterns(&config.docs.filename_pattern),
         require_continuous_numbering: config.docs.require_continuous_numbering,
         max_lines: config.docs.max_lines,
+        ignore: Vec::new(),
     }]
 }
 
@@ -700,6 +705,14 @@ fn build_ignore(root: &Path, config: &Config) -> Result<GlobSet> {
         builder.add(Glob::new(path)?);
     }
     let _ = root;
+    Ok(builder.build()?)
+}
+
+fn build_base_ignore(base: &NormalizedBase) -> Result<GlobSet> {
+    let mut builder = GlobSetBuilder::new();
+    for path in &base.ignore {
+        builder.add(Glob::new(path)?);
+    }
     Ok(builder.build()?)
 }
 
@@ -1033,6 +1046,48 @@ docs:
         let report = run_checks(temp.path(), &config).unwrap();
 
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    }
+
+    #[test]
+    fn base_ignore_does_not_hide_files_from_other_bases() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs/records")).unwrap();
+        fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
+        fs::write(temp.path().join("docs/01_intro.md"), "# Intro\n").unwrap();
+        fs::write(temp.path().join("docs/records/0001-note.md"), "# Note\n").unwrap();
+
+        let config: Config = serde_yaml::from_str(
+            r#"
+entryDocs:
+  required:
+    - README.md
+docs:
+  bases:
+    - id: main
+      root: docs
+      requireContinuousNumbering: true
+      ignore:
+        - docs/records/**
+      patterns:
+        - id: numbered
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+    - id: records
+      root: docs/records
+      requireContinuousNumbering: false
+      patterns:
+        - id: record
+          regex: "^\\d{4}-[a-z0-9_-]+\\.md$"
+          role: record
+          numbered: false
+"#,
+        )
+        .unwrap();
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+        assert_eq!(report.summary.files_checked, 2);
     }
 
     #[test]

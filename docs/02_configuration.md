@@ -26,7 +26,8 @@ entryDocs:
 
 `docs.bases` controls documentation contract zones. A docs base uses a
 deny-by-default posture for Markdown files: every checked `.md` file must match
-one of the configured patterns or be excluded by `ignore.paths`.
+one of the configured patterns or be excluded by global `ignore.paths` or the
+base's own `ignore` list.
 
 ```yaml
 docs:
@@ -35,6 +36,8 @@ docs:
       root: docs
       requireContinuousNumbering: true
       maxLines: 500
+      ignore:
+        - docs/adr/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -54,14 +57,18 @@ single-base shorthand.
 
 ## Multiple Bases
 
-Different documentation areas can use different naming rules.
+Different documentation areas can use different naming rules. When a parent
+docs base contains a child docs base, use the parent base's `ignore` list to
+avoid checking the child files twice.
 
 ```yaml
 docs:
   bases:
     - id: guide
-      root: docs/guide
+      root: docs
       requireContinuousNumbering: true
+      ignore:
+        - docs/adr/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -141,6 +148,10 @@ Docs Hygiene only checks Markdown files under each docs base root; other file
 extensions are ignored by the built-in policy engine. Use `ignore.paths` for
 generated directories, archives, fixtures, or any subtree that should not be
 considered part of the active docs contract.
+
+Use `docs.bases[].ignore` for paths that should be ignored only by one docs
+base. This is useful when a parent docs directory contains independently
+checked subtrees such as ADRs or user stories.
 
 ```yaml
 ignore:
