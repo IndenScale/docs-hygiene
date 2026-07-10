@@ -47,6 +47,8 @@ pub struct DocsConfig {
     pub require_continuous_numbering: bool,
     pub max_lines: Option<usize>,
     #[serde(default)]
+    pub forbid_ascii_art: bool,
+    #[serde(default)]
     pub bases: Vec<DocsBaseConfig>,
 }
 
@@ -163,6 +165,7 @@ impl Default for DocsConfig {
             filename_pattern: default_filename_pattern(),
             require_continuous_numbering: false,
             max_lines: None,
+            forbid_ascii_art: false,
             bases: Vec::new(),
         }
     }
@@ -232,6 +235,7 @@ docs:
       root: docs
       requireContinuousNumbering: true
       maxLines: 500
+      forbidAsciiArt: true
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"

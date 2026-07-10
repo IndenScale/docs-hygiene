@@ -20,6 +20,10 @@ not match `docs.filenamePattern`.
 
 `DH_SIZE_001` reports a docs file that exceeds `docs.maxLines`.
 
+## ASCII Art
+
+When `docs.forbidAsciiArt` is enabled, `DH_ASCII_001` reports consecutive ASCII art blocks in document prose. Fenced code blocks, ordinary Markdown tables, and horizontal rules are excluded.
+
 ## I18n
 
 `DH_I18N_001` reports a root docs file without a localized counterpart.

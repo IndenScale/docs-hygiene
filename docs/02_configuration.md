@@ -125,6 +125,15 @@ language:
     minCjkRatio: 0.15
 ```
 
+## Forbid ASCII Art
+
+`docs.forbidAsciiArt` is disabled by default. Enable it to report ASCII flowcharts and box diagrams in prose:
+
+```yaml
+docs:
+  forbidAsciiArt: true
+```
+
 ## Suppressions
 
 `suppressions` disables selected diagnostics for selected paths. This is useful

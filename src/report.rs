@@ -56,6 +56,7 @@ impl Report {
             "DH_SEQ_001" => Some("A numbered docs directory has a gap in its sequence."),
             "DH_SEQ_002" => Some("A numbered docs directory uses the same number more than once."),
             "DH_SIZE_001" => Some("A docs file exceeds the configured line budget."),
+            "DH_ASCII_001" => Some("A document contains a forbidden ASCII art block."),
             "DH_I18N_001" => Some("A root docs file is missing a localized counterpart."),
             "DH_I18N_002" => Some("A localized docs file has no root counterpart."),
             "DH_LANG_001" => {

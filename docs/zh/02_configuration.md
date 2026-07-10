@@ -112,6 +112,15 @@ language:
     minCjkRatio: 0.15
 ```
 
+## 禁止 ASCII 字符画
+
+`docs.forbidAsciiArt` 默认关闭。开启后，文档中的 ASCII 流程图、框图等字符画会产生 `DH_ASCII_001`；代码块中的示例不检查。
+
+```yaml
+docs:
+  forbidAsciiArt: true
+```
+
 ## 豁免
 
 `suppressions` 可以按路径关闭指定诊断。它适合 fixtures、翻译示例、生成文档，或包含混合语言的测试用例。

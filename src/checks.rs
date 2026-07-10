@@ -142,6 +142,7 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     check_numbering(config, &docs, &mut diagnostics);
     check_i18n(config, &docs, &mut diagnostics);
     check_max_lines(root, config, &docs, &mut diagnostics)?;
+    check_ascii_art(root, config, &docs, &mut diagnostics)?;
     check_language(root, config, &docs, &mut diagnostics)?;
     check_concepts(root, config, &docs, &ignore, &mut diagnostics)?;
     check_adapters(root, config, &mut diagnostics)?;
@@ -377,6 +378,112 @@ fn check_max_lines(
         }
     }
     Ok(())
+}
+
+fn check_ascii_art(
+    root: &Path,
+    config: &Config,
+    docs: &[DocFile],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Result<()> {
+    if !config.docs.forbid_ascii_art {
+        return Ok(());
+    }
+
+    for doc in docs {
+        let text = std::fs::read_to_string(root.join(&doc.rel))?;
+        let stripped = strip_code_blocks(&text);
+        let lines = stripped.lines().collect::<Vec<_>>();
+        let mut index = 0;
+        while index < lines.len() {
+            if !is_ascii_art_line(lines[index]) {
+                index += 1;
+                continue;
+            }
+
+            let start = index;
+            let mut end = index + 1;
+            while end < lines.len() && is_ascii_art_line(lines[end]) {
+                end += 1;
+            }
+            let block = &lines[start..end];
+            if block.len() >= 2 && block.iter().any(|line| is_strong_ascii_art_line(line)) {
+                diagnostics.push(
+                    Diagnostic::new(
+                        "DH_ASCII_001",
+                        Severity::Error,
+                        doc.rel.display().to_string(),
+                        "ASCII art is forbidden in documentation; use Markdown structure or an image instead.",
+                    )
+                    .at_line(start + 1),
+                );
+            }
+            index = end;
+        }
+    }
+
+    Ok(())
+}
+
+fn is_ascii_art_line(line: &str) -> bool {
+    let trimmed = line.trim();
+    if trimmed.len() < 3 {
+        return false;
+    }
+
+    // Do not treat ordinary Markdown tables as diagrams.
+    let table_cells = trimmed
+        .strip_prefix('|')
+        .and_then(|value| value.strip_suffix('|'))
+        .map(|value| {
+            value
+                .split('|')
+                .filter(|cell| !cell.trim().is_empty())
+                .count()
+        })
+        .unwrap_or(0);
+    if table_cells >= 2 && !trimmed.contains("->") && !trimmed.contains("<-") {
+        return false;
+    }
+
+    let art_count = trimmed
+        .chars()
+        .filter(|ch| "+-|=/_\\<>[]{}()#*.:".contains(*ch))
+        .count();
+    if art_count < 2 {
+        return false;
+    }
+
+    let has_alphanumeric = trimmed.chars().any(|ch| ch.is_ascii_alphanumeric());
+    if !has_alphanumeric {
+        // Horizontal rules are Markdown, not ASCII art.
+        return !trimmed.chars().all(|ch| matches!(ch, '-' | '*' | '_'));
+    }
+
+    trimmed.contains('|')
+        || trimmed.contains("->")
+        || trimmed.contains("<-")
+        || trimmed.contains("=>")
+        || trimmed.contains("<=")
+        || trimmed
+            .chars()
+            .next()
+            .is_some_and(|ch| matches!(ch, '+' | '[' | '(' | '/' | '\\'))
+        || trimmed
+            .chars()
+            .next_back()
+            .is_some_and(|ch| matches!(ch, '+' | ']' | ')' | '/' | '\\'))
+}
+
+fn is_strong_ascii_art_line(line: &str) -> bool {
+    let trimmed = line.trim();
+    !trimmed.chars().any(|ch| ch.is_ascii_alphanumeric())
+        || trimmed.contains("->")
+        || trimmed.contains("<-")
+        || trimmed.contains("=>")
+        || trimmed.contains("<=")
+        || trimmed.starts_with('+')
+        || trimmed.ends_with('+')
 }
 
 fn check_language(
@@ -867,6 +974,81 @@ concepts:
 
         let report = run_checks(temp.path(), &config()).unwrap();
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    }
+
+    #[test]
+    fn detects_ascii_art_when_enabled() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs")).unwrap();
+        fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
+        fs::write(
+            temp.path().join("docs/01_architecture.md"),
+            "# Architecture\n\n+---------+\n| Client  | ---> API\n+---------+\n",
+        )
+        .unwrap();
+
+        let mut policy = config();
+        policy.docs.forbid_ascii_art = true;
+        let report = run_checks(temp.path(), &policy).unwrap();
+        let diagnostic = report
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code == "DH_ASCII_001")
+            .expect("ASCII art diagnostic");
+        assert_eq!(diagnostic.path, "docs/01_architecture.md");
+        assert_eq!(diagnostic.range.start.line, 2);
+    }
+
+    #[test]
+    fn detects_mixed_language_ascii_art_diagram() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs")).unwrap();
+        fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
+        fs::write(
+            temp.path().join("docs/01_architecture.md"),
+            r#"# Architecture
+
+Specification IR                         Assembly graph
+需求 / 不变式 / 验收条件 / Closure target   对象 / 接口 / 关系 / 证据
+                  \                       /
+                   \--- compile(...) ----/
+                              |
+            diagnostics / metrics / Closure / acceptance
+"#,
+        )
+        .unwrap();
+
+        let mut policy = config();
+        policy.docs.forbid_ascii_art = true;
+        let report = run_checks(temp.path(), &policy).unwrap();
+        let diagnostic = report
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code == "DH_ASCII_001")
+            .expect("mixed-language ASCII art diagnostic");
+        assert_eq!(diagnostic.range.start.line, 4);
+    }
+
+    #[test]
+    fn ignores_ascii_art_examples_in_code_and_markdown_tables() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs")).unwrap();
+        fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
+        fs::write(
+            temp.path().join("docs/01_architecture.md"),
+            "# Architecture\n\n```text\n+-----+\n| API |\n+-----+\n```\n\n| A | B |\n|---|---|\n| C | D |\n",
+        )
+        .unwrap();
+
+        let mut policy = config();
+        policy.docs.forbid_ascii_art = true;
+        let report = run_checks(temp.path(), &policy).unwrap();
+        assert!(
+            !report
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code == "DH_ASCII_001")
+        );
     }
 
     #[test]
