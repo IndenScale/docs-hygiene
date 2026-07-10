@@ -114,7 +114,7 @@ language:
 
 ## 禁止 ASCII 字符画
 
-`docs.forbidAsciiArt` 默认关闭。开启后，文档中的 ASCII 流程图、框图等字符画会产生 `DH_ASCII_001`；代码块中的示例不检查。
+`docs.forbidAsciiArt` 默认关闭。开启后，文档中的 ASCII 流程图、框图等字符画会产生 `DH_ASCII_001`。普通正文和 `text`、`ascii`、`diagram` fenced block 会检查；`python`、`bash`、`yaml` 等代码示例不检查。
 
 ```yaml
 docs:

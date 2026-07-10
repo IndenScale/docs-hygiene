@@ -392,8 +392,8 @@ fn check_ascii_art(
 
     for doc in docs {
         let text = std::fs::read_to_string(root.join(&doc.rel))?;
-        let stripped = strip_code_blocks(&text);
-        let lines = stripped.lines().collect::<Vec<_>>();
+        let surface = ascii_art_surface(&text);
+        let lines = surface.lines().collect::<Vec<_>>();
         let mut index = 0;
         while index < lines.len() {
             if !is_ascii_art_line(lines[index]) {
@@ -430,6 +430,9 @@ fn is_ascii_art_line(line: &str) -> bool {
     if trimmed.len() < 3 {
         return false;
     }
+    if trimmed.starts_with("- ") {
+        return false;
+    }
 
     // Do not treat ordinary Markdown tables as diagrams.
     let table_cells = trimmed
@@ -463,8 +466,6 @@ fn is_ascii_art_line(line: &str) -> bool {
     trimmed.contains('|')
         || trimmed.contains("->")
         || trimmed.contains("<-")
-        || trimmed.contains("=>")
-        || trimmed.contains("<=")
         || trimmed
             .chars()
             .next()
@@ -480,8 +481,6 @@ fn is_strong_ascii_art_line(line: &str) -> bool {
     !trimmed.chars().any(|ch| ch.is_ascii_alphanumeric())
         || trimmed.contains("->")
         || trimmed.contains("<-")
-        || trimmed.contains("=>")
-        || trimmed.contains("<=")
         || trimmed.starts_with('+')
         || trimmed.ends_with('+')
 }
@@ -840,6 +839,36 @@ fn strip_code_blocks(text: &str) -> String {
     out
 }
 
+fn ascii_art_surface(text: &str) -> String {
+    let mut in_code = false;
+    let mut include_code = false;
+    let mut out = String::new();
+    for line in text.lines() {
+        let trimmed = line.trim_start();
+        if let Some(info) = trimmed.strip_prefix("```") {
+            if !in_code {
+                let language = info
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or("")
+                    .to_ascii_lowercase();
+                include_code = matches!(
+                    language.as_str(),
+                    "text" | "txt" | "ascii" | "diagram" | "plaintext"
+                );
+            }
+            in_code = !in_code;
+            out.push('\n');
+            continue;
+        }
+        if !in_code || include_code {
+            out.push_str(line);
+        }
+        out.push('\n');
+    }
+    out
+}
+
 fn is_probable_concept(term: &str) -> bool {
     let trimmed = term.trim();
     if trimmed.len() < 2 || trimmed.len() > 80 {
@@ -1030,25 +1059,26 @@ Specification IR                         Assembly graph
     }
 
     #[test]
-    fn ignores_ascii_art_examples_in_code_and_markdown_tables() {
+    fn detects_ascii_art_in_text_fences_but_ignores_code_and_markdown_tables() {
         let temp = tempdir().unwrap();
         fs::create_dir_all(temp.path().join("docs")).unwrap();
         fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
         fs::write(
             temp.path().join("docs/01_architecture.md"),
-            "# Architecture\n\n```text\n+-----+\n| API |\n+-----+\n```\n\n| A | B |\n|---|---|\n| C | D |\n",
+            "# Architecture\n\n```text\n+-----+\n| API |\n+-----+\n```\n\n```python\n+-----+\n| API |\n+-----+\n```\n\n| A | B |\n|---|---|\n| C | D |\n",
         )
         .unwrap();
 
         let mut policy = config();
         policy.docs.forbid_ascii_art = true;
         let report = run_checks(temp.path(), &policy).unwrap();
-        assert!(
-            !report
-                .diagnostics
-                .iter()
-                .any(|diagnostic| diagnostic.code == "DH_ASCII_001")
-        );
+        let diagnostics = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "DH_ASCII_001")
+            .collect::<Vec<_>>();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].range.start.line, 3);
     }
 
     #[test]
