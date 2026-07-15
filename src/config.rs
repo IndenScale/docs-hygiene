@@ -25,6 +25,88 @@ pub struct Config {
     pub suppressions: Vec<SuppressionConfig>,
     #[serde(default)]
     pub ignore: IgnoreConfig,
+    #[serde(default)]
+    pub document_contracts: DocumentContractsConfig,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentContractsConfig {
+    #[serde(default)]
+    pub maturity: MaturityConfig,
+    #[serde(default)]
+    pub profiles: Vec<DocumentProfileConfig>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MaturityLevel {
+    #[default]
+    Seed,
+    Growing,
+    Maintained,
+    Governed,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaturityConfig {
+    #[serde(default)]
+    pub declared: MaturityLevel,
+    #[serde(default)]
+    pub recommendations: Vec<MaturityRecommendationConfig>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaturityRecommendationConfig {
+    pub level: MaturityLevel,
+    pub min_repository_lines: Option<usize>,
+    pub min_repository_bytes: Option<u64>,
+    pub min_managed_documents: Option<usize>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentProfileConfig {
+    pub id: String,
+    #[serde(rename = "match")]
+    pub matcher: DocumentMatchConfig,
+    #[serde(default)]
+    pub required_sections: Vec<RequiredSectionConfig>,
+    #[serde(default)]
+    pub required_fields: Vec<RequiredFieldConfig>,
+    #[serde(default)]
+    pub ordered_sections: bool,
+    #[serde(default = "default_contract_enforce_from")]
+    pub enforce_from: MaturityLevel,
+    #[serde(default = "default_placeholders_allowed_until")]
+    pub placeholders_allowed_until: MaturityLevel,
+    #[serde(default)]
+    pub placeholder_patterns: Vec<String>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentMatchConfig {
+    #[serde(default)]
+    pub paths: Vec<String>,
+    #[serde(default)]
+    pub filenames: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredSectionConfig {
+    pub id: String,
+    pub headings: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredFieldConfig {
+    pub id: String,
+    pub pattern: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -263,6 +345,28 @@ language:
   zh:
     minCjkRatio: 0.15
 
+documentContracts:
+  maturity:
+    declared: growing
+    recommendations:
+      - level: maintained
+        minRepositoryLines: 10000
+        minManagedDocuments: 20
+  profiles:
+    - id: repository-readme
+      match:
+        paths: [README.md, README_ZH.md]
+        filenames: ["^README(?:_ZH)?\\.md$"]
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
+      orderedSections: true
+      requiredSections:
+        - id: overview
+          headings: [Overview, 概览]
+        - id: quick-start
+          headings: [Quick Start, 快速开始]
+
 adapters:
   markdownlint:
     enabled: true
@@ -300,4 +404,12 @@ fn default_pattern_role() -> String {
 
 fn default_concepts_dir() -> PathBuf {
     PathBuf::from("concept")
+}
+
+fn default_contract_enforce_from() -> MaturityLevel {
+    MaturityLevel::Maintained
+}
+
+fn default_placeholders_allowed_until() -> MaturityLevel {
+    MaturityLevel::Growing
 }

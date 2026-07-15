@@ -36,6 +36,18 @@ When `docs.forbidAsciiArt` is enabled, `DH_ASCII_001` reports consecutive ASCII 
 
 `DH_LANG_002` reports a document above its configured maximum CJK ratio.
 
+## Document Contracts
+
+`DH_CONTRACT_001` reports a missing required semantic section.
+
+`DH_CONTRACT_002` reports a missing required field.
+
+`DH_CONTRACT_003` reports a declared placeholder in a required section.
+
+`DH_CONTRACT_004` reports required sections in the wrong order.
+
+`DH_MATURITY_001` recommends a higher declared governance maturity from configured repository-size signals.
+
 ## Concepts
 
 `DH_CONCEPT_001` reports a highlighted concept reference without a concept

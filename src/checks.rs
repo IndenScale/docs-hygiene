@@ -8,7 +8,7 @@ use regex::Regex;
 use serde::Serialize;
 use walkdir::WalkDir;
 
-use crate::config::{Config, FilenamePatternConfig};
+use crate::config::{Config, DocumentProfileConfig, FilenamePatternConfig, MaturityLevel};
 use crate::report::{Report, Severity};
 
 #[derive(Debug)]
@@ -144,11 +144,314 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     check_max_lines(root, config, &docs, &mut diagnostics)?;
     check_ascii_art(root, config, &docs, &mut diagnostics)?;
     check_language(root, config, &docs, &mut diagnostics)?;
+    check_document_contracts(root, config, &ignore, &docs, &mut diagnostics)?;
     check_concepts(root, config, &docs, &ignore, &mut diagnostics)?;
     check_adapters(root, config, &mut diagnostics)?;
     let diagnostics = apply_suppressions(config, diagnostics)?;
 
     Ok(Report::new(diagnostics, docs.len(), root))
+}
+
+fn check_document_contracts(
+    root: &Path,
+    config: &Config,
+    ignore: &GlobSet,
+    managed_docs: &[DocFile],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Result<()> {
+    if config.document_contracts.profiles.is_empty()
+        && config
+            .document_contracts
+            .maturity
+            .recommendations
+            .is_empty()
+    {
+        return Ok(());
+    }
+
+    check_maturity_recommendation(root, config, ignore, managed_docs.len(), diagnostics)?;
+    let declared = config.document_contracts.maturity.declared;
+
+    for entry in WalkDir::new(root)
+        .into_iter()
+        .filter_entry(|entry| entry.depth() == 0 || entry.file_name() != ".git")
+    {
+        let entry = entry?;
+        if !entry.file_type().is_file()
+            || entry.path().extension().and_then(|value| value.to_str()) != Some("md")
+        {
+            continue;
+        }
+        let rel = entry.path().strip_prefix(root).unwrap_or(entry.path());
+        if ignore.is_match(rel) {
+            continue;
+        }
+        let Some(profile) = matching_document_profile(rel, &config.document_contracts.profiles)?
+        else {
+            continue;
+        };
+        check_document_contract(root, rel, profile, declared, diagnostics)?;
+    }
+    Ok(())
+}
+
+fn matching_document_profile<'a>(
+    rel: &Path,
+    profiles: &'a [DocumentProfileConfig],
+) -> Result<Option<&'a DocumentProfileConfig>> {
+    let filename = rel
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("");
+    for profile in profiles {
+        let matcher = &profile.matcher;
+        if matcher.paths.is_empty() && matcher.filenames.is_empty() {
+            continue;
+        }
+        let path_matches = if matcher.paths.is_empty() {
+            true
+        } else {
+            let mut builder = GlobSetBuilder::new();
+            for path in &matcher.paths {
+                builder.add(Glob::new(path)?);
+            }
+            builder.build()?.is_match(rel)
+        };
+        let filename_matches = if matcher.filenames.is_empty() {
+            true
+        } else {
+            matcher
+                .filenames
+                .iter()
+                .map(|pattern| Regex::new(pattern))
+                .collect::<Result<Vec<_>, _>>()?
+                .iter()
+                .any(|pattern| pattern.is_match(filename))
+        };
+        if path_matches && filename_matches {
+            return Ok(Some(profile));
+        }
+    }
+    Ok(None)
+}
+
+fn check_document_contract(
+    root: &Path,
+    rel: &Path,
+    profile: &DocumentProfileConfig,
+    declared: MaturityLevel,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Result<()> {
+    let text = std::fs::read_to_string(root.join(rel))?;
+    let surface = strip_code_blocks(&text);
+    let headings = markdown_headings(&surface);
+    let severity = contract_severity(declared, profile.enforce_from);
+    let mut matched_lines = Vec::new();
+
+    for section in &profile.required_sections {
+        let matched = headings.iter().find(|heading| {
+            section
+                .headings
+                .iter()
+                .any(|candidate| candidate == &heading.title)
+        });
+        let Some(heading) = matched else {
+            diagnostics.push(Diagnostic::new(
+                "DH_CONTRACT_001",
+                severity,
+                rel.display().to_string(),
+                format!(
+                    "Document profile '{}' requires section '{}' (accepted headings: {}).",
+                    profile.id,
+                    section.id,
+                    section.headings.join(", ")
+                ),
+            ));
+            continue;
+        };
+        matched_lines.push((section.id.as_str(), heading.line));
+
+        if !profile.placeholder_patterns.is_empty()
+            && section_contains_placeholder(
+                &surface,
+                &headings,
+                heading.line,
+                &profile.placeholder_patterns,
+            )?
+        {
+            let placeholder_severity = if declared > profile.placeholders_allowed_until {
+                Severity::Error
+            } else {
+                Severity::Info
+            };
+            diagnostics.push(
+                Diagnostic::new(
+                    "DH_CONTRACT_003",
+                    placeholder_severity,
+                    rel.display().to_string(),
+                    format!(
+                        "Required section '{}' in profile '{}' still contains a declared placeholder.",
+                        section.id, profile.id
+                    ),
+                )
+                .at_line(heading.line),
+            );
+        }
+    }
+
+    if profile.ordered_sections && matched_lines.windows(2).any(|pair| pair[0].1 >= pair[1].1) {
+        diagnostics.push(Diagnostic::new(
+            "DH_CONTRACT_004",
+            severity,
+            rel.display().to_string(),
+            format!(
+                "Required sections for document profile '{}' are not in configured order.",
+                profile.id
+            ),
+        ));
+    }
+
+    for field in &profile.required_fields {
+        if !Regex::new(&field.pattern)?.is_match(&surface) {
+            diagnostics.push(Diagnostic::new(
+                "DH_CONTRACT_002",
+                severity,
+                rel.display().to_string(),
+                format!(
+                    "Document profile '{}' requires field '{}'.",
+                    profile.id, field.id
+                ),
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[derive(Debug)]
+struct MarkdownHeading {
+    line: usize,
+    title: String,
+}
+
+fn markdown_headings(text: &str) -> Vec<MarkdownHeading> {
+    text.lines()
+        .enumerate()
+        .filter_map(|(index, line)| {
+            let trimmed = line.trim_start();
+            let hashes = trimmed.chars().take_while(|ch| *ch == '#').count();
+            if !(1..=6).contains(&hashes) || !trimmed[hashes..].starts_with(' ') {
+                return None;
+            }
+            let title = trimmed[hashes..]
+                .trim()
+                .trim_end_matches('#')
+                .trim()
+                .to_string();
+            Some(MarkdownHeading {
+                line: index + 1,
+                title,
+            })
+        })
+        .collect()
+}
+
+fn section_contains_placeholder(
+    text: &str,
+    headings: &[MarkdownHeading],
+    heading_line: usize,
+    patterns: &[String],
+) -> Result<bool> {
+    let end_line = headings
+        .iter()
+        .find(|heading| heading.line > heading_line)
+        .map(|heading| heading.line)
+        .unwrap_or_else(|| text.lines().count() + 1);
+    let body = text
+        .lines()
+        .skip(heading_line)
+        .take(end_line.saturating_sub(heading_line + 1))
+        .collect::<Vec<_>>()
+        .join("\n");
+    for pattern in patterns {
+        if Regex::new(pattern)?.is_match(&body) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn contract_severity(declared: MaturityLevel, enforce_from: MaturityLevel) -> Severity {
+    if declared >= enforce_from {
+        Severity::Error
+    } else {
+        Severity::Warning
+    }
+}
+
+fn check_maturity_recommendation(
+    root: &Path,
+    config: &Config,
+    ignore: &GlobSet,
+    managed_documents: usize,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Result<()> {
+    let declared = config.document_contracts.maturity.declared;
+    let mut repository_lines = 0usize;
+    let mut repository_bytes = 0u64;
+    for entry in WalkDir::new(root)
+        .into_iter()
+        .filter_entry(|entry| entry.depth() == 0 || entry.file_name() != ".git")
+    {
+        let entry = entry?;
+        if !entry.file_type().is_file() {
+            continue;
+        }
+        let rel = entry.path().strip_prefix(root).unwrap_or(entry.path());
+        if ignore.is_match(rel) {
+            continue;
+        }
+        repository_bytes = repository_bytes.saturating_add(entry.metadata()?.len());
+        if let Ok(text) = std::fs::read_to_string(entry.path()) {
+            repository_lines = repository_lines.saturating_add(text.lines().count());
+        }
+    }
+
+    let recommended = config
+        .document_contracts
+        .maturity
+        .recommendations
+        .iter()
+        .filter(|recommendation| recommendation.level > declared)
+        .filter(|recommendation| {
+            let has_signal = recommendation.min_repository_lines.is_some()
+                || recommendation.min_repository_bytes.is_some()
+                || recommendation.min_managed_documents.is_some();
+            has_signal
+                && recommendation
+                    .min_repository_lines
+                    .is_none_or(|minimum| repository_lines >= minimum)
+                && recommendation
+                    .min_repository_bytes
+                    .is_none_or(|minimum| repository_bytes >= minimum)
+                && recommendation
+                    .min_managed_documents
+                    .is_none_or(|minimum| managed_documents >= minimum)
+        })
+        .map(|recommendation| recommendation.level)
+        .max();
+
+    if let Some(level) = recommended {
+        diagnostics.push(Diagnostic::new(
+            "DH_MATURITY_001",
+            Severity::Info,
+            ".",
+            format!(
+                "Repository signals recommend document governance maturity {:?}; declared {:?} ({} lines, {} bytes, {} managed docs).",
+                level, declared, repository_lines, repository_bytes, managed_documents
+            ),
+        ));
+    }
+    Ok(())
 }
 
 fn check_required_files(root: &Path, config: &Config, diagnostics: &mut Vec<Diagnostic>) {
@@ -1483,5 +1786,131 @@ suppressions:
 
         assert_eq!(lang_diagnostics.len(), 1, "{:?}", report.diagnostics);
         assert_eq!(lang_diagnostics[0].path, "docs/01_case.md");
+    }
+
+    #[test]
+    fn path_and_filename_infer_contract_with_localized_heading_aliases() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs/decisions")).unwrap();
+        fs::write(
+            temp.path().join("docs/decisions/0001-record-contracts.md"),
+            "# 记录文档契约\n\n## 上下文\n\n背景。\n\n## 决策\n\n采用路径推导。\n\n## 后果\n\n保持开放扩展。\n\n## 实施说明\n\n额外章节合法。\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+docs:
+  bases:
+    - id: decisions
+      root: docs/decisions
+      patterns:
+        - id: adr
+          regex: "^\\d{4}-[a-z0-9-]+\\.md$"
+          role: adr
+documentContracts:
+  maturity:
+    declared: maintained
+  profiles:
+    - id: adr
+      match:
+        paths: ["docs/**/decisions/*.md"]
+        filenames: ["^\\d{4}-[a-z0-9-]+\\.md$"]
+      orderedSections: true
+      requiredSections:
+        - id: context
+          headings: [Context, 上下文]
+        - id: decision
+          headings: [Decision, 决策]
+        - id: consequences
+          headings: [Consequences, 后果]
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    }
+
+    #[test]
+    fn contract_reports_missing_sections_fields_order_and_mature_placeholders() {
+        let temp = tempdir().unwrap();
+        fs::write(
+            temp.path().join("ROADMAP.md"),
+            "# Roadmap\n\n## 验收\n\nTODO\n\n## 目标\n\n形成稳定入口。\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  maturity:
+    declared: governed
+  profiles:
+    - id: roadmap
+      match:
+        paths: [ROADMAP.md]
+        filenames: ["^ROADMAP\\.md$"]
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      placeholderPatterns: ["(?i)\\bTODO\\b"]
+      orderedSections: true
+      requiredSections:
+        - id: goal
+          headings: [目标]
+        - id: acceptance
+          headings: [验收]
+        - id: exit
+          headings: [退出条件]
+      requiredFields:
+        - id: owner
+          pattern: "(?m)^负责人："
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        for code in [
+            "DH_CONTRACT_001",
+            "DH_CONTRACT_002",
+            "DH_CONTRACT_003",
+            "DH_CONTRACT_004",
+        ] {
+            assert_has_code(&report, code);
+        }
+    }
+
+    #[test]
+    fn repository_signals_recommend_but_do_not_force_maturity() {
+        let temp = tempdir().unwrap();
+        fs::write(
+            temp.path().join("README.md"),
+            "# Project\n\nA small project.\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  maturity:
+    declared: seed
+    recommendations:
+      - level: growing
+        minRepositoryLines: 2
+        minRepositoryBytes: 10
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert_has_code(&report, "DH_MATURITY_001");
+        let diagnostic = report
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code == "DH_MATURITY_001")
+            .unwrap();
+        assert!(matches!(diagnostic.severity, Severity::Info));
+        assert_eq!(report.summary.warning_count, 0);
+        assert_eq!(report.summary.info_count, 1);
     }
 }

@@ -125,6 +125,12 @@ language:
     minCjkRatio: 0.15
 ```
 
+## Document Contracts
+
+`documentContracts.profiles` infers a document type from path and file name. The first matching profile applies. Required sections accept localized heading aliases; additional sections are always allowed. See [Document Contracts](06_document_contracts.md) for the decision and full model.
+
+`documentContracts.maturity.declared` controls enforcement. Repository-size recommendations emit information but never raise the declared maturity automatically.
+
 ## Forbid ASCII Art
 
 `docs.forbidAsciiArt` is disabled by default. Enable it to report ASCII flowcharts and box diagrams in prose:

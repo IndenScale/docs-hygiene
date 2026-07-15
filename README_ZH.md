@@ -8,6 +8,7 @@ Docs Hygiene 是面向仓库文档的 policy-as-code 卫生检查器。它让文
 - `docs/` 下的编号文档结构
 - 文档长度预算
 - 根文档与本地化文档的 i18n 同位关系
+- 基于路径与文件名推导、随项目成熟度增强的文档契约
 - 从高亮术语到 `concept/*.md` 的概念外键
 - 对 markdownlint 等外部工具的 adapter 编排
 

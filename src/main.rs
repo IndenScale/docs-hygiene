@@ -183,7 +183,8 @@ fn check(args: CheckArgs) -> Result<()> {
         OutputFormat::Json => print_json_report(&report)?,
     }
 
-    if args.fail_on_warning && report.summary.diagnostic_count > 0 {
+    if report.summary.error_count > 0 || (args.fail_on_warning && report.summary.warning_count > 0)
+    {
         anyhow::bail!("docs-hygiene found diagnostics");
     }
 

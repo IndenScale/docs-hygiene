@@ -112,6 +112,12 @@ language:
     minCjkRatio: 0.15
 ```
 
+## 文档契约
+
+`documentContracts.profiles` 根据路径和文件名推导文档类型，第一个匹配的 profile 生效。必要章节可以声明多语言标题别名，其他章节始终开放。完整决策和模型见[文档契约](06_document_contracts.md)。
+
+`documentContracts.maturity.declared` 控制门禁强度。仓库规模建议只产生信息，不会自动提高项目声明的成熟度。
+
 ## 禁止 ASCII 字符画
 
 `docs.forbidAsciiArt` 默认关闭。开启后，文档中的 ASCII 流程图、框图等字符画会产生 `DH_ASCII_001`。普通正文和 `text`、`ascii`、`diagram` fenced block 会检查；`python`、`bash`、`yaml` 等代码示例不检查。

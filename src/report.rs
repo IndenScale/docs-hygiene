@@ -28,6 +28,8 @@ pub struct Summary {
     pub diagnostic_count: usize,
     pub error_count: usize,
     pub warning_count: usize,
+    pub info_count: usize,
+    pub hint_count: usize,
 }
 
 impl Report {
@@ -36,13 +38,26 @@ impl Report {
             .iter()
             .filter(|diag| matches!(diag.severity, Severity::Error))
             .count();
-        let warning_count = diagnostics.len() - error_count;
+        let warning_count = diagnostics
+            .iter()
+            .filter(|diag| matches!(diag.severity, Severity::Warning))
+            .count();
+        let info_count = diagnostics
+            .iter()
+            .filter(|diag| matches!(diag.severity, Severity::Info))
+            .count();
+        let hint_count = diagnostics
+            .iter()
+            .filter(|diag| matches!(diag.severity, Severity::Hint))
+            .count();
         Self {
             summary: Summary {
                 files_checked,
                 diagnostic_count: diagnostics.len(),
                 error_count,
                 warning_count,
+                info_count,
+                hint_count,
             },
             diagnostics,
             root: root.to_path_buf(),
@@ -64,6 +79,21 @@ impl Report {
             }
             "DH_LANG_002" => {
                 Some("A document has more CJK content than its language policy allows.")
+            }
+            "DH_CONTRACT_001" => {
+                Some("A path-inferred document profile is missing a required section.")
+            }
+            "DH_CONTRACT_002" => {
+                Some("A path-inferred document profile is missing a required field.")
+            }
+            "DH_CONTRACT_003" => {
+                Some("A required document section contains a declared placeholder.")
+            }
+            "DH_CONTRACT_004" => {
+                Some("Required document sections are not in the configured order.")
+            }
+            "DH_MATURITY_001" => {
+                Some("Repository size signals recommend a higher document governance maturity.")
             }
             "DH_CONCEPT_001" => Some("A highlighted term is missing a concept definition file."),
             "DH_CONCEPT_002" => Some("A concept definition file is not referenced by docs."),
@@ -91,10 +121,12 @@ pub fn print_text_report(report: &Report) {
         );
     }
     println!(
-        "\n{} diagnostics: {} errors, {} warnings across {} docs files.",
+        "\n{} diagnostics: {} errors, {} warnings, {} info, {} hints across {} docs files.",
         report.summary.diagnostic_count,
         report.summary.error_count,
         report.summary.warning_count,
+        report.summary.info_count,
+        report.summary.hint_count,
         report.summary.files_checked
     );
 }

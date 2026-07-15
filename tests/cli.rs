@@ -116,7 +116,7 @@ entryDocs:
         .unwrap()
         .args(["check", temp.path().to_str().unwrap(), "--format", "json"])
         .assert()
-        .success()
+        .failure()
         .get_output()
         .stdout
         .clone();
@@ -138,4 +138,65 @@ entryDocs:
             .unwrap()
             .is_empty()
     );
+}
+
+#[test]
+fn warnings_are_advisory_unless_fail_on_warning_is_set() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        r#"
+documentContracts:
+  maturity:
+    declared: seed
+  profiles:
+    - id: readme
+      match:
+        paths: [README.md]
+      enforceFrom: maintained
+      requiredSections:
+        - id: quick-start
+          headings: [Quick Start]
+"#,
+    )
+    .unwrap();
+    std::fs::write(temp.path().join("README.md"), "# Early project\n").unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DH_CONTRACT_001 Warning"));
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap(), "--fail-on-warning"])
+        .assert()
+        .failure();
+}
+
+#[test]
+fn informational_maturity_advice_never_fails_the_gate() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        r#"
+documentContracts:
+  maturity:
+    declared: seed
+    recommendations:
+      - level: growing
+        minRepositoryLines: 1
+"#,
+    )
+    .unwrap();
+    std::fs::write(temp.path().join("README.md"), "# Project\n").unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap(), "--fail-on-warning"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DH_MATURITY_001 Info"));
 }

@@ -8,6 +8,7 @@ It is not a Markdown syntax linter. Use markdownlint for Markdown formatting, ly
 - numbered docs under `docs/`
 - document length budgets
 - i18n parity between root docs and localized docs
+- path-inferred document contracts with maturity-aware required sections
 - concept foreign keys from highlighted terms to `concept/*.md`
 - adapter orchestration for tools such as markdownlint
 

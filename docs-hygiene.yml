@@ -44,6 +44,38 @@ language:
   zh:
     minCjkRatio: 0.15
 
+documentContracts:
+  maturity:
+    declared: maintained
+    recommendations:
+      - level: governed
+        minRepositoryLines: 20000
+        minManagedDocuments: 20
+  profiles:
+    - id: repository-readme
+      match:
+        paths: [README.md, README_ZH.md]
+        filenames: ["^README(?:_ZH)?\\.md$"]
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
+      orderedSections: true
+      requiredSections:
+        - id: quick-start
+          headings: [Quick Start, 快速开始]
+        - id: policy
+          headings: [Policy, 策略]
+        - id: adapters
+          headings: [Adapters, Adapter]
+    - id: changelog
+      match:
+        paths: [CHANGELOG.md]
+        filenames: ["^CHANGELOG\\.md$"]
+      enforceFrom: maintained
+      requiredFields:
+        - id: released-version
+          pattern: "(?m)^## \\d+\\.\\d+\\.\\d+(?: |$)"
+
 adapters:
   markdownlint:
     enabled: true
