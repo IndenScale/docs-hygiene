@@ -48,9 +48,9 @@ Docs Hygiene 使用 Body 与 Reference Library 两个正交角色治理三层资
 
 Body 追溯轴是 `PRD → Spec/Test Definition → Code/Configuration`；Library 投影轴是
 `UL → Glossary → SDK`。Test Definition 属于 Definition，Test Result 和运行
-观察属于独立 Evidence 平面。仓库分别在 `docs/prd`、`docs/references`、
-`docs/specs`、`docs/glossary` 和 `docs/sdk` 中对这些角色进行 dogfood，并在
-`implementation-manifest.yml` 中声明 Code/Configuration Body 的实现关系。
+观察属于独立 Evidence 平面。仓库将 Intent 资产放在 `docs/intent`，Definition 资产
+放在 `docs/definition`，中文版本统一放在 `docs/zh` 下。Implementation 留在仓库根部：
+`src/lib.rs` 就是 SDK，Code/Configuration 关系由 `implementation-manifest.yml` 声明。
 
 ## 产品边界
 

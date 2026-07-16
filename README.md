@@ -57,9 +57,10 @@ Docs Hygiene governs three layers using the orthogonal roles Body and Reference 
 The Body trace axis is `PRD → Spec/Test Definition → Code/Configuration`; the
 Library projection axis is `UL → Glossary → SDK`. Test Definitions belong
 to Definition, while Test Results and runtime observations occupy the separate
-Evidence plane. This repository dogfoods these roles under `docs/prd`,
-`docs/references`, `docs/specs`, `docs/glossary`, and `docs/sdk`, with the
-Code/Configuration Body relationships declared in `implementation-manifest.yml`.
+Evidence plane. This repository keeps Intent assets under `docs/intent`, Definition
+assets under `docs/definition`, and their Chinese counterparts under `docs/zh`.
+Implementation stays in the repository root: `src/lib.rs` is the SDK, while code and
+configuration relationships are declared in `implementation-manifest.yml`.
 
 ## Product Boundary
 

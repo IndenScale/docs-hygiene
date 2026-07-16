@@ -140,6 +140,8 @@ pub struct DocsBaseConfig {
     pub id: String,
     pub root: PathBuf,
     #[serde(default)]
+    pub localized_roots: BTreeMap<String, PathBuf>,
+    #[serde(default)]
     pub patterns: Vec<FilenamePatternConfig>,
     #[serde(default)]
     pub require_continuous_numbering: Option<bool>,

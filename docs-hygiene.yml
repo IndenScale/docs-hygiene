@@ -19,12 +19,12 @@ docs:
       requireContinuousNumbering: true
       maxLines: 200
       ignore:
-        - docs/references/**
-        - docs/prd/**
+        - docs/intent/**
+        - docs/definition/**
         - docs/position/**
-        - docs/glossary/**
-        - docs/specs/**
-        - docs/sdk/**
+        - docs/zh/intent/**
+        - docs/zh/definition/**
+        - docs/zh/position/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -34,34 +34,40 @@ docs:
           regex: "^INDEX\\.md$"
           role: index
           numbered: false
-    - id: references
-      root: docs/references
+    - id: intent
+      root: docs/intent
+      localizedRoots:
+        zh: docs/zh/intent
       requireContinuousNumbering: true
       maxLines: 200
       patterns:
-        - id: numbered-reference
+        - id: numbered-intent
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
           role: numbered
           numbered: true
-        - id: reference-index
+        - id: intent-index
           regex: "^README\\.md$"
           role: index
           numbered: false
-    - id: prd
-      root: docs/prd
+    - id: definition
+      root: docs/definition
+      localizedRoots:
+        zh: docs/zh/definition
       requireContinuousNumbering: true
       maxLines: 200
       patterns:
-        - id: numbered-prd
+        - id: numbered-definition
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
           role: numbered
           numbered: true
-        - id: prd-index
+        - id: definition-index
           regex: "^README\\.md$"
           role: index
           numbered: false
     - id: position
       root: docs/position
+      localizedRoots:
+        zh: docs/zh/position
       requireContinuousNumbering: true
       maxLines: 200
       patterns:
@@ -70,45 +76,6 @@ docs:
           role: numbered
           numbered: true
         - id: position-index
-          regex: "^README\\.md$"
-          role: index
-          numbered: false
-    - id: glossary
-      root: docs/glossary
-      requireContinuousNumbering: true
-      maxLines: 200
-      patterns:
-        - id: numbered-glossary
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
-          numbered: true
-        - id: glossary-index
-          regex: "^README\\.md$"
-          role: index
-          numbered: false
-    - id: specs
-      root: docs/specs
-      requireContinuousNumbering: true
-      maxLines: 200
-      patterns:
-        - id: numbered-spec
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
-          numbered: true
-        - id: spec-index
-          regex: "^README\\.md$"
-          role: index
-          numbered: false
-    - id: sdk
-      root: docs/sdk
-      requireContinuousNumbering: true
-      maxLines: 200
-      patterns:
-        - id: numbered-sdk-reference
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
-          numbered: true
-        - id: sdk-index
           regex: "^README\\.md$"
           role: index
           numbered: false
@@ -142,7 +109,7 @@ documentContracts:
       match:
         paths:
           - docs/position/[0-9][0-9]_*.md
-          - docs/position/zh/[0-9][0-9]_*.md
+          - docs/zh/position/[0-9][0-9]_*.md
         filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
       enforceFrom: maintained
       orderedSections: true
@@ -167,8 +134,8 @@ documentContracts:
     - id: product-requirement
       match:
         paths:
-          - docs/prd/[0-9][0-9]_*.md
-          - docs/prd/zh/[0-9][0-9]_*.md
+          - docs/intent/02_*.md
+          - docs/zh/intent/02_*.md
         filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
       enforceFrom: maintained
       placeholdersAllowedUntil: growing
@@ -203,8 +170,8 @@ documentContracts:
     - id: ubiquitous-language
       match:
         paths:
-          - docs/references/01_ubiquitous_language.md
-          - docs/references/zh/01_ubiquitous_language.md
+          - docs/intent/01_ubiquitous_language.md
+          - docs/zh/intent/01_ubiquitous_language.md
         filenames: ["^01_ubiquitous_language\\.md$"]
       enforceFrom: maintained
       orderedSections: true
@@ -227,8 +194,8 @@ documentContracts:
     - id: definition-glossary
       match:
         paths:
-          - docs/glossary/[0-9][0-9]_*.md
-          - docs/glossary/zh/[0-9][0-9]_*.md
+          - docs/definition/01_*_glossary.md
+          - docs/zh/definition/01_*_glossary.md
         filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
       enforceFrom: maintained
       orderedSections: true
@@ -249,8 +216,8 @@ documentContracts:
     - id: definition-specification
       match:
         paths:
-          - docs/specs/[0-9][0-9]_*.md
-          - docs/specs/zh/[0-9][0-9]_*.md
+          - docs/definition/02_*_spec.md
+          - docs/zh/definition/02_*_spec.md
         filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
       enforceFrom: maintained
       orderedSections: true
@@ -270,28 +237,6 @@ documentContracts:
           pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
         - id: prd-id
           pattern: "(?m)^prd: PRD-[0-9]+$"
-        - id: glossary-id
-          pattern: "(?m)^glossary: GLOSSARY-[0-9]+$"
-    - id: implementation-sdk-reference
-      match:
-        paths:
-          - docs/sdk/[0-9][0-9]_*.md
-          - docs/sdk/zh/[0-9][0-9]_*.md
-        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
-      requiredSections:
-        - id: definition-source
-          headings: [Definition Source, 定义来源]
-        - id: public-surface
-          headings: [Public Surface, 公共表面]
-        - id: semantic-mappings
-          headings: [Semantic Mappings, 语义映射]
-        - id: evidence
-          headings: [Evidence, 证据]
-      requiredFields:
-        - id: sdk-id
-          pattern: "(?m)^id: SDK-[0-9]+$"
         - id: glossary-id
           pattern: "(?m)^glossary: GLOSSARY-[0-9]+$"
     - id: repository-readme

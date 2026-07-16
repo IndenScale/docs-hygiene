@@ -94,6 +94,26 @@ i18n:
   requireNumberParity: true
 ```
 
+By default, a base rooted at `docs` discovers `docs/zh` as its `zh` subtree.
+When a semantic base and the locale hierarchy are orthogonal, use
+`localizedRoots` to pair them explicitly:
+
+```yaml
+docs:
+  bases:
+    - id: intent
+      root: docs/intent
+      localizedRoots:
+        zh: docs/zh/intent
+      patterns:
+        - id: numbered
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          numbered: true
+```
+
+The localized root is checked with the same filename patterns, numbering,
+line budget, and document contracts as the root-language directory.
+
 For this layout, `docs/01_overview.md` should have
 `docs/zh/01_overview.md`.
 

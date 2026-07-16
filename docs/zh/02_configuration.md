@@ -86,6 +86,24 @@ i18n:
 
 在这个布局下，`docs/01_overview.md` 应对应 `docs/zh/01_overview.md`。
 
+默认情况下，以 `docs` 为根的 base 会把 `docs/zh` 识别为 `zh` 子树。当语义目录与
+语言目录是两个正交维度时，使用 `localizedRoots` 显式配对：
+
+```yaml
+docs:
+  bases:
+    - id: intent
+      root: docs/intent
+      localizedRoots:
+        zh: docs/zh/intent
+      patterns:
+        - id: numbered
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          numbered: true
+```
+
+本地化根目录使用与根语言目录相同的文件名规则、编号、行数预算和文档契约。
+
 ## 语言 CRUD
 
 语言策略可以通过 CLI 命令编辑，不必手动修改 YAML。

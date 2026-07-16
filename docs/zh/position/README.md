@@ -9,7 +9,8 @@
 
 ## 变更路由
 
-- 共享产品含义的变化进入 `docs/references/`。
-- 期望产品行为的变化进入 `docs/prd/`。
+- 共享产品含义的变化进入 `docs/intent/01_ubiquitous_language.md`。
+- 期望产品行为的变化进入 `docs/intent/02_three_layer_contract_governance.md`。
+- 形式定义进入 `docs/definition/`。
 - 对解释模型的调整进入本目录。
-- 对已交付行为的主张必须回到代码、测试和规则说明核验。
+- 对已交付行为的主张必须回到根目录代码、配置、测试和运行 Evidence 核验。

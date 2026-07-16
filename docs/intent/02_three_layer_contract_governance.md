@@ -127,8 +127,9 @@ warning or review item, but it must not decide business meaning for the team.
 
 ## Delivery Status
 
-The three-layer asset model and this PRD are baselined. Document contracts now govern
-UL, PRD, Glossary, Spec, and SDK Reference assets, a public Rust library exposes
-the existing checker, and `implementation-manifest.yml` declares the CLI/Configuration
-Body relationships to its Spec and SDK. Generic manifest validation, projection graphs,
-and end-to-end trace diagnostics remain future work and must not be described as shipped.
+The three-layer asset model and this PRD are baselined. Document contracts govern UL
+and PRD under `docs/intent` and Glossary and Spec under `docs/definition`. Implementation
+remains at the repository root: the public Rust library is the SDK, and
+`implementation-manifest.yml` declares the CLI/Configuration Body relationships to its
+Spec and SDK. Generic manifest validation, projection graphs, and end-to-end trace
+diagnostics remain future work and must not be described as shipped.

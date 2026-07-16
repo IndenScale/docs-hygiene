@@ -127,6 +127,7 @@ struct DocFile {
 struct NormalizedBase {
     id: String,
     root: PathBuf,
+    localized_roots: BTreeMap<String, PathBuf>,
     patterns: Vec<FilenamePatternConfig>,
     require_continuous_numbering: bool,
     max_lines: Option<usize>,
@@ -480,57 +481,67 @@ fn collect_docs(
     let mut docs = Vec::new();
 
     for base in bases {
-        let docs_root = root.join(&base.root);
-        if !docs_root.exists() {
-            continue;
-        }
         let patterns = compile_patterns(&base.patterns)?;
         let base_ignore = build_base_ignore(&base)?;
-        for entry in WalkDir::new(&docs_root) {
-            let entry = entry?;
-            if !entry.file_type().is_file() {
+        let roots = std::iter::once((base.root.clone(), None)).chain(
+            base.localized_roots
+                .iter()
+                .map(|(lang, path)| (path.clone(), Some(lang.clone()))),
+        );
+
+        for (relative_root, explicit_lang) in roots {
+            let docs_root = root.join(relative_root);
+            if !docs_root.exists() {
                 continue;
             }
-            let path = entry.path();
-            let rel = path.strip_prefix(root).unwrap_or(path);
-            if ignore.is_match(rel)
-                || base_ignore.is_match(rel)
-                || path.extension().and_then(|value| value.to_str()) != Some("md")
-            {
-                continue;
+            for entry in WalkDir::new(&docs_root) {
+                let entry = entry?;
+                if !entry.file_type().is_file() {
+                    continue;
+                }
+                let path = entry.path();
+                let rel = path.strip_prefix(root).unwrap_or(path);
+                if ignore.is_match(rel)
+                    || base_ignore.is_match(rel)
+                    || path.extension().and_then(|value| value.to_str()) != Some("md")
+                {
+                    continue;
+                }
+
+                let file_name = path
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or("");
+                let Some(pattern) = matching_pattern(file_name, &patterns) else {
+                    diagnostics.push(Diagnostic::new(
+                        "DH_NAME_001",
+                        Severity::Error,
+                        rel.display().to_string(),
+                        format!("File name does not match any pattern for base {}.", base.id),
+                    ));
+                    continue;
+                };
+
+                let parent = path.parent().unwrap_or(&docs_root);
+                let lang = explicit_lang.clone().or_else(|| {
+                    parent
+                        .strip_prefix(&docs_root)
+                        .ok()
+                        .and_then(|value| value.components().next())
+                        .and_then(|value| value.as_os_str().to_str())
+                        .filter(|value| lang_set.contains(*value))
+                        .map(|value| value.to_string())
+                });
+                let (number, stem) = numbered_parts(file_name);
+                docs.push(DocFile {
+                    base_id: base.id.clone(),
+                    rel: rel.to_path_buf(),
+                    lang,
+                    number,
+                    stem,
+                    numbered: pattern.numbered,
+                });
             }
-
-            let file_name = path
-                .file_name()
-                .and_then(|value| value.to_str())
-                .unwrap_or("");
-            let Some(pattern) = matching_pattern(file_name, &patterns) else {
-                diagnostics.push(Diagnostic::new(
-                    "DH_NAME_001",
-                    Severity::Error,
-                    rel.display().to_string(),
-                    format!("File name does not match any pattern for base {}.", base.id),
-                ));
-                continue;
-            };
-
-            let parent = path.parent().unwrap_or(&docs_root);
-            let lang = parent
-                .strip_prefix(&docs_root)
-                .ok()
-                .and_then(|value| value.components().next())
-                .and_then(|value| value.as_os_str().to_str())
-                .filter(|value| lang_set.contains(*value))
-                .map(|value| value.to_string());
-            let (number, stem) = numbered_parts(file_name);
-            docs.push(DocFile {
-                base_id: base.id.clone(),
-                rel: rel.to_path_buf(),
-                lang,
-                number,
-                stem,
-                numbered: pattern.numbered,
-            });
         }
     }
 
@@ -1038,6 +1049,7 @@ fn normalized_bases(config: &Config) -> Vec<NormalizedBase> {
             .map(|base| NormalizedBase {
                 id: base.id.clone(),
                 root: base.root.clone(),
+                localized_roots: base.localized_roots.clone(),
                 patterns: if base.patterns.is_empty() {
                     default_patterns(&config.docs.filename_pattern)
                 } else {
@@ -1055,6 +1067,7 @@ fn normalized_bases(config: &Config) -> Vec<NormalizedBase> {
     vec![NormalizedBase {
         id: "default".to_string(),
         root: config.docs.root.clone(),
+        localized_roots: BTreeMap::new(),
         patterns: default_patterns(&config.docs.filename_pattern),
         require_continuous_numbering: config.docs.require_continuous_numbering,
         max_lines: config.docs.max_lines,
@@ -1561,6 +1574,52 @@ docs:
         let report = run_checks(temp.path(), &config).unwrap();
 
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    }
+
+    #[test]
+    fn localized_roots_keep_locale_and_semantic_hierarchies_orthogonal() {
+        let temp = tempdir().unwrap();
+        fs::create_dir_all(temp.path().join("docs/intent")).unwrap();
+        fs::create_dir_all(temp.path().join("docs/zh/intent")).unwrap();
+        fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
+        fs::write(
+            temp.path().join("docs/intent/01_language.md"),
+            "# Language\n",
+        )
+        .unwrap();
+        fs::write(
+            temp.path().join("docs/zh/intent/01_language.md"),
+            "# 语言\n",
+        )
+        .unwrap();
+
+        let config: Config = serde_yaml::from_str(
+            r#"
+entryDocs:
+  required: [README.md]
+docs:
+  bases:
+    - id: intent
+      root: docs/intent
+      localizedRoots:
+        zh: docs/zh/intent
+      requireContinuousNumbering: true
+      patterns:
+        - id: numbered
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          numbered: true
+i18n:
+  rootLang: en
+  languages: [zh]
+  requireDocsParity: true
+  requireNumberParity: true
+"#,
+        )
+        .unwrap();
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+        assert_eq!(report.summary.files_checked, 2);
     }
 
     #[test]

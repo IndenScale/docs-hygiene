@@ -1,7 +1,7 @@
 //! Public implementation reference for Docs Hygiene policies.
 //!
-//! The library API is the Implementation Layer projection of the governed
-//! terminology and specifications. The CLI is one consumer of this API.
+//! This crate is `SDK-001` version `0.1.0`. It projects `GLOSSARY-001` version
+//! `0.1.0` into the Implementation Layer. The CLI is one consumer of this API.
 
 pub mod checks;
 pub mod config;
