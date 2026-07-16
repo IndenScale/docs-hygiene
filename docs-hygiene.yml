@@ -20,6 +20,7 @@ docs:
       ignore:
         - docs/references/**
         - docs/prd/**
+        - docs/position/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -55,6 +56,19 @@ docs:
           regex: "^README\\.md$"
           role: index
           numbered: false
+    - id: position
+      root: docs/position
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-position
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: position-index
+          regex: "^README\\.md$"
+          role: index
+          numbered: false
 
 i18n:
   rootLang: en
@@ -81,6 +95,32 @@ documentContracts:
         minRepositoryLines: 20000
         minManagedDocuments: 20
   profiles:
+    - id: product-position
+      match:
+        paths:
+          - docs/position/[0-9][0-9]_*.md
+          - docs/position/zh/[0-9][0-9]_*.md
+        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: position-statement
+          headings: [Position Statement, 立场主张]
+        - id: model
+          headings: [Model, 模型]
+        - id: reference-axis
+          headings: [Reference Axis, Reference 轴]
+        - id: subject-axis
+          headings: [Subject Axis, 主体轴]
+        - id: evidence-plane
+          headings: [Evidence Plane, Evidence 平面]
+        - id: governance-implications
+          headings: [Governance Implications, 治理含义]
+        - id: boundaries
+          headings: [Boundaries, 边界]
+      requiredFields:
+        - id: position-status
+          pattern: "(?m)^(?:Status:|状态：)\\s*(?:working|adopted|superseded)$"
     - id: product-requirement
       match:
         paths:
