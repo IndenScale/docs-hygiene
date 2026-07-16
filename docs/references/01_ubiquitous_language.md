@@ -2,7 +2,7 @@
 
 Registry ID: `docs-hygiene`
 
-Registry version: `0.1.0`
+Registry version: `0.2.0`
 
 This registry defines the language used by Docs Hygiene product references,
 requirements, diagnostics, tests, and adapters. IDs are stable semantic
@@ -14,6 +14,13 @@ identities; display names may be translated without changing the identity.
 | --- | --- | --- | --- |
 | `DH-PRODUCT` | Docs Hygiene | The policy engine that checks repository intent surfaces locally and in CI. | Current |
 | `DH-INTENT-CONTROL-PLANE` | Intent Control Plane | The authoritative references, requirements, decisions, acceptance criteria, and evidence relationships that constrain implementation. | Product direction |
+| `DH-THREE-LAYER-MODEL` | Three-Layer Model | Product architecture organizing Bodies, Libraries, traceability, and Evidence across Intent, Definition, and Implementation. | Adopted |
+| `DH-INTENT-LAYER` | Intent Layer | Layer whose Body is PRD and whose Reference Library is UL. | Adopted |
+| `DH-DEFINITION-LAYER` | Definition Layer | Layer whose Body is Spec/Test Definition and whose Reference Library is Glossary. | Adopted |
+| `DH-IMPLEMENTATION-LAYER` | Implementation Layer | Layer whose Body is Code/Configuration and whose Reference Library is the SDK that packages shared implementation primitives. | Adopted |
+| `DH-REFERENCE-LIBRARY` | Reference Library | Reusable language, definition identities, or implementation primitives consumed by Bodies in one layer. | Adopted |
+| `DH-GOVERNED-BODY` | Governed Body | A governed assertion expressing concrete intent, definition, or implementation in one layer. | Adopted |
+| `DH-EVIDENCE-PLANE` | Evidence Plane | Observations of whether implementation satisfies definition and delivers intent benefit, rather than a fourth asset layer. | Adopted |
 | `DH-EXECUTION-TRUTH` | Execution Truth | Current behavior demonstrated by code, configuration, tests, and runtime evidence. | Current |
 | `DH-MANAGED-DOCUMENT` | Managed Document | A repository document owned by a configured docs base or document contract. | Current |
 | `DH-DOCUMENT-CONTRACT` | Document Contract | A path-inferred, maturity-aware contract for required fields and semantic sections. | Current |
@@ -58,6 +65,7 @@ identities; display names may be translated without changing the identity.
 | `RESULT-REVIEW-REQUIRED` | Semantic review required | A reproducible review item names the source, concept relation, and reason. |
 | `BENEFIT-EARLY-DRIFT-DETECTION` | Early intent-drift detection | Broken or incomplete intent relationships are visible before implementation amplifies them. |
 | `BENEFIT-REPLAYABLE-INTENT` | Replayable historical intent | A reviewer can resolve the exact concepts and acceptance meaning used by a baseline. |
+| `BENEFIT-LAYERED-TRACEABILITY` | Layered traceability | A reviewer can locate broken relationships and missing evidence along the Body and Library axes. |
 
 ## Change Rules
 
@@ -67,3 +75,5 @@ identities; display names may be translated without changing the identity.
    relation and impact review.
 4. Product requirements must pin this registry version and enumerate the
    governed concepts they consume.
+5. Changes to three-layer relationships must review their impact on PRD,
+   Glossary, Spec, and SDK projections together.

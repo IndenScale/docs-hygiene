@@ -36,6 +36,22 @@ Docs Hygiene 以 policy-as-code 检查这个控制平面。当前版本提供仓
 语义：确定性检查阻断无效引用和不完整契约，存在歧义的语义差异则成为显式评审
 事项。
 
+## 三层架构
+
+Docs Hygiene 使用 Body 与 Reference Library 两个正交角色治理三层资产：
+
+| 层次 | Body | Reference Library |
+| --- | --- | --- |
+| Intent | PRD | Ubiquitous Language |
+| Definition | Spec 与 Test Definition | Glossary |
+| Implementation | Code 与 Configuration | SDK |
+
+Body 追溯轴是 `PRD → Spec/Test Definition → Code/Configuration`；Library 投影轴是
+`UL → Glossary → SDK`。Test Definition 属于 Definition，Test Result 和运行
+观察属于独立 Evidence 平面。仓库分别在 `docs/prd`、`docs/references`、
+`docs/specs`、`docs/glossary` 和 `docs/sdk` 中对这些角色进行 dogfood，并在
+`implementation-manifest.yml` 中声明 Code/Configuration Body 的实现关系。
+
 ## 产品边界
 
 Docs Hygiene 不是 SDD 工作流或执行计划工具。它不生成 PRD、技术设计和任务拆解，

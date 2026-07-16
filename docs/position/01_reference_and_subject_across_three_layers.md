@@ -1,6 +1,6 @@
 # Reference and Subject Across Three Layers
 
-Status: working
+Status: adopted
 
 Scope: Docs Hygiene product model
 
@@ -12,20 +12,21 @@ repository as three related layers: Intent, Definition, and Implementation.
 
 Each layer contains two different artifact roles:
 
-- a Reference supplies reusable language or primitives shared by many subjects;
-- a Subject expresses the concrete intent, definition, or realization currently
-  being governed.
+- a Reference Library supplies reusable language or primitives shared by many Bodies;
+- a Body expresses the concrete intent, definition, or realization under governance.
 
-Reference does not mean secondary, and Subject does not mean more authoritative.
-The distinction is reuse versus a specific governed assertion.
+Library names a role rather than only a code package. The Intent Library is the UL,
+the Definition Library is the Glossary, and the Implementation Library is the SDK
+plus shared types, schemas, interfaces, and rules. The distinction between Library
+and Body is reuse versus a specific governed assertion, not authority.
 
 ## Model
 
-| Layer | Reference | Subject | Primary question |
+| Layer | Reference Library | Body | Primary question |
 | --- | --- | --- | --- |
 | Intent | Ubiquitous Language | PRD | What should exist, and what does it mean? |
 | Definition | Glossary | Spec and Test Definition | What precisely counts as correct? |
-| Implementation | Library | Code and Configuration | How is the definition realized? |
+| Implementation | SDK | Code and Configuration | How is the definition realized? |
 
 ```mermaid
 flowchart TB
@@ -42,20 +43,20 @@ flowchart TB
     end
 
     subgraph Implementation[Implementation Layer]
-        Library[Library]
+        SDK[SDK]
         Code[Code and Configuration]
-        Code -->|depends on| Library
+        Code -->|depends on| SDK
     end
 
     UL -->|projects meaning| Glossary
-    Glossary -->|maps to reusable symbols| Library
+    Glossary -->|maps to reusable symbols| SDK
     PRD -->|is formalized by| Spec
     Spec -->|is realized by| Code
 ```
 
 ## Reference Axis
 
-The Reference axis is `UL → Glossary → Library`.
+The Reference axis is `UL → Glossary → SDK`.
 
 The UL is the reusable Intent reference. It defines business and product
 concepts, relations, actions, states, invariants, outcomes, and benefits without
@@ -67,9 +68,9 @@ schema terms, and judgment vocabulary. It may narrow presentation for a
 particular definition context, but it must not silently change the source
 meaning.
 
-The Library is the reusable Implementation reference. It realizes definition
-identities as shared types, schemas, interfaces, modules, rules, or domain
-primitives that concrete code and configuration can depend on.
+The SDK is the reusable Implementation Reference Library. It realizes definition
+identities as shared types, schemas, interfaces, modules, rules, or domain primitives
+that concrete code and configuration can depend on.
 
 The three references are related projections, not three independent sources of
 meaning. Drift exists when a downstream reference can no longer be traced to
@@ -77,7 +78,7 @@ the upstream identity and semantic version it realizes.
 
 ## Subject Axis
 
-The Subject axis is `PRD → Spec/Test Definition → Code/Configuration`.
+The Body axis (Subject axis) is `PRD → Spec/Test Definition → Code/Configuration`.
 
 A PRD makes a concrete product claim using the UL: a user needs a benefit, an
 action should be possible, or an invariant must hold.
@@ -113,9 +114,9 @@ not prove that the metric still represents the intended user value.
 Docs Hygiene should eventually be able to govern three relationship families:
 
 1. same-layer references: `PRD → UL`, `Spec/Test → Glossary`, and
-   `Code/Configuration → Library`;
+   `Code/Configuration → SDK`;
 2. subject traceability: `PRD → Spec/Test → Code/Configuration → Evidence`;
-3. reference projection: `UL → Glossary → Library`.
+3. reference projection: `UL → Glossary → SDK`.
 
 These relationships expose different forms of cognitive debt:
 

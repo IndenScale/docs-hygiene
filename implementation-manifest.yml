@@ -1,0 +1,25 @@
+id: IMPL-001
+version: 0.1.0
+layer: implementation
+role: body
+status: current
+
+realizes:
+  id: SPEC-001
+  version: 0.1.0
+
+references:
+  id: SDK-001
+  version: 0.1.0
+
+members:
+  code:
+    - src/main.rs
+  configuration:
+    - docs-hygiene.yml
+
+evidence:
+  definition:
+    - cargo test
+  repository:
+    - cargo run -- check --fail-on-warning

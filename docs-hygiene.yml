@@ -4,6 +4,7 @@ entryDocs:
     - README_ZH.md
     - CHANGELOG.md
     - LICENSE
+    - implementation-manifest.yml
   optional:
     - AGENTS.md
     - CLAUDE.md
@@ -21,6 +22,9 @@ docs:
         - docs/references/**
         - docs/prd/**
         - docs/position/**
+        - docs/glossary/**
+        - docs/specs/**
+        - docs/sdk/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -66,6 +70,45 @@ docs:
           role: numbered
           numbered: true
         - id: position-index
+          regex: "^README\\.md$"
+          role: index
+          numbered: false
+    - id: glossary
+      root: docs/glossary
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-glossary
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: glossary-index
+          regex: "^README\\.md$"
+          role: index
+          numbered: false
+    - id: specs
+      root: docs/specs
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-spec
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: spec-index
+          regex: "^README\\.md$"
+          role: index
+          numbered: false
+    - id: sdk
+      root: docs/sdk
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-sdk-reference
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: sdk-index
           regex: "^README\\.md$"
           role: index
           numbered: false
@@ -149,6 +192,8 @@ documentContracts:
       requiredFields:
         - id: prd-id
           pattern: "(?m)^id: PRD-[0-9]+$"
+        - id: prd-version
+          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
         - id: lifecycle-status
           pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
         - id: ul-registry
@@ -179,6 +224,76 @@ documentContracts:
           pattern: "(?m)^Registry ID(?:：|:) `docs-hygiene`$"
         - id: registry-version
           pattern: "(?m)^Registry (?:version|版本)(?:：|:) `?[0-9]+\\.[0-9]+\\.[0-9]+`?$"
+    - id: definition-glossary
+      match:
+        paths:
+          - docs/glossary/[0-9][0-9]_*.md
+          - docs/glossary/zh/[0-9][0-9]_*.md
+        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: source-semantics
+          headings: [Source Semantics, 来源语义]
+        - id: definition-identities
+          headings: [Definition Identities, 定义身份]
+        - id: projection-rules
+          headings: [Projection Rules, 投影规则]
+      requiredFields:
+        - id: glossary-id
+          pattern: "(?m)^id: GLOSSARY-[0-9]+$"
+        - id: glossary-version
+          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
+        - id: ul-version
+          pattern: "(?m)^ul_version: [0-9]+\\.[0-9]+\\.[0-9]+$"
+    - id: definition-specification
+      match:
+        paths:
+          - docs/specs/[0-9][0-9]_*.md
+          - docs/specs/zh/[0-9][0-9]_*.md
+        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: intent-source
+          headings: [Intent Source, 意图来源]
+        - id: inputs
+          headings: [Inputs, 输入]
+        - id: constraints
+          headings: [Constraints, 约束]
+        - id: verification
+          headings: [Verification, 验证]
+      requiredFields:
+        - id: spec-id
+          pattern: "(?m)^id: SPEC-[0-9]+$"
+        - id: spec-version
+          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
+        - id: prd-id
+          pattern: "(?m)^prd: PRD-[0-9]+$"
+        - id: glossary-id
+          pattern: "(?m)^glossary: GLOSSARY-[0-9]+$"
+    - id: implementation-sdk-reference
+      match:
+        paths:
+          - docs/sdk/[0-9][0-9]_*.md
+          - docs/sdk/zh/[0-9][0-9]_*.md
+        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: definition-source
+          headings: [Definition Source, 定义来源]
+        - id: public-surface
+          headings: [Public Surface, 公共表面]
+        - id: semantic-mappings
+          headings: [Semantic Mappings, 语义映射]
+        - id: evidence
+          headings: [Evidence, 证据]
+      requiredFields:
+        - id: sdk-id
+          pattern: "(?m)^id: SDK-[0-9]+$"
+        - id: glossary-id
+          pattern: "(?m)^glossary: GLOSSARY-[0-9]+$"
     - id: repository-readme
       match:
         paths: [README.md, README_ZH.md]

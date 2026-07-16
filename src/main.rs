@@ -1,15 +1,8 @@
-mod checks;
-mod config;
-mod report;
-
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
-
-use crate::checks::run_checks;
-use crate::config::Config;
-use crate::report::{Report, print_json_report, print_text_report};
+use docs_hygiene::{Config, Report, print_json_report, print_text_report, run_checks};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about)]

@@ -44,6 +44,23 @@ amplifies it. They do not ask an LLM to decide business meaning on behalf of a
 team; deterministic checks block broken references and incomplete contracts,
 while ambiguous semantic differences become explicit review items.
 
+## Three-Layer Architecture
+
+Docs Hygiene governs three layers using the orthogonal roles Body and Reference Library:
+
+| Layer | Body | Reference Library |
+| --- | --- | --- |
+| Intent | PRD | Ubiquitous Language |
+| Definition | Spec and Test Definition | Glossary |
+| Implementation | Code and Configuration | SDK |
+
+The Body trace axis is `PRD → Spec/Test Definition → Code/Configuration`; the
+Library projection axis is `UL → Glossary → SDK`. Test Definitions belong
+to Definition, while Test Results and runtime observations occupy the separate
+Evidence plane. This repository dogfoods these roles under `docs/prd`,
+`docs/references`, `docs/specs`, `docs/glossary`, and `docs/sdk`, with the
+Code/Configuration Body relationships declared in `implementation-manifest.yml`.
+
 ## Product Boundary
 
 Docs Hygiene is not a Spec-Driven Development workflow or an execution planner.

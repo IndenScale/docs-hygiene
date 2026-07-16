@@ -4,6 +4,10 @@ This directory contains baselinable product-intent records. Requirements state
 what Docs Hygiene should govern and how value can be observed. They do not
 serve as implementation task lists.
 
+A PRD is an Intent Layer Body and references the UL as its same-layer Reference
+Library. Its claims must be formalized by a Definition Layer Spec rather than
+jumping directly to implementation or Evidence.
+
 ## Authority
 
 - Product language comes from the [UL registry](../references/01_ubiquitous_language.md).
@@ -20,4 +24,4 @@ or explicitly defer every local concept and semantic change proposal.
 
 ## Records
 
-- [PRD-001 Intent Contract Governance](01_intent_contract_governance.md)
+- [PRD-001 Three-Layer Contract Governance](01_intent_contract_governance.md)
