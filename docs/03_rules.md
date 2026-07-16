@@ -79,6 +79,10 @@ content-hash-stale semantic Wiki Link to a Library identity.
 `DH_LIBRARY_001` reports a missing, malformed, duplicate, or undeclared member
 of a recursive Library tree, including removed leaf-level `version` or `source` metadata.
 
+`DH_DOMAIN_001` reports that a canonical Library Domain reached its configured
+direct-member fan-out warning or error threshold. It does not infer semantic
+Sub Domain boundaries.
+
 `DH_BODY_001` reports the same structural or localization failure in a directory
 PRD or Spec Body Package, or a malformed, duplicated, unsafe, or missing declared
 Implementation Body member. Removed leaf-level `version` or `source` metadata is

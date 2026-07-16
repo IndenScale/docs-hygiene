@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Hygiene"
+  short_description: "Govern docs, Domain topology, and Library fan-out"
+  default_prompt: "Use $docs-hygiene to audit this project and fix documentation governance violations."

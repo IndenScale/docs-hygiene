@@ -73,6 +73,7 @@ Docs Hygiene currently provides deterministic project-level governance checks:
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
 - YAML frontmatter, identity Manifests, and recursive Package structure;
+- Domain and Sub Domain topology with configurable Library fan-out budgets;
 - adjacent-level governance edges across Intent, Definition, and Implementation;
 - Adapter orchestration for external tools such as markdownlint.
 
@@ -139,6 +140,37 @@ docs-hygiene check --format json
 Other commands include `init`, `lang`, `explain`, and `explain-rules`. Run
 `docs-hygiene --help` for the complete interface.
 
+## Coding Agent Plugin
+
+This repository is also an installable plugin for Codex, Claude Code, and Kimi
+Code. All three products share the same Agent Skills under `skills/`; their
+product manifests are thin distribution adapters.
+
+For Codex:
+
+```bash
+codex plugin marketplace add IndenScale/docs-hygiene
+codex plugin add docs-hygiene@inden-scale
+```
+
+For Claude Code:
+
+```bash
+claude plugin marketplace add IndenScale/docs-hygiene
+claude plugin install docs-hygiene@inden-scale
+```
+
+For Kimi Code, run these commands in the TUI:
+
+```text
+/plugins install https://github.com/IndenScale/docs-hygiene
+/reload
+```
+
+Start a new task or session after installation. The bundled runner prefers a
+`docs-hygiene` binary on `PATH`; otherwise it builds the source in the installed
+plugin copy, which requires a local Rust toolchain.
+
 ## Policy
 
 Each governance scope reads `docs-hygiene.yml` from the project root by default.
@@ -185,5 +217,6 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [Document Contracts](docs/06_document_contracts.md)
 - [Governance Graph](docs/07_governance_graph.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
+- [Domain Topology and Fan-out](docs/11_domain_topology.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

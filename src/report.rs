@@ -116,6 +116,9 @@ impl Report {
             "DH_LIBRARY_001" => Some(
                 "A Library directory has a missing, malformed, duplicate, or undeclared member term.",
             ),
+            "DH_DOMAIN_001" => Some(
+                "A canonical Library Domain reached its configured direct-member fan-out warning or error threshold.",
+            ),
             "DH_BODY_001" => Some(
                 "A Body Package has a missing, malformed, duplicate, unsafe, undeclared, or localized-mismatched member.",
             ),

@@ -1,0 +1,14 @@
+{
+  "name": "docs-hygiene",
+  "version": "0.1.0",
+  "description": "Teach coding agents to govern documentation, Domain topology, and Library fan-out with Docs Hygiene.",
+  "author": {
+    "name": "IndenScale",
+    "url": "https://github.com/IndenScale"
+  },
+  "homepage": "https://github.com/IndenScale/docs-hygiene",
+  "repository": "https://github.com/IndenScale/docs-hygiene",
+  "license": "MIT",
+  "keywords": ["documentation", "governance", "lint", "traceability"],
+  "skills": "./skills/"
+}

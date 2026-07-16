@@ -1,0 +1,14 @@
+{
+  "name": "inden-scale",
+  "description": "IndenScale coding-agent plugins for documentation governance.",
+  "owner": {
+    "name": "IndenScale"
+  },
+  "plugins": [
+    {
+      "name": "docs-hygiene",
+      "source": ".",
+      "description": "Documentation governance, Domain topology, and Library fan-out workflows for coding agents."
+    }
+  ]
+}

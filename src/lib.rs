@@ -14,5 +14,5 @@ pub use activation::{
     print_json_activation, print_text_activation,
 };
 pub use checks::run_checks;
-pub use config::{Config, RuleMode, RulePolicyConfig};
+pub use config::{Config, DomainFanoutConfig, RuleMode, RulePolicyConfig};
 pub use report::{Report, print_json_report, print_text_report};

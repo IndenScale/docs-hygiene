@@ -26,6 +26,7 @@ frontmatter、语义 Wiki Link、已配置文档 Profile、受治理精化层级
 | `localization.parity` | 语言阈值与表示同位 |
 | `concepts.references` | 概念外键与孤立概念 |
 | `governance.identity` | 身份、Package 与语义引用 |
+| `governance.domain-fanout` | canonical Library Domain 直属成员预算 |
 | `governance.traceability` | 相邻层级派生与投影 |
 | `adapters.external` | 外部 Adapter 执行 |
 

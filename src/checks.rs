@@ -189,13 +189,19 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     );
 
     let identity = activation.decision("governance.identity");
+    let domain_fanout = activation.decision("governance.domain-fanout");
     let traceability = activation.decision("governance.traceability");
-    if identity.state != RuleState::Inactive || traceability.state != RuleState::Inactive {
+    if identity.state != RuleState::Inactive
+        || domain_fanout.state != RuleState::Inactive
+        || traceability.state != RuleState::Inactive
+    {
         let mut governance = Vec::new();
         check_governance(root, config, &mut governance);
         for diagnostic in governance {
             let decision = if matches!(diagnostic.code, "DH_DERIVATION_001" | "DH_DERIVATION_002") {
                 traceability
+            } else if diagnostic.code == "DH_DOMAIN_001" {
+                domain_fanout
             } else {
                 identity
             };
@@ -299,7 +305,7 @@ fn has_explicit_feature_policy(rule: &str, config: &Config) -> bool {
         "concepts.references" => {
             config.concepts.require_concept_file || config.concepts.fail_on_orphan_concept.is_some()
         }
-        "governance.identity" | "governance.traceability" => {
+        "governance.identity" | "governance.domain-fanout" | "governance.traceability" => {
             !config.governance.manifests.is_empty()
         }
         "adapters.external" => config.adapters.markdownlint.enabled,
@@ -310,6 +316,7 @@ fn has_explicit_feature_policy(rule: &str, config: &Config) -> bool {
 // Keep each policy surface independently reviewable. These implementation
 // units are included into this module so the split does not widen internal APIs.
 include!("checks/governance_models.rs");
+include!("checks/domain_fanout.rs");
 include!("checks/package_structure.rs");
 include!("checks/package_localization.rs");
 include!("checks/wiki_references.rs");

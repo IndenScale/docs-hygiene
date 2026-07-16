@@ -51,6 +51,16 @@ fn check_package_members(
         return;
     }
 
+    if asset.reference_relation == ReferenceRelation::Library {
+        check_domain_fanout(
+            &asset.id,
+            &asset.path,
+            members.len(),
+            &config.governance.domain_fanout,
+            diagnostics,
+        );
+    }
+
     let package_rel = manifest_rel.parent().unwrap_or_else(|| Path::new(""));
     let Some(members) = member_strings(members) else {
         diagnostics.push(Diagnostic::new(
@@ -83,6 +93,7 @@ fn check_package_members(
         asset.reference_relation,
         &mut identities,
         &mut canonical_nodes,
+        &config.governance.domain_fanout,
         diagnostics,
     );
     check_localized_package(
@@ -249,6 +260,7 @@ fn check_package_directory(
     reference_relation: ReferenceRelation,
     identities: &mut BTreeSet<String>,
     canonical_nodes: &mut BTreeMap<PathBuf, CanonicalPackageNode>,
+    domain_fanout: &crate::config::DomainFanoutConfig,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let code = package_diagnostic_code(reference_relation);
@@ -309,6 +321,15 @@ fn check_package_directory(
                     "Nested package manifest must declare kind: domain.",
                 ));
             }
+            if reference_relation == ReferenceRelation::Library {
+                check_domain_fanout(
+                    &domain.id,
+                    &package_rel.join(&domain_manifest_rel).display().to_string(),
+                    domain.members.len(),
+                    domain_fanout,
+                    diagnostics,
+                );
+            }
             canonical_nodes.insert(
                 domain_manifest_rel,
                 CanonicalPackageNode {
@@ -328,6 +349,7 @@ fn check_package_directory(
                 reference_relation,
                 identities,
                 canonical_nodes,
+                domain_fanout,
                 diagnostics,
             );
             continue;

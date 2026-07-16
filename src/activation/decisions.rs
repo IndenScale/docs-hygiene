@@ -70,6 +70,9 @@ fn rule_rationale(rule: &str) -> &'static str {
         "governance.identity" => {
             "Stable identities and references make project knowledge resolvable."
         }
+        "governance.domain-fanout" => {
+            "Bounded direct membership keeps Library Domains reviewable and encourages explicit semantic subdomains."
+        }
         "governance.traceability" => {
             "Typed adjacent-level edges show whether intent reaches definition and implementation."
         }
@@ -236,6 +239,25 @@ fn infer_automatic_decision(
             RuleState::Inactive,
             vec!["no governance identity signal".into()],
         ),
+        "governance.domain-fanout" if facts.configured_governance_manifests > 0 => (
+            RuleState::Error,
+            vec![format!(
+                "{} governance Manifests configured; Library Domain fan-out warns at {} and errors at {} direct members",
+                facts.configured_governance_manifests,
+                config.governance.domain_fanout.warning_at,
+                config.governance.domain_fanout.error_at
+            )],
+        ),
+        "governance.domain-fanout" if facts.manifest_files > 0 => (
+            RuleState::Warning,
+            vec![format!(
+                "{} Manifests detected without configured governance assets",
+                facts.manifest_files
+            )],
+        ),
+        "governance.domain-fanout" => {
+            (RuleState::Inactive, vec!["no Library Domain signal".into()])
+        }
         "governance.traceability" if facts.configured_refinement_levels.len() >= 2 => (
             RuleState::Error,
             vec![format!(

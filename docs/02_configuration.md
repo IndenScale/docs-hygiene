@@ -153,7 +153,7 @@ or error states. See [Progressive Rule Activation](10_progressive_rule_activatio
 
 ## Governance Graph
 
-`governance.manifests` enables ID-based asset resolution, mandatory semantic Wiki Link references, optional content-hash anchors, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract.
+`governance.manifests` enables ID-based asset resolution, mandatory semantic Wiki Link references, optional content-hash anchors, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract and [Domain Topology and Fan-out](11_domain_topology.md) for `governance.domainFanout`.
 
 ## Forbid ASCII Art
 

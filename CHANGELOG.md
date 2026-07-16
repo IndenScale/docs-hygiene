@@ -2,9 +2,12 @@
 
 ## Unreleased
 
-- Add deterministic progressive rule activation with eight stable rule-family
+- Add deterministic progressive rule activation with nine stable rule-family
   IDs, auto/required/disabled modes, four activation states, checker enforcement,
   and versioned `explain-rules` text and JSON output.
+- Define Domain, Sub Domain, and direct-member fan-out budgets across UL,
+  Glossary, the coding-agent Skill, and the policy engine; warn at 15 canonical
+  direct members and fail at 50 by default with configurable thresholds.
 
 - Replace the overloaded governance fields `layer` and `role` with
   `refinementLevel` and `referenceRelation`; replace filename-pattern `role`

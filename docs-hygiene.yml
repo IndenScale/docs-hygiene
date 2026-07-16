@@ -241,6 +241,9 @@ documentContracts:
           headings: [Decision Boundaries, 决策边界]
 
 governance:
+  domainFanout:
+    warningAt: 15
+    errorAt: 50
   manifests:
     - docs/intent/ul/manifest.yml
     - docs/intent/prd/prd-001/manifest.yml

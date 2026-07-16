@@ -11,3 +11,4 @@ members:
   - path-safety.md
   - identity-uniqueness.md
   - language-representation.md
+  - domain-fanout-budget.md

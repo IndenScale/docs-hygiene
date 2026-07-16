@@ -16,13 +16,14 @@ pub use output::{print_json_activation, print_text_activation};
 
 // Governance Library: [[GLOSSARY-RULE-ACTIVATION-DECISION]]
 
-pub const RULE_IDS: [&str; 8] = [
+pub const RULE_IDS: [&str; 9] = [
     "project.entry-docs",
     "docs.structure",
     "documents.contracts",
     "localization.parity",
     "concepts.references",
     "governance.identity",
+    "governance.domain-fanout",
     "governance.traceability",
     "adapters.external",
 ];
@@ -98,6 +99,7 @@ impl ActivationReport {
 }
 
 pub fn evaluate_rule_activation(root: &Path, config: &Config) -> Result<ActivationReport> {
+    config.validate()?;
     validate_rule_ids(config)?;
     let facts = collect_project_facts(root, config)?;
     let decisions = RULE_IDS

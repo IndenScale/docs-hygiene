@@ -10,3 +10,4 @@ members:
   - fr-007-deterministic-checks.md
   - fr-008-body-packages.md
   - fr-009-library-trees.md
+  - fr-010-domain-fanout-budget.md

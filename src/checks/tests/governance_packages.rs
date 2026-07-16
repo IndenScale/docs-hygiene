@@ -32,6 +32,127 @@
         }
     }
 
+    fn write_term_members(root: &Path, prefix: &str, count: usize) -> Vec<String> {
+        fs::create_dir_all(root).unwrap();
+        (0..count)
+            .map(|index| {
+                let filename = format!("{prefix}-{index:02}.md");
+                fs::write(
+                    root.join(&filename),
+                    format!(
+                        "---\nid: {prefix}-TERM-{index:02}\nstatus: baselined\n---\n\n# Term {index}\n"
+                    ),
+                )
+                .unwrap();
+                filename
+            })
+            .collect()
+    }
+
+    #[test]
+    fn enforces_default_library_domain_fanout_budget_at_every_depth() {
+        let temp = tempdir().unwrap();
+        let library = temp.path().join("docs/intent/ul");
+        let mut root_members = write_term_members(&library, "ROOT", 14);
+        root_members.push("crowded".to_owned());
+        let nested_members = write_term_members(&library.join("crowded"), "NESTED", 50);
+
+        fs::write(
+            library.join("manifest.yml"),
+            format!(
+                "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [{}]\n",
+                root_members.join(", ")
+            ),
+        )
+        .unwrap();
+        fs::write(
+            library.join("crowded/manifest.yml"),
+            format!(
+                "id: UL-DOMAIN-CROWDED\nkind: domain\nstatus: baselined\nmembers: [{}]\n",
+                nested_members.join(", ")
+            ),
+        )
+        .unwrap();
+
+        let report = run_checks(
+            temp.path(),
+            &governance_config(&["docs/intent/ul/manifest.yml"], false),
+        )
+        .unwrap();
+        let fanout = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "DH_DOMAIN_001")
+            .collect::<Vec<_>>();
+
+        assert_eq!(fanout.len(), 2, "{:?}", report.diagnostics);
+        assert!(fanout.iter().any(|diagnostic| {
+            diagnostic.path == "docs/intent/ul/manifest.yml"
+                && matches!(diagnostic.severity, Severity::Warning)
+                && diagnostic.message.contains("15 direct members")
+        }));
+        assert!(fanout.iter().any(|diagnostic| {
+            diagnostic.path == "docs/intent/ul/crowded/manifest.yml"
+                && matches!(diagnostic.severity, Severity::Error)
+                && diagnostic.message.contains("50 direct members")
+        }));
+    }
+
+    #[test]
+    fn supports_configured_and_disabled_library_domain_fanout_budgets() {
+        let temp = tempdir().unwrap();
+        let library = temp.path().join("docs/intent/ul");
+        let members = write_term_members(&library, "TERM", 3);
+        fs::write(
+            library.join("manifest.yml"),
+            format!(
+                "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [{}]\n",
+                members.join(", ")
+            ),
+        )
+        .unwrap();
+
+        let configured: Config = serde_yaml::from_str(
+            r#"
+governance:
+  manifests: [docs/intent/ul/manifest.yml]
+  domainFanout:
+    warningAt: 3
+    errorAt: 5
+"#,
+        )
+        .unwrap();
+        let report = run_checks(temp.path(), &configured).unwrap();
+        assert!(report.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_DOMAIN_001"
+                && matches!(diagnostic.severity, Severity::Warning)
+                && diagnostic.message.contains("3 direct members")
+        }));
+
+        let disabled: Config = serde_yaml::from_str(
+            r#"
+governance:
+  manifests: [docs/intent/ul/manifest.yml]
+  domainFanout:
+    warningAt: 3
+    errorAt: 5
+rules:
+  governance.domain-fanout:
+    mode: disabled
+"#,
+        )
+        .unwrap();
+        let disabled_report = run_checks(temp.path(), &disabled).unwrap();
+        assert!(
+            disabled_report
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.code != "DH_DOMAIN_001"),
+            "{:?}",
+            disabled_report.diagnostics
+        );
+    }
+
     #[test]
     fn accepts_complete_horizontal_and_vertical_governance_graph() {
         let temp = tempdir().unwrap();

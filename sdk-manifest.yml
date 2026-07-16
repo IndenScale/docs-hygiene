@@ -13,6 +13,7 @@ members:
   - src/lib.rs
   - src/checks.rs
   - src/checks/derivation.rs
+  - src/checks/domain_fanout.rs
   - src/checks/document_contracts.rs
   - src/checks/governance_models.rs
   - src/checks/package_localization.rs

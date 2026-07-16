@@ -66,6 +66,17 @@ and resolve to existing files.
 UL and Glossary are recursive Library trees rather than monolithic term lists. PRD
 and Spec are directory Body Packages rather than monolithic documents.
 
+A Domain is a stable semantic boundary inside a Library. A Sub Domain is the
+same governed node type nested under another Domain; it is not another
+refinement level or reference relation. Domain boundaries remain explicit human
+decisions rather than classifications inferred from prose.
+
+Each canonical Library Domain has a configurable direct-member fan-out budget.
+Markdown leaves and child Domains each count as one direct member; descendants
+below a child Domain do not count toward the parent. The defaults warn at 15
+and error at 50. Localized trees preserve canonical topology but do not emit
+duplicate fan-out diagnostics.
+
 ## Horizontal References
 
 Every Body contains at least one semantic Wiki Link to a Library identity at the

@@ -62,6 +62,7 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
 - 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
 - YAML frontmatter、身份 Manifest 和递归 Package 结构；
+- Domain 与 Sub Domain 拓扑及可配置的 Library fan-out 预算；
 - Intent、Definition 与 Implementation 之间的相邻层级治理边；
 - 对 markdownlint 等外部工具的 Adapter 编排。
 
@@ -123,6 +124,35 @@ docs-hygiene check --format json
 其他命令包括 `init`、`lang`、`explain` 和 `explain-rules`。运行
 `docs-hygiene --help` 查看完整界面。
 
+## Coding Agent 插件
+
+本仓库也可以作为 Codex、Claude Code 和 Kimi Code 插件安装。三者共享 `skills/`
+中的同一组 Agent Skills，各产品 manifest 只负责最薄的分发适配。
+
+Codex 安装方式：
+
+```bash
+codex plugin marketplace add IndenScale/docs-hygiene
+codex plugin add docs-hygiene@inden-scale
+```
+
+Claude Code 安装方式：
+
+```bash
+claude plugin marketplace add IndenScale/docs-hygiene
+claude plugin install docs-hygiene@inden-scale
+```
+
+Kimi Code 在 TUI 中运行：
+
+```text
+/plugins install https://github.com/IndenScale/docs-hygiene
+/reload
+```
+
+安装后请新建任务或会话。插件内的运行脚本会优先使用 `PATH` 中的
+`docs-hygiene`；如果不存在，则从插件缓存中的源码构建，因此需要本机 Rust 工具链。
+
 ## 策略
 
 每个治理范围默认从项目根目录读取 `docs-hygiene.yml`。策略声明入口文档、文档区域、
@@ -163,5 +193,6 @@ adapters:
 - [文档契约](docs/zh/06_document_contracts.md)
 - [治理关系图](docs/zh/07_governance_graph.md)
 - [渐进式规则激活](docs/zh/10_progressive_rule_activation.md)
+- [Domain 拓扑与 Fan-out](docs/zh/11_domain_topology.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

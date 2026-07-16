@@ -1,0 +1,27 @@
+{
+  "name": "docs-hygiene",
+  "version": "0.1.0",
+  "description": "Teach coding agents to govern documentation, Domain topology, and Library fan-out with Docs Hygiene.",
+  "author": {
+    "name": "IndenScale",
+    "url": "https://github.com/IndenScale"
+  },
+  "homepage": "https://github.com/IndenScale/docs-hygiene",
+  "repository": "https://github.com/IndenScale/docs-hygiene",
+  "license": "MIT",
+  "keywords": ["documentation", "governance", "lint", "traceability"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Docs Hygiene",
+    "shortDescription": "Deterministic documentation governance for coding agents.",
+    "longDescription": "Audit project documentation structure, Domain and Sub Domain topology, Library fan-out budgets, identities, representations, contracts, references, and traceability with the Docs Hygiene CLI.",
+    "developerName": "IndenScale",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write", "Execute"],
+    "websiteURL": "https://github.com/IndenScale/docs-hygiene",
+    "defaultPrompt": [
+      "Audit this project with Docs Hygiene and explain the violations.",
+      "Repair the Docs Hygiene diagnostics in this repository."
+    ]
+  }
+}

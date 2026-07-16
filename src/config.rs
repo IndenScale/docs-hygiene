@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -56,6 +56,26 @@ pub struct GovernanceConfig {
     pub manifests: Vec<PathBuf>,
     #[serde(default)]
     pub require_complete_vertical_derivation: bool,
+    #[serde(default)]
+    pub domain_fanout: DomainFanoutConfig,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DomainFanoutConfig {
+    #[serde(default = "default_domain_fanout_warning_at")]
+    pub warning_at: usize,
+    #[serde(default = "default_domain_fanout_error_at")]
+    pub error_at: usize,
+}
+
+impl Default for DomainFanoutConfig {
+    fn default() -> Self {
+        Self {
+            warning_at: default_domain_fanout_warning_at(),
+            error_at: default_domain_fanout_error_at(),
+        }
+    }
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -288,14 +308,35 @@ impl Config {
     pub fn load(path: &Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display()))?;
-        serde_yaml::from_str(&content)
-            .with_context(|| format!("failed to parse {}", path.display()))
+        let config: Self = serde_yaml::from_str(&content)
+            .with_context(|| format!("failed to parse {}", path.display()))?;
+        config
+            .validate()
+            .with_context(|| format!("invalid policy in {}", path.display()))?;
+        Ok(config)
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
+        self.validate()
+            .with_context(|| format!("invalid policy for {}", path.display()))?;
         let content = serde_yaml::to_string(self)
             .with_context(|| format!("failed to serialize {}", path.display()))?;
         std::fs::write(path, content).with_context(|| format!("failed to write {}", path.display()))
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        let fanout = self.governance.domain_fanout;
+        if fanout.warning_at == 0 {
+            bail!("governance.domainFanout.warningAt must be at least 1");
+        }
+        if fanout.error_at <= fanout.warning_at {
+            bail!(
+                "governance.domainFanout.errorAt ({}) must be greater than warningAt ({})",
+                fanout.error_at,
+                fanout.warning_at
+            );
+        }
+        Ok(())
     }
 
     pub fn starter_yaml() -> &'static str {
@@ -346,6 +387,11 @@ language:
   zh:
     minCjkRatio: 0.15
 
+governance:
+  domainFanout:
+    warningAt: 15
+    errorAt: 50
+
 rules:
   project.entry-docs:
     mode: auto
@@ -358,6 +404,8 @@ rules:
   concepts.references:
     mode: auto
   governance.identity:
+    mode: auto
+  governance.domain-fanout:
     mode: auto
   governance.traceability:
     mode: auto
@@ -423,6 +471,14 @@ fn default_document_kind() -> String {
 
 fn default_concepts_dir() -> PathBuf {
     PathBuf::from("concept")
+}
+
+fn default_domain_fanout_warning_at() -> usize {
+    15
+}
+
+fn default_domain_fanout_error_at() -> usize {
+    50
 }
 
 fn default_contract_enforce_from() -> MaturityLevel {

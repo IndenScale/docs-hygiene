@@ -28,6 +28,7 @@ Ignore policy is applied before facts are counted.
 | `localization.parity` | language thresholds and representation parity |
 | `concepts.references` | concept foreign keys and orphan concepts |
 | `governance.identity` | identities, packages, and semantic references |
+| `governance.domain-fanout` | canonical Library Domain direct-member budgets |
 | `governance.traceability` | adjacent-level derivation and projection |
 | `adapters.external` | external Adapter execution |
 

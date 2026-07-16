@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Coding Agent Plugins"
+  short_description: "Package one repository for Codex, Claude, and Kimi"
+  default_prompt: "Use $build-coding-agent-plugins to package this repository as a portable coding-agent plugin."

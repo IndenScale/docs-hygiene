@@ -1,0 +1,20 @@
+{
+  "name": "inden-scale",
+  "interface": {
+    "displayName": "IndenScale"
+  },
+  "plugins": [
+    {
+      "name": "docs-hygiene",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/IndenScale/docs-hygiene.git"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

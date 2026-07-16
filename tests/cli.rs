@@ -50,7 +50,7 @@ fn explain_rules_reports_stable_text_and_json_contracts() {
     let value: Value = serde_json::from_slice(&output).unwrap();
 
     assert_eq!(value["schemaVersion"], "docs-hygiene.rule-activation.v1");
-    assert_eq!(value["decisions"].as_array().unwrap().len(), 8);
+    assert_eq!(value["decisions"].as_array().unwrap().len(), 9);
     assert_eq!(value["decisions"][0]["rule"], "project.entry-docs");
     assert!(value["decisions"][0]["rationale"].is_string());
     assert!(value["decisions"][0]["remediation"].is_string());
@@ -134,6 +134,8 @@ fn lang_commands_update_config() {
     assert!(initialized.contains("languageRepresentations:"));
     assert!(initialized.contains("canonical: en"));
     assert!(initialized.contains("documentKind: numbered"));
+    assert!(initialized.contains("warningAt: 15"));
+    assert!(initialized.contains("errorAt: 50"));
 
     Command::cargo_bin("docs-hygiene")
         .unwrap()
@@ -215,6 +217,25 @@ fn legacy_configuration_names_are_rejected() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("unknown field `i18n`"));
+}
+
+#[test]
+fn invalid_domain_fanout_budget_is_rejected() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        "governance:\n  domainFanout:\n    warningAt: 50\n    errorAt: 15\n",
+    )
+    .unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "governance.domainFanout.errorAt (15) must be greater than warningAt (50)",
+        ));
 }
 
 #[test]

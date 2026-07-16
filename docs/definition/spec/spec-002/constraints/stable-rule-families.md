@@ -7,4 +7,5 @@ status: baselined
 
 The public rule IDs are `project.entry-docs`, `docs.structure`,
 `documents.contracts`, `localization.parity`, `concepts.references`,
-`governance.identity`, `governance.traceability`, and `adapters.external`.
+`governance.identity`, `governance.domain-fanout`, `governance.traceability`,
+and `adapters.external`.
