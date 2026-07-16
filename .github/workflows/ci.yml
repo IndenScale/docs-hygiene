@@ -17,6 +17,9 @@ jobs:
       - name: Install Rust toolchain
         run: rustup toolchain install 1.85.0 --profile minimal --component clippy
 
+      - name: Enforce source file size budgets
+        run: ./scripts/check-file-size.sh
+
       - name: Test, including repository dogfood policy
         run: cargo +1.85.0 test --locked
 

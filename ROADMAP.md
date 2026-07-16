@@ -21,6 +21,9 @@ remain the authority for delivered behavior.
   declares direct children and each term has its own Markdown leaf.
 - PRD and Spec are recursive directory Body Packages whose manifests enumerate
   atomic roles, stories, requirements, constraints, acceptance, and verification.
+- Source files are governed by a 500-line warning and a 1,000-line CI error;
+  the core checker is split into responsibility-focused private units and the
+  current repository passes without warnings or exceptions.
 
 ## Planned
 

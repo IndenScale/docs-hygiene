@@ -27,6 +27,9 @@
   diagnostics.
 - Dogfood the repository policy and governance graph in the Rust test suite and
   GitHub Actions.
+- Split the core checker into responsibility-focused private implementation
+  units and add a repository file-size gate: more than 500 lines warns and more
+  than 1,000 lines blocks CI.
 
 ## 0.1.0
 
