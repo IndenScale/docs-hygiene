@@ -1,6 +1,19 @@
 # Docs Hygiene
 
-Docs Hygiene 是面向仓库文档的 policy-as-code 卫生检查器。它让文档保持整洁、完整、结构一致，并适合进入 CI 门禁。
+Docs Hygiene 是面向仓库意图层的 Policy Engine。它把文档治理放进本地检查和
+CI，让共享意图不再只依赖模板、评审仪式和个人责任感。
+
+在 AI 辅助研发中，实现能力的增长速度已经超过共享认知和业务验证能力。一条
+模糊需求可以在团队发现概念、规则或预期收益存在歧义之前，驱动 Agent 生成数千
+行内部一致但业务错误的代码。代码拥有编译器、类型系统、测试和静态分析，承载
+意图的文档却很少拥有同等级别的质量体系。Docs Hygiene 要把这类治理真正左移。
+
+## 意图控制平面
+
+代码仍然是系统的执行事实。Reference、PRD、ADR、验收标准和证据索引共同构成
+意图控制平面：它们定义实现需要保持的概念、约束、决策和可观察结果。
+
+Docs Hygiene 以 policy-as-code 检查这个控制平面。当前版本提供仓库级结构治理：
 
 它不是 Markdown 语法 linter。Markdown 格式应交给 markdownlint，链接检查应交给 lychee，文案风格应交给 Vale 或 cspell。Docs Hygiene 专注仓库级文档治理：
 
@@ -11,6 +24,23 @@ Docs Hygiene 是面向仓库文档的 policy-as-code 卫生检查器。它让文
 - 基于路径与文件名推导、随项目成熟度增强的文档契约
 - 从高亮术语到 `concept/*.md` 的概念外键
 - 对 markdownlint 等外部工具的 adapter 编排
+
+产品方向是在这些基座上，从结构卫生继续扩展到语义契约和追溯契约：
+
+- 受治理的通用语言（UL）和带版本的概念引用
+- 显式的局部概念和可审议的语义变更提案
+- PRD 中实体、动作、不变量、用户收益与验收标准之间的关系
+- 从共享意图到可执行验证证据的追溯链
+
+这些契约要在实现放大问题之前暴露认知债。它们不会让 LLM 代替团队决定业务
+语义：确定性检查阻断无效引用和不完整契约，存在歧义的语义差异则成为显式评审
+事项。
+
+## 产品边界
+
+Docs Hygiene 不是 SDD 工作流或执行计划工具。它不生成 PRD、技术设计和任务拆解，
+也不规定 Coding Agent 应当如何实现变更。SDD 和 Coding Agent 可以消费受治理的
+意图；Docs Hygiene 负责验证上游语言、文档和证据关系是否持续一致。
 
 ## 快速开始
 
@@ -41,7 +71,8 @@ cargo run -- lang remove ja
 
 ## 策略
 
-本仓库使用 `docs-hygiene.yml` dogfood Docs Hygiene。
+本仓库使用 `docs-hygiene.yml` dogfood Docs Hygiene。已经实现的规则面以 `docs/`
+中的说明为准；上述产品方向只有在进入这些说明后，才代表已经可用。
 
 ## Adapter
 
