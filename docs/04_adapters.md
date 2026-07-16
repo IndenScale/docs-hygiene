@@ -28,7 +28,7 @@ output in the diagnostic message.
 
 Use markdownlint for Markdown syntax and formatting rules.
 
-Use Docs Hygiene for repository-level policy:
+Use Docs Hygiene for project-level policy:
 
 - required documentation entry files
 - numbered docs structure

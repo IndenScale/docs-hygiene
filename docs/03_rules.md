@@ -1,7 +1,7 @@
 # Rules
 
 Docs Hygiene emits stable diagnostic codes. The first release keeps the rule
-surface small and focused on repository hygiene.
+surface small and focused on project documentation hygiene.
 
 ## Entry Files
 

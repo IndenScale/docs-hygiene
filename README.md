@@ -1,126 +1,145 @@
 # Docs Hygiene
 
-Docs Hygiene is a repository documentation checker. It runs locally and in CI
-to verify that documents are complete, clearly organized, and traceable from
-intent through definition to implementation.
+English | [中文](README_ZH.md)
 
-In AI-assisted development, implementation capacity scales faster than shared
-understanding and business verification. A vague requirement can now drive
-thousands of internally consistent lines of code before a team notices that
-its concepts, rules, or expected benefits were ambiguous. Code has compilers,
-types, tests, and static analysis; intent-bearing documents rarely have an
-equivalent quality system. Docs Hygiene makes documentation continuously checkable.
+**Docs Hygiene (DH) is a governance tool for project documentation.**
 
-## Documents
+In the age of AI coding, documentation is the SSOT for project intent and
+decisions. Agents can amplify implementation capacity quickly, but they amplify
+ambiguous requirements, unstable concepts, and broken constraints just as
+quickly. Code quality already has compilers, type systems, tests, static analysis,
+and CI. Documentation governance still largely stops at formatting, spelling,
+and dead-link checks, without verifying whether intent is complete, shared
+meaning is stable, or decisions reach implementation.
 
-Docs Hygiene treats README files, PRDs, specifications, ADRs, and other written
-material as maintained repository assets. Today it provides deterministic
-repository-level governance checks:
+Docs Hygiene expresses governance requirements in project documentation as
+continuously verifiable invariants. It does not interpret natural language on a
+team's behalf. Instead, it deterministically exposes broken structure, identity,
+references, and traceability before implementation amplifies the deviation.
 
-It is not a general-purpose Markdown syntax or prose linter. Use markdownlint for formatting, lychee for external URL crawling, and Vale or cspell for prose quality. Docs Hygiene focuses on repository-level documentation governance:
+## Three Kinds of Invariants
 
-- required files such as README, CHANGELOG, and LICENSE
-- numbered docs under `docs/`
-- document length budgets
-- parity between canonical and localized language representations
-- path-inferred document contracts with maturity-aware required sections
-- concept foreign keys from highlighted terms to `concept/*.md`
-- dead semantic Wiki Links and repository-local Markdown Link targets
-- governed YAML frontmatter and type-specific directory contracts
-- identity manifests for Intent, Definition, and Implementation documents
-- semantic Wiki Links from Bodies to Libraries at the same refinement level
-- adjacent-refinement-level traceability from intent through definition to implementation
-- adapter orchestration for tools such as markdownlint
+| Governance direction | What Docs Hygiene preserves |
+| --- | --- |
+| From intent to implementation | Progressive refinement and traceability from Intent through Definition to Implementation |
+| From project assertions to shared definitions | Body references to same-level Library identities and progressive Library projection |
+| From working language to distribution languages | Identity, structure, and governance parity between canonical and localized representations |
 
-The product direction is to extend these foundations from structural hygiene
-to semantic and traceability contracts:
+These directions correspond to three independent governance dimensions:
+refinement level, reference relation, and language representation. Together,
+they make intent-level decisions verifiably realizable in implementation, expose
+deviation early, and reduce the cost of repeatedly rediscovering terminology,
+document identity, authoritative representations, and implementation grounds.
 
-- explicit local concepts and reviewable semantic change proposals
-- PRD entity, action, invariant, benefit, and acceptance relationships
-- item-level coverage and traceability from intent to definition and implementation
+See the [Three-Dimensional Governance Model](docs/position/01_three_dimensional_governance_model.md)
+for the formal product model.
 
-These contracts are intended to expose cognitive debt before an implementation
-amplifies it. They do not ask an LLM to decide business meaning on behalf of a
-team; deterministic checks block broken references and incomplete contracts,
-while ambiguous semantic differences become explicit review items.
+## Project and Execution Boundaries
 
-## Three Governance Dimensions
+The project is the governed subject, the directory is the execution boundary,
+and a Git repository is only a physical container. One Docs Hygiene scope may
+cover an entire repository or one project directory inside a monorepo. Each run
+loads policy and resolves governed assets from an explicitly selected project
+root. Docs Hygiene does not currently auto-discover or orchestrate every project
+in a monorepo.
 
-Every governed asset is located by three independent dimensions:
+```text
+monorepo/
+├── platform/
+│   ├── docs-hygiene.yml
+│   ├── docs/
+│   └── src/
+└── sdk/
+    ├── docs-hygiene.yml
+    ├── docs/
+    └── src/
+```
 
-- **Refinement level**: Intent, Definition, or Implementation;
-- **Reference relation**: a project-specific Body or a shared Library;
-- **Language representation**: `en`, `zh`, or another configured language code.
+The projects can be checked independently:
 
-One representation is canonical. Localized representations preserve the same semantic identity, lifecycle, structure, and governance edges; they are not separate assets.
+```bash
+docs-hygiene check platform --fail-on-warning
+docs-hygiene check sdk --fail-on-warning
+```
 
-## Refinement Levels and Reference Relations
+## Current Capabilities
 
-Refinement progressively reduces ambiguity and implementation freedom:
+Docs Hygiene currently provides deterministic project-level governance checks:
 
-| Refinement level | Body | Library |
-| --- | --- | --- |
-| Intent | PRDs: why, for whom, and what outcome is wanted | Ubiquitous Language (UL): shared product terms |
-| Definition | Specs and test definitions: what precisely counts as correct | Glossary: precise definitions of product terms |
-| Implementation | Code and configuration: how the definition is implemented | SDK: reusable types, interfaces, and rules |
+- required entry files such as README, CHANGELOG, and LICENSE;
+- numbered documents, allowed file types, and length budgets;
+- path-inferred document contracts with maturity-aware enforcement;
+- path, identity, and structure parity across canonical and localized representations;
+- semantic references from governed content to `concept/*.md` and Library identities;
+- project-root-local Markdown Links, image targets, and semantic Wiki Links;
+- YAML frontmatter, identity Manifests, and recursive Package structure;
+- adjacent-level governance edges across Intent, Definition, and Implementation;
+- Adapter orchestration for external tools such as markdownlint.
 
-Bodies progress through `PRD → Spec/Test Definition → Code/Configuration`;
-Libraries are refined through `UL → Glossary → SDK`. This repository keeps Intent assets under `docs/intent`, Definition
-assets under `docs/definition`, and their Chinese counterparts under `docs/zh`.
-UL lives under `docs/intent/ul/`, and Glossary under `docs/definition/glossary/`; each
-domain has a Manifest and each stable term is one Markdown leaf. PRD and Spec live
-under `docs/intent/prd/` and `docs/definition/spec/` as directory Bodies. Implementation stays
-in the repository root: `src/lib.rs` is the SDK, while code and configuration
-relationships are declared in `implementation-manifest.yml`. The core
-checker resolves these assets by stable ID, validates content-level Wiki Link references and optional SHA-256 anchors,
-and validates adjacent-refinement-level `formalizes`, `realizes`, and `projects` edges.
-
-## Product Boundary
-
-Docs Hygiene is not a Spec-Driven Development workflow or an execution planner.
-It does not generate PRDs, technical designs, or task breakdowns, and it does
-not prescribe how a coding agent should implement a change. SDD and coding
-agents may consume the governed intent; Docs Hygiene verifies that the upstream
-documents and their reference relationships remain coherent.
+Docs Hygiene does not replace tools for Markdown formatting, external URLs,
+spelling, or prose quality. It does not infer natural-language equivalence,
+translation freshness, or business contradictions. Item-level requirement
+coverage and symbol-level semantic mapping remain future work.
 
 ## Quick Start
 
-```bash
-cargo run -- check --fail-on-warning
-```
-
-Create a starter policy:
+Build the binary from this repository:
 
 ```bash
-cargo run -- init
+cargo build --release
 ```
 
-Create a starter docs tree:
+Create a minimal documentation tree and starter policy for a project:
 
 ```bash
-cargo run -- scaffold
+./target/release/docs-hygiene scaffold /path/to/project
 ```
 
-Manage language policy:
+Run the checks:
 
 ```bash
-cargo run -- lang list
-cargo run -- lang add ja --min-cjk-ratio 0.10
-cargo run -- lang set-threshold ja --max-cjk-ratio 0.90
-cargo run -- lang remove ja
+./target/release/docs-hygiene check /path/to/project --fail-on-warning
 ```
+
+If the binary is already installed or available on `PATH`:
+
+```bash
+docs-hygiene scaffold .
+docs-hygiene check --fail-on-warning
+```
+
+Errors fail by default, while warnings remain advisory. `--fail-on-warning`
+promotes warnings to a gate. Use JSON when another tool consumes the report:
+
+```bash
+docs-hygiene check --format json
+```
+
+Other commands include `init`, `lang`, and `explain`. Run
+`docs-hygiene --help` for the complete interface.
 
 ## Policy
 
-This repository dogfoods Docs Hygiene with `docs-hygiene.yml`. The implemented
-rule surface is documented under `docs/`; capabilities described as product
-direction above are not implied to be available until they are documented
-there.
+Each governance scope reads `docs-hygiene.yml` from the project root by default.
+Policy declares entry documents, documentation areas, language representations,
+concept foreign keys, document contracts, governance Manifests, suppressions,
+and external Adapters. A project can begin with structural hygiene and enable
+stronger semantic and traceability gates as it matures.
+
+This repository dogfoods Docs Hygiene with its own
+[docs-hygiene.yml](docs-hygiene.yml). It demonstrates the complete
+three-dimensional model, but it is not a fixed directory template that every
+project must copy.
+
+See [Configuration](docs/02_configuration.md) for policy syntax. Shipped behavior
+is defined by [Rules](docs/03_rules.md) and the
+[Governance Graph](docs/07_governance_graph.md).
 
 ## Adapters
 
-Docs Hygiene can call external tools instead of reimplementing their rules. The
-first adapter is markdownlint:
+Docs Hygiene owns governance rules that require project context. Existing tools
+continue to own the surface checks they already perform well. Adapters orchestrate
+those tools in the same run without reimplementing them in the core checker.
 
 ```yaml
 adapters:
@@ -133,3 +152,16 @@ adapters:
       - CHANGELOG.md
       - "docs/**/*.md"
 ```
+
+See [External Tool Adapters](docs/04_adapters.md) for the current contract.
+
+## Documentation
+
+- [Overview](docs/01_overview.md)
+- [Configuration](docs/02_configuration.md)
+- [Rules](docs/03_rules.md)
+- [CI and JSON output](docs/05_ci.md)
+- [Document Contracts](docs/06_document_contracts.md)
+- [Governance Graph](docs/07_governance_graph.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)

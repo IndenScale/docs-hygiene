@@ -6,13 +6,30 @@ Scope: Docs Hygiene product model
 
 ## Position
 
-Docs Hygiene locates every governed asset along three independent dimensions:
+In the age of AI coding, project documentation is the SSOT for project intent
+and decisions. Code and configuration are implementation facts, but governed
+documentation is what stably explains why the project exists, who it serves,
+what counts as correct, and which decisions ground the implementation. Docs
+Hygiene does not generate those decisions. It turns the relationships that must
+continue to hold among them into verifiable invariants.
 
-1. Refinement level describes movement from intent toward executable form.
-2. Reference relation distinguishes project-specific Bodies from shared Libraries.
-3. Language representation identifies the natural language used to render the same asset.
+The project is the governed subject, the directory is the execution boundary,
+and a Git repository is only a physical container. One governance scope may
+cover an entire repository or one project directory inside a monorepo. The
+current CLI loads policy and resolves assets from one explicitly selected
+project root per run; it does not auto-discover or orchestrate other projects.
+
+Docs Hygiene locates every governed project asset along three independent
+dimensions:
+
+1. Refinement level preserves progressive refinement from intent to implementation.
+2. Reference relation preserves semantic dependencies between project assertions and shared definitions.
+3. Language representation preserves the same asset from working language to distribution languages.
 
 The coordinate identifies an asset representation. Typed graph edges preserve reference and derivation relationships across those coordinates.
+These invariants expose deviation early and reduce the comprehension cost of
+repeatedly establishing terminology, document identity, authoritative
+representations, and implementation grounds.
 
 ## Refinement Level
 

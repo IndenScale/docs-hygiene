@@ -1,112 +1,125 @@
 # Docs Hygiene
 
-Docs Hygiene 是一个仓库文档检查工具。它在本地和 CI 中检查文档是否完整、组织是否清楚，以及认知能否从意图、定义追溯到实现。
+[English](README.md) | 中文
 
-在 AI 辅助研发中，实现能力的增长速度已经超过共享认知和业务验证能力。一条模糊需求可以在团队发现概念、规则或预期收益存在歧义之前，驱动 Agent 生成数千行内部一致但业务错误的代码。代码拥有编译器、类型系统、测试和静态分析，承载意图的文档却很少拥有同等级别的质量体系。Docs Hygiene 希望让文档也能被持续检查。
+**Docs Hygiene（DH）是项目文档的治理工具。**
 
-## 文档
+在 AI Coding 时代，文档是项目意图与决策的 SSOT。Agent 可以快速放大实现能力，
+但模糊的需求、不稳定的概念和断裂的约束也会被同样快速地放大。代码质量已经拥有
+编译器、类型系统、测试、静态分析和 CI；文档治理却仍大多停留在格式、拼写和死链
+检查，无法验证意图是否完整、共享含义是否稳定、决策是否被落实。
 
-Docs Hygiene 把仓库中的 README、PRD、规格、ADR 和其他说明都视为需要维护的
-文档资产。当前版本提供确定性的仓库级治理检查：
+Docs Hygiene 把项目文档中的治理要求声明为可持续验证的不变式。它不替团队解释
+自然语言，而是在实现放大偏差之前，确定性地暴露结构、身份、引用和追溯关系的断裂。
 
-它不是通用 Markdown 语法或文风 linter。Markdown 格式交给 markdownlint，外部 URL 爬取交给 lychee，文案风格交给 Vale 或 cspell。Docs Hygiene 专注仓库级文档治理：
+## 三类不变式
 
-- README、CHANGELOG、LICENSE 等入口文件完整性
-- `docs/` 下的编号文档结构
-- 文档长度预算
-- canonical 与本地化语言表示的同位关系
-- 基于路径与文件名推导、随项目成熟度增强的文档契约
-- 从高亮术语到 `concept/*.md` 的概念外键
-- 死的语义 Wiki Link 和仓库内 Markdown Link 目标
-- 受治理的 YAML frontmatter 与特定类型目录契约
-- 意图、规格和实现文档的身份 Manifest
-- Body 到同一精化层级 Library 的语义 Wiki Link 校验
-- 意图、定义和实现之间的相邻精化层级追溯校验
-- 对 markdownlint 等外部工具的 adapter 编排
+| 治理方向 | Docs Hygiene 守护什么 |
+| --- | --- |
+| 从意图到实现 | 项目决策从 Intent 经 Definition 到 Implementation 的逐层精化与追溯 |
+| 从项目主张到共享定义 | Body 内容对同层级 Library 身份的引用，以及 Library 的逐层投影 |
+| 从工作语言到分发语言 | canonical 与 localized 表示之间的身份、结构和治理关系同位 |
 
-产品方向是在这些基座上，从结构卫生继续扩展到语义契约和追溯契约：
+这三个方向对应精化层级、引用关系和语言表示三个相互独立的治理维度。它们让意图层
+的决策能够被逐层验证地落实到实现，让偏离尽早暴露，同时减少理解项目时反复确认
+术语、文档身份、权威表示和实现依据的代价。
 
-- 显式的局部概念和可审议的语义变更提案
-- PRD 中实体、动作、不变量、用户收益与验收标准之间的关系
-- 从意图到规格和实现的条目级覆盖与追溯链
+详细模型见[三维治理模型](docs/zh/position/01_three_dimensional_governance_model.md)。
 
-这些契约要在实现放大问题之前暴露认知债。它们不会让 LLM 代替团队决定业务
-语义：确定性检查阻断无效引用和不完整契约，存在歧义的语义差异则成为显式评审
-事项。
+## 项目与运行边界
 
-## 三个治理维度
+项目是治理对象，目录是运行边界，Git 仓库只是物理载体。一个 DH 治理范围可以对应
+整个仓库，也可以对应 monorepo 中的一个项目目录。每次检查从显式指定的项目根目录
+读取策略并解析受治理资产；DH 当前不会自动发现或编排 monorepo 中的所有项目。
 
-每项受治理资产由三个相互独立的维度定位：
+```text
+monorepo/
+├── platform/
+│   ├── docs-hygiene.yml
+│   ├── docs/
+│   └── src/
+└── sdk/
+    ├── docs-hygiene.yml
+    ├── docs/
+    └── src/
+```
 
-- **精化层级**：Intent、Definition 或 Implementation；
-- **引用关系**：表达项目具体主张的 Body，或维护共享含义的 Library；
-- **语言表示**：`en`、`zh` 或其他配置的语言代码。
+两个项目可以分别检查：
 
-一个语言表示拥有 canonical 权威。本地化表示保持相同的语义身份、生命周期、结构和治理边，不形成独立资产。
+```bash
+docs-hygiene check platform --fail-on-warning
+docs-hygiene check sdk --fail-on-warning
+```
 
-## 精化层级与引用关系
+## 当前能力
 
-精化过程逐层减少歧义和实现自由度：
+Docs Hygiene 当前提供确定性的项目级治理检查：
 
-| 精化层级 | Body                                    | Library                            |
-| -------- | --------------------------------------- | ---------------------------------- |
-| 意图     | PRD：说明为什么做、为谁做、期望什么结果 | 通用语言（UL）：统一产品和业务术语 |
-| 规格     | Spec 与测试定义：说明怎样才算正确       | Glossary：把产品术语收窄为精确定义 |
-| 实现     | 代码与配置：实现规格                    | SDK：提供可复用的类型、接口和规则  |
+- README、CHANGELOG、LICENSE 等入口文件完整性；
+- 编号文档、允许的文件类型和长度预算；
+- 基于路径与文件名推导、随项目成熟度增强的文档契约；
+- canonical 与 localized 语言表示的路径、身份和结构同位；
+- 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
+- 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
+- YAML frontmatter、身份 Manifest 和递归 Package 结构；
+- Intent、Definition 与 Implementation 之间的相邻层级治理边；
+- 对 markdownlint 等外部工具的 Adapter 编排。
 
-Body 沿 `PRD → Spec/测试定义 → 代码/配置` 逐层落实；Library 沿
-`UL → Glossary → SDK` 逐层细化。UL 位于 `docs/intent/ul/`，Glossary 位于
-`docs/definition/glossary/`；中文表示分别位于 `docs/zh/intent/ul/` 和
-`docs/zh/definition/glossary/`。每个领域具有 Manifest，每个稳定术语使用一个同名
-Markdown 文件。PRD 与 Spec 分别位于 `docs/intent/prd/` 和 `docs/definition/spec/`
-中，并保持中文目录、身份和结构一致。
-Implementation 留在仓库根部：
-`src/lib.rs` 就是 SDK，Code/Configuration 关系由 `implementation-manifest.yml` 声明。
-核心检查器按稳定 ID 解析这些资产，校验内容中的 Wiki Link 与可选 SHA-256 锚，并校验相邻精化层级
-`formalizes`、`realizes` 和 `projects` 边。
-
-## 产品边界
-
-Docs Hygiene 不是 SDD 工作流或执行计划工具。它不生成 PRD、技术设计和任务拆解，
-也不规定 Coding Agent 应当如何实现变更。SDD 和 Coding Agent 可以消费受治理的
-意图；Docs Hygiene 负责验证这些文档及其引用关系是否持续一致。
+Docs Hygiene 不替代 Markdown 格式、外部 URL、拼写或文风工具，也不从自然语言推断
+语义等价、翻译新鲜度或业务矛盾。条目级需求覆盖和符号级语义映射仍属于后续方向。
 
 ## 快速开始
 
-```bash
-cargo run -- check --fail-on-warning
-```
-
-创建初始策略文件：
+在本仓库构建二进制：
 
 ```bash
-cargo run -- init
+cargo build --release
 ```
 
-创建初始文档树：
+为项目创建最小文档树和初始策略：
 
 ```bash
-cargo run -- scaffold
+./target/release/docs-hygiene scaffold /path/to/project
 ```
 
-管理语言策略：
+运行检查：
 
 ```bash
-cargo run -- lang list
-cargo run -- lang add ja --min-cjk-ratio 0.10
-cargo run -- lang set-threshold ja --max-cjk-ratio 0.90
-cargo run -- lang remove ja
+./target/release/docs-hygiene check /path/to/project --fail-on-warning
 ```
+
+如果已经安装或已将二进制加入 `PATH`：
+
+```bash
+docs-hygiene scaffold .
+docs-hygiene check --fail-on-warning
+```
+
+默认情况下，error 会让命令失败，warning 只提供建议；`--fail-on-warning` 会把 warning
+也提升为门禁。供其他工具消费时可以输出 JSON：
+
+```bash
+docs-hygiene check --format json
+```
+
+其他命令包括 `init`、`lang` 和 `explain`。运行 `docs-hygiene --help` 查看完整界面。
 
 ## 策略
 
-本仓库使用 `docs-hygiene.yml` dogfood Docs Hygiene。已经实现的规则面以 `docs/`
-中的说明为准；上述产品方向只有在进入这些说明后，才代表已经可用。
+每个治理范围默认从项目根目录读取 `docs-hygiene.yml`。策略声明入口文档、文档区域、
+语言表示、概念外键、文档契约、治理 Manifest、豁免和外部 Adapter。项目可以从结构
+卫生开始，再随成熟度逐步启用更强的语义与追溯门禁。
+
+本仓库使用自己的 [docs-hygiene.yml](docs-hygiene.yml) 进行 dogfood。它展示了完整的
+三维治理模型，但不是所有项目都必须复制的固定目录模板。
+
+配置说明见[配置](docs/zh/02_configuration.md)，已交付规则以[规则](docs/zh/03_rules.md)
+和[治理关系图](docs/zh/07_governance_graph.md)为准。
 
 ## Adapter
 
-Docs Hygiene 可以调用外部工具，而不是重写它们的规则。第一版 adapter 是
-markdownlint：
+Docs Hygiene 负责需要项目上下文的治理规则；已有工具继续负责各自擅长的表层检查。
+Adapter 允许一次运行编排这些工具，而不在核心检查器中重复实现它们。
 
 ```yaml
 adapters:
@@ -119,3 +132,16 @@ adapters:
       - CHANGELOG.md
       - "docs/**/*.md"
 ```
+
+当前 Adapter 契约见[外部工具 Adapter](docs/zh/04_adapters.md)。
+
+## 文档导航
+
+- [概览](docs/zh/01_overview.md)
+- [配置](docs/zh/02_configuration.md)
+- [规则](docs/zh/03_rules.md)
+- [CI 与 JSON 输出](docs/zh/05_ci.md)
+- [文档契约](docs/zh/06_document_contracts.md)
+- [治理关系图](docs/zh/07_governance_graph.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
