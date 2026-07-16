@@ -23,6 +23,9 @@ Docs Hygiene 以 policy-as-code 检查这个控制平面。当前版本提供仓
 - 根文档与本地化文档的 i18n 同位关系
 - 基于路径与文件名推导、随项目成熟度增强的文档契约
 - 从高亮术语到 `concept/*.md` 的概念外键
+- Intent、Definition 和 Implementation 资产的版本化治理 Manifest
+- 同层 `Body -> Library` 水平引用校验
+- 相邻层 Body 派生与 Library 投影校验
 - 对 markdownlint 等外部工具的 adapter 编排
 
 产品方向是在这些基座上，从结构卫生继续扩展到语义契约和追溯契约：
@@ -30,7 +33,7 @@ Docs Hygiene 以 policy-as-code 检查这个控制平面。当前版本提供仓
 - 受治理的通用语言（UL）和带版本的概念引用
 - 显式的局部概念和可审议的语义变更提案
 - PRD 中实体、动作、不变量、用户收益与验收标准之间的关系
-- 从共享意图到可执行验证证据的追溯链
+- 从共享意图到可执行证据的条目级覆盖与追溯链
 
 这些契约要在实现放大问题之前暴露认知债。它们不会让 LLM 代替团队决定业务
 语义：确定性检查阻断无效引用和不完整契约，存在歧义的语义差异则成为显式评审
@@ -42,15 +45,21 @@ Docs Hygiene 使用 Body 与 Reference Library 两个正交角色治理三层资
 
 | 层次 | Body | Reference Library |
 | --- | --- | --- |
-| Intent | PRD | Ubiquitous Language |
-| Definition | Spec 与 Test Definition | Glossary |
+| Intent | PRD 目录 Body Package | 递归 UL Tree，每个术语一个 Markdown 叶子 |
+| Definition | Spec 目录 Body Package 与 Test Definition | 递归 Glossary Tree，每个术语一个 Markdown 叶子 |
 | Implementation | Code 与 Configuration | SDK |
 
 Body 追溯轴是 `PRD → Spec/Test Definition → Code/Configuration`；Library 投影轴是
 `UL → Glossary → SDK`。Test Definition 属于 Definition，Test Result 和运行
-观察属于独立 Evidence 平面。仓库将 Intent 资产放在 `docs/intent`，Definition 资产
-放在 `docs/definition`，中文版本统一放在 `docs/zh` 下。Implementation 留在仓库根部：
+观察属于独立 Evidence 平面。canonical UL 位于 `docs/intent/ul/`，Glossary 位于
+`docs/definition/glossary/`；中文表示分别位于 `docs/zh/intent/ul/` 和
+`docs/zh/definition/glossary/`。每个领域具有 Manifest，每个稳定术语使用一个同名
+Markdown 叶子。PRD 与 Spec 分别位于 `docs/intent/prd/` 和 `docs/definition/spec/`
+的递归 Body Package 中，并保持中文同构树、身份和版本一致。
+Implementation 留在仓库根部：
 `src/lib.rs` 就是 SDK，Code/Configuration 关系由 `implementation-manifest.yml` 声明。
+核心检查器按稳定 ID 与版本解析这些资产，校验同层引用，并校验相邻层
+`formalizes`、`realizes` 和 `projects` 边。
 
 ## 产品边界
 

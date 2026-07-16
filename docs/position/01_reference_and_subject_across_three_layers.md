@@ -15,29 +15,32 @@ Each layer contains two different artifact roles:
 - a Reference Library supplies reusable language or primitives shared by many Bodies;
 - a Body expresses the concrete intent, definition, or realization under governance.
 
-Library names a role rather than only a code package. The Intent Library is the UL,
-the Definition Library is the Glossary, and the Implementation Library is the SDK
-plus shared types, schemas, interfaces, and rules. The distinction between Library
-and Body is reuse versus a specific governed assertion, not authority.
+Library names a role rather than only a code package. The Intent Library is the
+versioned UL directory, the Definition Library is the versioned Glossary directory,
+and the Implementation Library is the SDK plus shared types, schemas, interfaces,
+and rules. UL and Glossary are recursive domain trees with one stable term per Markdown
+leaf; every domain manifest declares identity, version, and direct membership. PRD and
+Spec are recursive Body Packages containing atomic governed assertions. The distinction between
+Library and Body is reuse versus a specific governed assertion, not authority.
 
 ## Model
 
 | Layer | Reference Library | Body | Primary question |
 | --- | --- | --- | --- |
-| Intent | Ubiquitous Language | PRD | What should exist, and what does it mean? |
-| Definition | Glossary | Spec and Test Definition | What precisely counts as correct? |
+| Intent | UL directory (one term per Markdown file) | PRD | What should exist, and what does it mean? |
+| Definition | Glossary directory (one term per Markdown file) | Spec and Test Definition | What precisely counts as correct? |
 | Implementation | SDK | Code and Configuration | How is the definition realized? |
 
 ```mermaid
 flowchart TB
     subgraph Intent[Intent Layer]
-        UL[Ubiquitous Language]
+        UL[UL directory and term files]
         PRD[PRD]
         PRD -->|references| UL
     end
 
     subgraph Definition[Definition Layer]
-        Glossary[Glossary]
+        Glossary[Glossary directory and term files]
         Spec[Spec and Test Definition]
         Spec -->|references| Glossary
     end
@@ -58,15 +61,16 @@ flowchart TB
 
 The Reference axis is `UL → Glossary → SDK`.
 
-The UL is the reusable Intent reference. It defines business and product
-concepts, relations, actions, states, invariants, outcomes, and benefits without
+The UL is a mandatory reusable Intent Library directory. Each concept, relation,
+action, state, invariant, outcome, or benefit has one Markdown file and a stable
+identity. The directory manifest versions and enumerates those terms without
 committing them to a particular technical representation.
 
-The Glossary is the reusable Definition reference. It projects UL meaning into
-precise specification identities such as state names, event names, enum values,
-schema terms, and judgment vocabulary. It may narrow presentation for a
-particular definition context, but it must not silently change the source
-meaning.
+The Glossary is a mandatory reusable Definition Library directory. Each Markdown
+file projects a UL term into a precise specification identity such as a state name,
+event name, enum value, schema term, or judgment vocabulary. The directory manifest
+versions and enumerates those terms. A projection may narrow presentation for a
+particular definition context, but it must not silently change the source meaning.
 
 The SDK is the reusable Implementation Reference Library. It realizes definition
 identities as shared types, schemas, interfaces, modules, rules, or domain primitives
@@ -80,13 +84,15 @@ the upstream identity and semantic version it realizes.
 
 The Body axis (Subject axis) is `PRD → Spec/Test Definition → Code/Configuration`.
 
-A PRD makes a concrete product claim using the UL: a user needs a benefit, an
-action should be possible, or an invariant must hold.
+A PRD Body Package makes concrete product claims through atomic role, story,
+requirement, and acceptance members. Members use standard Markdown links to UL term
+leaves, while the package manifest pins the UL Library version.
 
-A Spec or Test Definition formalizes that claim using the Glossary. It defines
-inputs, states, transitions, constraints, acceptance criteria, and falsifiable
-outcomes. It says what counts as correct without prescribing every
-implementation step.
+A Spec Body Package or Test Definition formalizes that claim through atomic model,
+constraint, scenario, and verification members linking to Glossary term files.
+It defines inputs, states, transitions, constraints, acceptance criteria, and
+falsifiable outcomes. Its asset manifest pins the Glossary Library version. It says
+what counts as correct without prescribing every implementation step.
 
 Code and Configuration realize the definition using Libraries and other
 implementation dependencies. They may be refactored or replaced while the

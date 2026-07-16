@@ -1,0 +1,15 @@
+id: SPEC-001-DOMAIN-CONSTRAINTS
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - classification.md
+  - horizontal-reference.md
+  - body-derivation.md
+  - library-projection.md
+  - package-members.md
+  - domain-tree.md
+  - path-safety.md
+  - identity-uniqueness.md
+  - localization.md
+  - evidence.md

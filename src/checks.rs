@@ -5,7 +5,7 @@ use std::process::Command;
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use regex::Regex;
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 use walkdir::WalkDir;
 
 use crate::config::{Config, DocumentProfileConfig, FilenamePatternConfig, MaturityLevel};
@@ -147,10 +147,1142 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     check_language(root, config, &docs, &mut diagnostics)?;
     check_document_contracts(root, config, &ignore, &docs, &mut diagnostics)?;
     check_concepts(root, config, &docs, &ignore, &mut diagnostics)?;
+    check_governance(root, config, &mut diagnostics);
     check_adapters(root, config, &mut diagnostics)?;
     let diagnostics = apply_suppressions(config, diagnostics)?;
 
     Ok(Report::new(diagnostics, docs.len(), root))
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+enum GovernanceLayer {
+    Intent,
+    Definition,
+    Implementation,
+}
+
+impl GovernanceLayer {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Intent => "intent",
+            Self::Definition => "definition",
+            Self::Implementation => "implementation",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+enum GovernanceRole {
+    Body,
+    Library,
+}
+
+impl GovernanceRole {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Body => "body",
+            Self::Library => "library",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct GovernanceTarget {
+    id: String,
+    version: String,
+}
+
+#[derive(Clone, Debug, Default)]
+struct GovernanceTargets(Vec<GovernanceTarget>);
+
+impl GovernanceTargets {
+    fn iter(&self) -> impl Iterator<Item = &GovernanceTarget> {
+        self.0.iter()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
+
+impl<'de> Deserialize<'de> for GovernanceTargets {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum OneOrMany {
+            One(GovernanceTarget),
+            Many(Vec<GovernanceTarget>),
+        }
+
+        Ok(match OneOrMany::deserialize(deserializer)? {
+            OneOrMany::One(target) => Self(vec![target]),
+            OneOrMany::Many(targets) => Self(targets),
+        })
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct GovernanceAsset {
+    id: String,
+    version: String,
+    layer: GovernanceLayer,
+    role: GovernanceRole,
+    status: String,
+    #[serde(default)]
+    references: GovernanceTargets,
+    #[serde(default)]
+    formalizes: GovernanceTargets,
+    #[serde(default)]
+    realizes: GovernanceTargets,
+    #[serde(default)]
+    projects: GovernanceTargets,
+    #[serde(default)]
+    members: Option<serde_yaml::Value>,
+    #[serde(skip)]
+    path: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct PackageMember {
+    id: String,
+    version: String,
+    status: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct PackageDomain {
+    id: String,
+    version: String,
+    status: String,
+    kind: String,
+    members: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PackageManifestNode {
+    id: String,
+    version: String,
+    status: String,
+    #[serde(default)]
+    kind: Option<String>,
+    members: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+struct CanonicalPackageNode {
+    identity: PackageMember,
+    kind: Option<String>,
+    members: Option<Vec<String>>,
+}
+
+fn is_governance_lifecycle_status(status: &str) -> bool {
+    matches!(
+        status,
+        "draft"
+            | "review"
+            | "proposed"
+            | "baselined"
+            | "current"
+            | "superseded"
+            | "archived"
+            | "abandoned"
+    )
+}
+
+fn check_governance(root: &Path, config: &Config, diagnostics: &mut Vec<Diagnostic>) {
+    if config.governance.manifests.is_empty() {
+        return;
+    }
+
+    let mut assets = Vec::new();
+    let semver = Regex::new(r"^\d+\.\d+\.\d+$").expect("static semver regex");
+    for rel in &config.governance.manifests {
+        let path = root.join(rel);
+        let text = match std::fs::read_to_string(&path) {
+            Ok(text) => text,
+            Err(error) => {
+                diagnostics.push(Diagnostic::new(
+                    "DH_GOVERNANCE_001",
+                    Severity::Error,
+                    rel.display().to_string(),
+                    format!("Governance manifest cannot be read: {error}."),
+                ));
+                continue;
+            }
+        };
+        let yaml = if matches!(
+            path.extension().and_then(|value| value.to_str()),
+            Some("md")
+        ) {
+            match markdown_frontmatter(&text) {
+                Some(frontmatter) => frontmatter,
+                None => {
+                    diagnostics.push(Diagnostic::new(
+                        "DH_GOVERNANCE_001",
+                        Severity::Error,
+                        rel.display().to_string(),
+                        "Governance Markdown manifest requires YAML frontmatter.",
+                    ));
+                    continue;
+                }
+            }
+        } else {
+            text.as_str()
+        };
+        match serde_yaml::from_str::<GovernanceAsset>(yaml) {
+            Ok(mut asset) => {
+                asset.path = rel.display().to_string();
+                if !semver.is_match(&asset.version) {
+                    diagnostics.push(Diagnostic::new(
+                        "DH_GOVERNANCE_001",
+                        Severity::Error,
+                        asset.path.clone(),
+                        format!(
+                            "Governed asset '{}' has invalid semantic version '{}'.",
+                            asset.id, asset.version
+                        ),
+                    ));
+                }
+                if !is_governance_lifecycle_status(&asset.status) {
+                    diagnostics.push(Diagnostic::new(
+                        "DH_GOVERNANCE_001",
+                        Severity::Error,
+                        asset.path.clone(),
+                        format!(
+                            "Governed asset '{}@{}' has invalid lifecycle status '{}'.",
+                            asset.id, asset.version, asset.status
+                        ),
+                    ));
+                }
+                assets.push(asset);
+            }
+            Err(error) => diagnostics.push(Diagnostic::new(
+                "DH_GOVERNANCE_001",
+                Severity::Error,
+                rel.display().to_string(),
+                format!("Invalid governance manifest: {error}."),
+            )),
+        }
+    }
+
+    let mut index = BTreeMap::new();
+    for (position, asset) in assets.iter().enumerate() {
+        let key = (asset.id.as_str(), asset.version.as_str());
+        if let Some(existing) = index.insert(key, position) {
+            diagnostics.push(
+                Diagnostic::new(
+                    "DH_GOVERNANCE_001",
+                    Severity::Error,
+                    asset.path.clone(),
+                    format!("Duplicate governed asset '{}@{}'.", asset.id, asset.version),
+                )
+                .with_related(RelatedInformation::new(
+                    assets[existing].path.clone(),
+                    "First declaration is here.",
+                )),
+            );
+        }
+    }
+
+    for asset in &assets {
+        check_package_members(root, config, asset, diagnostics);
+        check_horizontal_reference(asset, &assets, &index, diagnostics);
+        check_vertical_derivation(asset, &assets, &index, diagnostics);
+    }
+    if config.governance.require_complete_vertical_derivation {
+        check_vertical_derivation_completeness(&assets, diagnostics);
+    }
+}
+
+fn check_package_members(
+    root: &Path,
+    config: &Config,
+    asset: &GovernanceAsset,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let manifest_rel = Path::new(&asset.path);
+    let is_directory_package = manifest_rel.file_name().and_then(|value| value.to_str())
+        == Some("manifest.yml")
+        && asset.layer != GovernanceLayer::Implementation;
+    if asset.role != GovernanceRole::Library && !is_directory_package {
+        return;
+    }
+    let Some(serde_yaml::Value::Sequence(members)) = &asset.members else {
+        let code = package_diagnostic_code(asset.role);
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            asset.path.clone(),
+            format!(
+                "{} '{}@{}' must declare a member list.",
+                asset.role.label(),
+                asset.id,
+                asset.version
+            ),
+        ));
+        return;
+    };
+    if members.is_empty() {
+        let code = package_diagnostic_code(asset.role);
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            asset.path.clone(),
+            format!(
+                "{} '{}@{}' cannot have an empty member list.",
+                asset.role.label(),
+                asset.id,
+                asset.version
+            ),
+        ));
+        return;
+    }
+
+    if !is_directory_package {
+        check_non_directory_library_members(root, asset, members, diagnostics);
+        return;
+    }
+
+    let package_rel = manifest_rel.parent().unwrap_or_else(|| Path::new(""));
+    let Some(members) = member_strings(members) else {
+        diagnostics.push(Diagnostic::new(
+            package_diagnostic_code(asset.role),
+            Severity::Error,
+            asset.path.clone(),
+            "Package members must be path strings relative to their directory manifest.",
+        ));
+        return;
+    };
+    let mut identities = BTreeSet::new();
+    let mut canonical_nodes = BTreeMap::new();
+    canonical_nodes.insert(
+        PathBuf::from("manifest.yml"),
+        CanonicalPackageNode {
+            identity: PackageMember {
+                id: asset.id.clone(),
+                version: asset.version.clone(),
+                status: asset.status.clone(),
+            },
+            kind: None,
+            members: Some(members.clone()),
+        },
+    );
+    identities.insert(asset.id.clone());
+    check_package_directory(
+        root,
+        package_rel,
+        Path::new(""),
+        &members,
+        asset.role,
+        &mut identities,
+        &mut canonical_nodes,
+        diagnostics,
+    );
+    check_localized_package(
+        root,
+        config,
+        package_rel,
+        asset.role,
+        &canonical_nodes,
+        diagnostics,
+    );
+}
+
+fn package_diagnostic_code(role: GovernanceRole) -> &'static str {
+    match role {
+        GovernanceRole::Library => "DH_LIBRARY_001",
+        GovernanceRole::Body => "DH_BODY_001",
+    }
+}
+
+fn member_strings(members: &[serde_yaml::Value]) -> Option<Vec<String>> {
+    members
+        .iter()
+        .map(|member| member.as_str().map(str::to_owned))
+        .collect()
+}
+
+fn check_non_directory_library_members(
+    root: &Path,
+    asset: &GovernanceAsset,
+    members: &[serde_yaml::Value],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let manifest_rel = Path::new(&asset.path);
+    let package_rel = manifest_rel.parent().unwrap_or_else(|| Path::new(""));
+    for member in members {
+        let Some(member) = member.as_str() else {
+            diagnostics.push(Diagnostic::new(
+                "DH_LIBRARY_001",
+                Severity::Error,
+                asset.path.clone(),
+                "Library members must be path strings relative to the Library manifest.",
+            ));
+            continue;
+        };
+        if !root.join(package_rel).join(member).is_file() {
+            diagnostics.push(Diagnostic::new(
+                "DH_LIBRARY_001",
+                Severity::Error,
+                asset.path.clone(),
+                format!("Library member '{}' does not exist.", member),
+            ));
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn check_package_directory(
+    root: &Path,
+    package_rel: &Path,
+    directory_rel: &Path,
+    members: &[String],
+    role: GovernanceRole,
+    identities: &mut BTreeSet<String>,
+    canonical_nodes: &mut BTreeMap<PathBuf, CanonicalPackageNode>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let code = package_diagnostic_code(role);
+    let directory = root.join(package_rel).join(directory_rel);
+    let mut declared = BTreeSet::new();
+    for member in members {
+        let member_rel = Path::new(member);
+        if member_rel.is_absolute()
+            || member_rel.components().count() != 1
+            || member == "manifest.yml"
+        {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                package_rel
+                    .join(directory_rel)
+                    .join("manifest.yml")
+                    .display()
+                    .to_string(),
+                format!("Package member '{member}' must name one direct child without traversal."),
+            ));
+            continue;
+        }
+        declared.insert(member_rel.to_path_buf());
+        let node_rel = directory_rel.join(member_rel);
+        let node_path = directory.join(member_rel);
+        if node_path.is_dir() {
+            let domain_manifest_path = node_path.join("manifest.yml");
+            let domain_manifest_rel = node_rel.join("manifest.yml");
+            let domain = std::fs::read_to_string(&domain_manifest_path)
+                .ok()
+                .and_then(|text| serde_yaml::from_str::<PackageDomain>(&text).ok());
+            let Some(domain) = domain else {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    package_rel.join(&domain_manifest_rel).display().to_string(),
+                    "Declared package domain requires a valid manifest.yml.",
+                ));
+                continue;
+            };
+            validate_package_identity(
+                &PackageMember {
+                    id: domain.id.clone(),
+                    version: domain.version.clone(),
+                    status: domain.status.clone(),
+                },
+                &package_rel.join(&domain_manifest_rel),
+                code,
+                identities,
+                diagnostics,
+            );
+            if domain.kind != "domain" {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    package_rel.join(&domain_manifest_rel).display().to_string(),
+                    "Nested package manifest must declare kind: domain.",
+                ));
+            }
+            canonical_nodes.insert(
+                domain_manifest_rel,
+                CanonicalPackageNode {
+                    identity: PackageMember {
+                        id: domain.id,
+                        version: domain.version,
+                        status: domain.status,
+                    },
+                    kind: Some(domain.kind),
+                    members: Some(domain.members.clone()),
+                },
+            );
+            check_package_directory(
+                root,
+                package_rel,
+                &node_rel,
+                &domain.members,
+                role,
+                identities,
+                canonical_nodes,
+                diagnostics,
+            );
+            continue;
+        }
+        if !node_path.is_file() {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                package_rel.join(&node_rel).display().to_string(),
+                "Declared package member does not exist.",
+            ));
+            continue;
+        }
+        if member_rel.extension().and_then(|value| value.to_str()) != Some("md") {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                package_rel.join(&node_rel).display().to_string(),
+                "Package leaf member must be a Markdown file.",
+            ));
+            continue;
+        }
+        let text = match std::fs::read_to_string(&node_path) {
+            Ok(text) => text,
+            Err(error) => {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    package_rel.join(&node_rel).display().to_string(),
+                    format!("Package member cannot be read: {error}."),
+                ));
+                continue;
+            }
+        };
+        let Some(frontmatter) = markdown_frontmatter(&text) else {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                package_rel.join(&node_rel).display().to_string(),
+                "Package Markdown member requires YAML frontmatter.",
+            ));
+            continue;
+        };
+        match serde_yaml::from_str::<PackageMember>(frontmatter) {
+            Ok(item) => {
+                validate_package_identity(
+                    &item,
+                    &package_rel.join(&node_rel),
+                    code,
+                    identities,
+                    diagnostics,
+                );
+                canonical_nodes.insert(
+                    node_rel,
+                    CanonicalPackageNode {
+                        identity: item,
+                        kind: None,
+                        members: None,
+                    },
+                );
+            }
+            Err(error) => diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                package_rel.join(&node_rel).display().to_string(),
+                format!("Invalid package member frontmatter: {error}."),
+            )),
+        }
+    }
+
+    let discovered = std::fs::read_dir(&directory)
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let name = entry.file_name();
+            if name == "manifest.yml" {
+                return None;
+            }
+            let path = entry.path();
+            if path.is_dir() || path.extension().and_then(|value| value.to_str()) == Some("md") {
+                Some(PathBuf::from(name))
+            } else {
+                None
+            }
+        })
+        .collect::<BTreeSet<_>>();
+    for orphan in discovered.difference(&declared) {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            package_rel
+                .join(directory_rel)
+                .join(orphan)
+                .display()
+                .to_string(),
+            "Package child is not declared in its directory manifest.",
+        ));
+    }
+}
+
+fn validate_package_identity(
+    item: &PackageMember,
+    path: &Path,
+    code: &'static str,
+    identities: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let semver = Regex::new(r"^\d+\.\d+\.\d+$").expect("static semver regex");
+    if !semver.is_match(&item.version) {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            path.display().to_string(),
+            format!(
+                "Package identity '{}' has invalid version '{}'.",
+                item.id, item.version
+            ),
+        ));
+    }
+    if !is_governance_lifecycle_status(&item.status) {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            path.display().to_string(),
+            format!(
+                "Package identity '{}' has invalid lifecycle status '{}'.",
+                item.id, item.status
+            ),
+        ));
+    }
+    if !identities.insert(item.id.clone()) {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            path.display().to_string(),
+            format!("Package identity '{}' is declared more than once.", item.id),
+        ));
+    }
+}
+
+fn check_localized_package(
+    root: &Path,
+    config: &Config,
+    package_rel: &Path,
+    role: GovernanceRole,
+    canonical_nodes: &BTreeMap<PathBuf, CanonicalPackageNode>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let code = package_diagnostic_code(role);
+    let Some(base) = config
+        .docs
+        .bases
+        .iter()
+        .find(|base| base.root.as_path() == package_rel)
+    else {
+        return;
+    };
+    for (language, localized_root_rel) in &base.localized_roots {
+        let canonical_entries = canonical_nodes
+            .keys()
+            .flat_map(|path| {
+                let mut entries = vec![path.clone()];
+                if path.file_name().and_then(|value| value.to_str()) == Some("manifest.yml") {
+                    if let Some(parent) = path
+                        .parent()
+                        .filter(|parent| !parent.as_os_str().is_empty())
+                    {
+                        entries.push(parent.to_path_buf());
+                    }
+                }
+                entries
+            })
+            .collect::<BTreeSet<_>>();
+        for (node_rel, canonical) in canonical_nodes {
+            let localized_path = root.join(localized_root_rel).join(node_rel);
+            if !localized_path.is_file() {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    localized_root_rel.join(node_rel).display().to_string(),
+                    format!("Localized package node for '{language}' is missing."),
+                ));
+                continue;
+            }
+            let path = localized_root_rel.join(node_rel).display().to_string();
+            let text = std::fs::read_to_string(&localized_path).ok();
+            let localized =
+                if node_rel.file_name().and_then(|value| value.to_str()) == Some("manifest.yml") {
+                    text.and_then(|text| serde_yaml::from_str::<PackageManifestNode>(&text).ok())
+                        .map(|node| CanonicalPackageNode {
+                            identity: PackageMember {
+                                id: node.id,
+                                version: node.version,
+                                status: node.status,
+                            },
+                            kind: node.kind,
+                            members: Some(node.members),
+                        })
+                } else {
+                    text.and_then(|text| markdown_frontmatter(&text).map(str::to_owned))
+                        .and_then(|frontmatter| {
+                            serde_yaml::from_str::<PackageMember>(&frontmatter).ok()
+                        })
+                        .map(|identity| CanonicalPackageNode {
+                            identity,
+                            kind: None,
+                            members: None,
+                        })
+                };
+            let Some(localized) = localized else {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    path,
+                    format!(
+                        "Localized package node for '{language}' has invalid identity metadata."
+                    ),
+                ));
+                continue;
+            };
+            if localized.identity.id != canonical.identity.id
+                || localized.identity.version != canonical.identity.version
+                || localized.identity.status != canonical.identity.status
+                || localized.kind != canonical.kind
+                || localized.members != canonical.members
+            {
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    path,
+                    format!("Localized package node for '{language}' must preserve canonical id, version, status, kind, and direct members."),
+                ));
+            }
+        }
+        let localized_root = root.join(localized_root_rel);
+        let localized_entries = WalkDir::new(&localized_root)
+            .min_depth(1)
+            .into_iter()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| {
+                entry.file_type().is_dir()
+                    || entry.path().extension().and_then(|value| value.to_str()) == Some("md")
+                    || entry.path().file_name().and_then(|value| value.to_str())
+                        == Some("manifest.yml")
+            })
+            .filter_map(|entry| {
+                entry
+                    .path()
+                    .strip_prefix(&localized_root)
+                    .ok()
+                    .map(Path::to_path_buf)
+            })
+            .collect::<BTreeSet<_>>();
+        for extra in localized_entries.difference(&canonical_entries) {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                localized_root_rel.join(extra).display().to_string(),
+                format!("Localized package tree for '{language}' contains an extra node."),
+            ));
+        }
+    }
+}
+
+fn markdown_frontmatter(text: &str) -> Option<&str> {
+    let rest = text.strip_prefix("---\n")?;
+    let end = rest.find("\n---")?;
+    Some(&rest[..end])
+}
+
+fn resolve_governance_target<'a>(
+    target: &GovernanceTarget,
+    assets: &'a [GovernanceAsset],
+    index: &BTreeMap<(&str, &str), usize>,
+) -> Option<&'a GovernanceAsset> {
+    index
+        .get(&(target.id.as_str(), target.version.as_str()))
+        .map(|position| &assets[*position])
+}
+
+fn check_horizontal_reference(
+    asset: &GovernanceAsset,
+    assets: &[GovernanceAsset],
+    index: &BTreeMap<(&str, &str), usize>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if asset.role == GovernanceRole::Library {
+        if !asset.references.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                asset.path.clone(),
+                format!(
+                    "Library '{}@{}' cannot declare a horizontal 'references' edge.",
+                    asset.id, asset.version
+                ),
+            ));
+        }
+        return;
+    }
+    if asset.references.is_empty() {
+        diagnostics.push(Diagnostic::new(
+            "DH_REFERENCE_001",
+            Severity::Error,
+            asset.path.clone(),
+            format!(
+                "Body '{}@{}' must reference a Library in the same {} layer.",
+                asset.id,
+                asset.version,
+                asset.layer.label()
+            ),
+        ));
+        return;
+    }
+    for target in asset.references.iter() {
+        let Some(target_asset) = resolve_governance_target(target, assets, index) else {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                asset.path.clone(),
+                format!(
+                    "Horizontal reference target '{}@{}' does not exist.",
+                    target.id, target.version
+                ),
+            ));
+            continue;
+        };
+        if target_asset.role != GovernanceRole::Library || target_asset.layer != asset.layer {
+            diagnostics.push(
+                Diagnostic::new(
+                    "DH_REFERENCE_001",
+                    Severity::Error,
+                    asset.path.clone(),
+                    format!(
+                        "Body '{}@{}' must reference a Library in the same {} layer, but target '{}@{}' is {} {}.",
+                        asset.id,
+                        asset.version,
+                        asset.layer.label(),
+                        target_asset.id,
+                        target_asset.version,
+                        target_asset.layer.label(),
+                        target_asset.role.label()
+                    ),
+                )
+                .with_related(RelatedInformation::new(
+                    target_asset.path.clone(),
+                    "Resolved target is declared here.",
+                )),
+            );
+        }
+    }
+}
+
+fn check_vertical_derivation(
+    asset: &GovernanceAsset,
+    assets: &[GovernanceAsset],
+    index: &BTreeMap<(&str, &str), usize>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    match (asset.layer, asset.role) {
+        (GovernanceLayer::Intent, GovernanceRole::Body) => {
+            reject_vertical_edges(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "realizes",
+                &asset.realizes,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "projects",
+                &asset.projects,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+        }
+        (GovernanceLayer::Definition, GovernanceRole::Body) => {
+            require_vertical_edge(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                GovernanceLayer::Intent,
+                GovernanceRole::Body,
+                "DH_DERIVATION_001",
+                assets,
+                index,
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "realizes",
+                &asset.realizes,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "projects",
+                &asset.projects,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+        }
+        (GovernanceLayer::Implementation, GovernanceRole::Body) => {
+            require_vertical_edge(
+                asset,
+                "realizes",
+                &asset.realizes,
+                GovernanceLayer::Definition,
+                GovernanceRole::Body,
+                "DH_DERIVATION_001",
+                assets,
+                index,
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "projects",
+                &asset.projects,
+                "DH_DERIVATION_001",
+                diagnostics,
+            );
+        }
+        (GovernanceLayer::Intent, GovernanceRole::Library) => {
+            reject_vertical_edges(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "realizes",
+                &asset.realizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "projects",
+                &asset.projects,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+        }
+        (GovernanceLayer::Definition, GovernanceRole::Library) => {
+            require_vertical_edge(
+                asset,
+                "projects",
+                &asset.projects,
+                GovernanceLayer::Intent,
+                GovernanceRole::Library,
+                "DH_DERIVATION_002",
+                assets,
+                index,
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "realizes",
+                &asset.realizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+        }
+        (GovernanceLayer::Implementation, GovernanceRole::Library) => {
+            require_vertical_edge(
+                asset,
+                "projects",
+                &asset.projects,
+                GovernanceLayer::Definition,
+                GovernanceRole::Library,
+                "DH_DERIVATION_002",
+                assets,
+                index,
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "formalizes",
+                &asset.formalizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+            reject_vertical_edges(
+                asset,
+                "realizes",
+                &asset.realizes,
+                "DH_DERIVATION_002",
+                diagnostics,
+            );
+        }
+    }
+}
+
+fn reject_vertical_edges(
+    asset: &GovernanceAsset,
+    edge_name: &str,
+    targets: &GovernanceTargets,
+    code: &'static str,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if !targets.is_empty() {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            asset.path.clone(),
+            format!(
+                "{} {} '{}@{}' cannot declare vertical '{}' edges.",
+                asset.layer.label(),
+                asset.role.label(),
+                asset.id,
+                asset.version,
+                edge_name
+            ),
+        ));
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn require_vertical_edge(
+    asset: &GovernanceAsset,
+    edge_name: &str,
+    targets: &GovernanceTargets,
+    expected_layer: GovernanceLayer,
+    expected_role: GovernanceRole,
+    code: &'static str,
+    assets: &[GovernanceAsset],
+    index: &BTreeMap<(&str, &str), usize>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if targets.is_empty() {
+        diagnostics.push(Diagnostic::new(
+            code,
+            Severity::Error,
+            asset.path.clone(),
+            format!(
+                "{} {} '{}@{}' must declare a vertical '{}' edge to an {} {}.",
+                asset.layer.label(),
+                asset.role.label(),
+                asset.id,
+                asset.version,
+                edge_name,
+                expected_layer.label(),
+                expected_role.label()
+            ),
+        ));
+        return;
+    }
+    for target in targets.iter() {
+        let Some(target_asset) = resolve_governance_target(target, assets, index) else {
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                asset.path.clone(),
+                format!(
+                    "Vertical '{}' target '{}@{}' does not exist.",
+                    edge_name, target.id, target.version
+                ),
+            ));
+            continue;
+        };
+        if target_asset.layer != expected_layer || target_asset.role != expected_role {
+            diagnostics.push(
+                Diagnostic::new(
+                    code,
+                    Severity::Error,
+                    asset.path.clone(),
+                    format!(
+                        "Vertical '{}' from '{}@{}' must target an {} {}, but '{}@{}' is {} {}.",
+                        edge_name,
+                        asset.id,
+                        asset.version,
+                        expected_layer.label(),
+                        expected_role.label(),
+                        target_asset.id,
+                        target_asset.version,
+                        target_asset.layer.label(),
+                        target_asset.role.label()
+                    ),
+                )
+                .with_related(RelatedInformation::new(
+                    target_asset.path.clone(),
+                    "Resolved target is declared here.",
+                )),
+            );
+        }
+    }
+}
+
+fn check_vertical_derivation_completeness(
+    assets: &[GovernanceAsset],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for upstream in assets.iter().filter(|asset| {
+        matches!(asset.status.as_str(), "baselined" | "current")
+            && asset.layer != GovernanceLayer::Implementation
+    }) {
+        let derived = assets
+            .iter()
+            .any(|downstream| match (upstream.layer, upstream.role) {
+                (GovernanceLayer::Intent, GovernanceRole::Body) => downstream
+                    .formalizes
+                    .iter()
+                    .any(|target| target.id == upstream.id && target.version == upstream.version),
+                (GovernanceLayer::Definition, GovernanceRole::Body) => downstream
+                    .realizes
+                    .iter()
+                    .any(|target| target.id == upstream.id && target.version == upstream.version),
+                (GovernanceLayer::Intent, GovernanceRole::Library)
+                | (GovernanceLayer::Definition, GovernanceRole::Library) => downstream
+                    .projects
+                    .iter()
+                    .any(|target| target.id == upstream.id && target.version == upstream.version),
+                (GovernanceLayer::Implementation, _) => true,
+            });
+        if !derived {
+            let code = if upstream.role == GovernanceRole::Body {
+                "DH_DERIVATION_001"
+            } else {
+                "DH_DERIVATION_002"
+            };
+            diagnostics.push(Diagnostic::new(
+                code,
+                Severity::Error,
+                upstream.path.clone(),
+                format!(
+                    "Baselined {} '{}@{}' has no adjacent downstream derivation.",
+                    upstream.role.label(),
+                    upstream.id,
+                    upstream.version
+                ),
+            ));
+        }
+    }
 }
 
 fn check_document_contracts(
@@ -1971,5 +3103,362 @@ documentContracts:
         assert!(matches!(diagnostic.severity, Severity::Info));
         assert_eq!(report.summary.warning_count, 0);
         assert_eq!(report.summary.info_count, 1);
+    }
+
+    fn governance_config(manifests: &[&str], require_complete: bool) -> Config {
+        let manifest_lines = manifests
+            .iter()
+            .map(|path| format!("    - {path}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        serde_yaml::from_str(&format!(
+            "governance:\n  manifests:\n{manifest_lines}\n  requireCompleteVerticalDerivation: {require_complete}\n"
+        ))
+        .unwrap()
+    }
+
+    fn write_asset(root: &Path, path: &str, yaml: &str) {
+        let asset_path = root.join(path);
+        if let Some(parent) = asset_path.parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        if yaml.contains("role: library") && !yaml.contains("members:") {
+            let stem = Path::new(path)
+                .file_stem()
+                .and_then(|value| value.to_str())
+                .unwrap();
+            let term = format!("{stem}-term.md");
+            fs::write(
+                asset_path.parent().unwrap().join(&term),
+                format!("---\nid: TERM-{stem}\nversion: 1.0.0\nstatus: baselined\n---\n\n# Term\n"),
+            )
+            .unwrap();
+            fs::write(asset_path, format!("{yaml}members: [{term}]\n")).unwrap();
+        } else {
+            fs::write(asset_path, yaml).unwrap();
+        }
+    }
+
+    #[test]
+    fn accepts_complete_horizontal_and_vertical_governance_graph() {
+        let temp = tempdir().unwrap();
+        let manifests = [
+            "ul.yml",
+            "prd.yml",
+            "glossary.yml",
+            "spec.yml",
+            "sdk.yml",
+            "impl.yml",
+        ];
+        write_asset(
+            temp.path(),
+            "ul.yml",
+            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+        );
+        write_asset(
+            temp.path(),
+            "prd.yml",
+            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "glossary.yml",
+            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "spec.yml",
+            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: baselined\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "sdk.yml",
+            "id: SDK-1\nversion: 1.0.0\nlayer: implementation\nrole: library\nstatus: current\nprojects: { id: GLOSSARY-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "impl.yml",
+            "id: IMPL-1\nversion: 1.0.0\nlayer: implementation\nrole: body\nstatus: current\nreferences: { id: SDK-1, version: 1.0.0 }\nrealizes: { id: SPEC-1, version: 1.0.0 }\n",
+        );
+
+        let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
+
+        assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    }
+
+    #[test]
+    fn validates_library_directory_members_and_term_frontmatter() {
+        let temp = tempdir().unwrap();
+        let library = temp.path().join("docs/intent/ul");
+        fs::create_dir_all(&library).unwrap();
+        fs::write(
+            library.join("manifest.yml"),
+            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\nmembers: [declared.md, ../escaped.md]\n",
+        )
+        .unwrap();
+        fs::write(
+            library.join("declared.md"),
+            "---\nid: TERM-1\nversion: 1.0.0\nstatus: unknown\n---\n\n# Declared\n",
+        )
+        .unwrap();
+        fs::write(
+            library.join("orphan.md"),
+            "---\nid: TERM-2\nversion: 1.0.0\nstatus: proposed\n---\n\n# Orphan\n",
+        )
+        .unwrap();
+
+        let report = run_checks(
+            temp.path(),
+            &governance_config(&["docs/intent/ul/manifest.yml"], false),
+        )
+        .unwrap();
+        let members = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "DH_LIBRARY_001")
+            .collect::<Vec<_>>();
+
+        assert_eq!(members.len(), 3, "{:?}", report.diagnostics);
+        assert!(members.iter().any(|diagnostic| {
+            diagnostic
+                .message
+                .contains("must name one direct child without traversal")
+        }));
+        assert!(
+            members
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("invalid lifecycle status"))
+        );
+        assert!(
+            members
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("not declared"))
+        );
+
+        let localized = temp.path().join("docs/zh/intent/ul");
+        fs::create_dir_all(&localized).unwrap();
+        fs::write(
+            localized.join("declared.md"),
+            "---\nid: DIFFERENT-TERM\nversion: 1.0.0\nstatus: unknown\n---\n\n# 术语\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+docs:
+  bases:
+    - id: ul
+      root: docs/intent/ul
+      localizedRoots:
+        zh: docs/zh/intent/ul
+      patterns:
+        - id: term
+          regex: "^[a-z0-9-]+\\.md$"
+governance:
+  manifests: [docs/intent/ul/manifest.yml]
+"#,
+        )
+        .unwrap();
+        let localized_report = run_checks(temp.path(), &config).unwrap();
+        assert!(localized_report.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_LIBRARY_001"
+                && diagnostic.message.contains(
+                    "must preserve canonical id, version, status, kind, and direct members",
+                )
+        }));
+    }
+
+    #[test]
+    fn validates_recursive_body_package_and_localized_domain_members() {
+        let temp = tempdir().unwrap();
+        for root in ["docs/intent/prd/example", "docs/zh/intent/prd/example"] {
+            let package = temp.path().join(root);
+            fs::create_dir_all(package.join("stories")).unwrap();
+            fs::write(
+                package.join("manifest.yml"),
+                "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: proposed\nmembers: [stories]\n",
+            )
+            .unwrap();
+            fs::write(
+                package.join("stories/manifest.yml"),
+                "id: PRD-1-STORIES\nversion: 1.0.0\nkind: domain\nstatus: proposed\nmembers: [story.md]\n",
+            )
+            .unwrap();
+            fs::write(
+                package.join("stories/story.md"),
+                "---\nid: PRD-1-STORY-1\nversion: 1.0.0\nstatus: proposed\n---\n\n# Story\n",
+            )
+            .unwrap();
+        }
+        let config: Config = serde_yaml::from_str(
+            r#"
+docs:
+  bases:
+    - id: prd
+      root: docs/intent/prd/example
+      localizedRoots:
+        zh: docs/zh/intent/prd/example
+      patterns:
+        - id: item
+          regex: "^[a-z0-9-]+\\.md$"
+governance:
+  manifests: [docs/intent/prd/example/manifest.yml]
+"#,
+        )
+        .unwrap();
+
+        let clean = run_checks(temp.path(), &config).unwrap();
+        assert!(
+            clean
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.code != "DH_BODY_001"),
+            "{:?}",
+            clean.diagnostics
+        );
+
+        fs::write(
+            temp.path()
+                .join("docs/zh/intent/prd/example/stories/manifest.yml"),
+            "id: PRD-1-STORIES\nversion: 1.0.0\nkind: domain\nstatus: proposed\nmembers: []\n",
+        )
+        .unwrap();
+        let drifted = run_checks(temp.path(), &config).unwrap();
+        assert!(drifted.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_BODY_001" && diagnostic.message.contains("direct members")
+        }));
+
+        fs::write(
+            temp.path()
+                .join("docs/zh/intent/prd/example/stories/manifest.yml"),
+            "id: PRD-1-STORIES\nversion: 1.0.0\nkind: domain\nstatus: proposed\nmembers: [story.md]\n",
+        )
+        .unwrap();
+        let extra = temp.path().join("docs/zh/intent/prd/example/extra");
+        fs::create_dir_all(&extra).unwrap();
+        fs::write(
+            extra.join("manifest.yml"),
+            "id: EXTRA\nversion: 1.0.0\nkind: domain\nstatus: proposed\nmembers: []\n",
+        )
+        .unwrap();
+        let extra_report = run_checks(temp.path(), &config).unwrap();
+        assert!(extra_report.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_BODY_001"
+                && diagnostic.message.contains("contains an extra node")
+        }));
+    }
+
+    #[test]
+    fn reports_missing_and_cross_layer_horizontal_references() {
+        let temp = tempdir().unwrap();
+        let manifests = ["ul.yml", "prd-missing.yml", "prd-wrong.yml"];
+        write_asset(
+            temp.path(),
+            "ul.yml",
+            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+        );
+        write_asset(
+            temp.path(),
+            "prd-missing.yml",
+            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: proposed\n",
+        );
+        write_asset(
+            temp.path(),
+            "prd-wrong.yml",
+            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
+        );
+
+        let report = run_checks(temp.path(), &governance_config(&manifests, false)).unwrap();
+        let references = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "DH_REFERENCE_001")
+            .collect::<Vec<_>>();
+
+        assert_eq!(references.len(), 2, "{:?}", report.diagnostics);
+        assert!(
+            references
+                .iter()
+                .any(|diagnostic| diagnostic.path == "prd-missing.yml")
+        );
+        assert!(
+            references
+                .iter()
+                .any(|diagnostic| diagnostic.path == "prd-wrong.yml")
+        );
+    }
+
+    #[test]
+    fn reports_missing_and_invalid_vertical_body_derivation() {
+        let temp = tempdir().unwrap();
+        let manifests = ["ul.yml", "glossary.yml", "spec.yml", "impl.yml"];
+        write_asset(
+            temp.path(),
+            "ul.yml",
+            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+        );
+        write_asset(
+            temp.path(),
+            "glossary.yml",
+            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "spec.yml",
+            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "impl.yml",
+            "id: IMPL-1\nversion: 1.0.0\nlayer: implementation\nrole: body\nstatus: current\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nrealizes: { id: GLOSSARY-1, version: 1.0.0 }\n",
+        );
+
+        let report = run_checks(temp.path(), &governance_config(&manifests, false)).unwrap();
+        let derivations = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "DH_DERIVATION_001")
+            .collect::<Vec<_>>();
+
+        assert_eq!(derivations.len(), 2, "{:?}", report.diagnostics);
+        assert!(
+            derivations
+                .iter()
+                .any(|diagnostic| diagnostic.path == "spec.yml")
+        );
+        assert!(
+            derivations
+                .iter()
+                .any(|diagnostic| diagnostic.path == "impl.yml")
+        );
+    }
+
+    #[test]
+    fn reports_library_projection_and_reverse_completeness_gaps() {
+        let temp = tempdir().unwrap();
+        let manifests = ["ul.yml", "prd.yml", "glossary.yml"];
+        write_asset(
+            temp.path(),
+            "ul.yml",
+            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+        );
+        write_asset(
+            temp.path(),
+            "prd.yml",
+            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
+        );
+        write_asset(
+            temp.path(),
+            "glossary.yml",
+            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\n",
+        );
+
+        let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
+
+        assert!(report.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_DERIVATION_002" && diagnostic.path == "glossary.yml"
+        }));
+        assert!(report.diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "DH_DERIVATION_001" && diagnostic.path == "prd.yml"
+        }));
     }
 }

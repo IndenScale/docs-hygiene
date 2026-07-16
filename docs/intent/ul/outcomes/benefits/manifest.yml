@@ -1,0 +1,8 @@
+id: UL-DOMAIN-BENEFITS
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - benefit-early-drift-detection.md
+  - benefit-replayable-intent.md
+  - benefit-layered-traceability.md

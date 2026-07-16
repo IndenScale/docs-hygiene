@@ -1,0 +1,14 @@
+id: PRD-001-DOMAIN-ACCEPTANCE
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - ac-001.md
+  - ac-002.md
+  - ac-003.md
+  - ac-004.md
+  - ac-005.md
+  - ac-006.md
+  - ac-007.md
+  - ac-008.md
+  - ac-009.md

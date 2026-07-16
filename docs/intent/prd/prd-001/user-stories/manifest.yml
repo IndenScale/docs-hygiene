@@ -1,0 +1,8 @@
+id: PRD-001-DOMAIN-USER-STORIES
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - early-drift-detection.md
+  - replayable-intent.md
+  - layered-traceability.md

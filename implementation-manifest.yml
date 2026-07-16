@@ -6,7 +6,7 @@ status: current
 
 realizes:
   id: SPEC-001
-  version: 0.1.0
+  version: 1.0.0
 
 references:
   id: SDK-001
@@ -21,5 +21,6 @@ members:
 evidence:
   definition:
     - cargo test
+    - cargo test --test dogfood
   repository:
     - cargo run -- check --fail-on-warning

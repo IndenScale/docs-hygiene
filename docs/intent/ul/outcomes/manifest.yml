@@ -1,0 +1,6 @@
+id: UL-DOMAIN-OUTCOMES
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - benefits

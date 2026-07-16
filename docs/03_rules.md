@@ -56,6 +56,26 @@ definition file.
 `DH_CONCEPT_002` reports a concept definition file that is not referenced by
 docs.
 
+## Governance Graph
+
+`DH_GOVERNANCE_001` reports an unreadable or malformed manifest, duplicate
+`id@version`, invalid semantic version, or invalid lifecycle status.
+
+`DH_REFERENCE_001` reports a missing target or a `Body -> Library` reference
+whose target is not a Library in the same layer.
+
+`DH_LIBRARY_001` reports a missing, malformed, duplicate, or undeclared member
+of a recursive Library tree.
+
+`DH_BODY_001` reports the same structural or localization failure in a directory
+PRD or Spec Body Package.
+
+`DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
+adjacent-layer Body derivation through `formalizes` or `realizes`.
+
+`DH_DERIVATION_002` reports a missing, unresolved, wrongly typed, or incomplete
+adjacent-layer Library projection through `projects`.
+
 ## Adapters
 
 `DH_ADAPTER_001` reports an external adapter failure.

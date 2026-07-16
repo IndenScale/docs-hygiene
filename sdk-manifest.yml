@@ -1,0 +1,15 @@
+id: SDK-001
+version: 0.1.0
+layer: implementation
+role: library
+status: current
+
+projects:
+  id: GLOSSARY-001
+  version: 1.0.0
+
+members:
+  - src/lib.rs
+  - src/checks.rs
+  - src/config.rs
+  - src/report.rs

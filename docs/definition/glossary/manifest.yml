@@ -1,0 +1,13 @@
+id: GLOSSARY-001
+version: 1.0.0
+layer: definition
+role: library
+status: baselined
+
+projects:
+  id: UL-001
+  version: 1.0.0
+
+members:
+  - classification
+  - relationships

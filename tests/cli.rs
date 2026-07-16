@@ -200,3 +200,36 @@ documentContracts:
         .success()
         .stdout(predicate::str::contains("DH_MATURITY_001 Info"));
 }
+
+#[test]
+fn governance_graph_failures_block_the_cli_gate() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        "governance:\n  manifests: [ul.yml, spec.yml]\n",
+    )
+    .unwrap();
+    std::fs::write(
+        temp.path().join("ul.yml"),
+        "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\nmembers: [term.md]\n",
+    )
+    .unwrap();
+    std::fs::write(
+        temp.path().join("term.md"),
+        "---\nid: TERM-1\nversion: 1.0.0\nstatus: baselined\n---\n\n# Term\n",
+    )
+    .unwrap();
+    std::fs::write(
+        temp.path().join("spec.yml"),
+        "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\n",
+    )
+    .unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("DH_REFERENCE_001 Error"))
+        .stdout(predicate::str::contains("DH_DERIVATION_001 Error"));
+}

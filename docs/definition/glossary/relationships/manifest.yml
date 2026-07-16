@@ -1,0 +1,9 @@
+id: GLOSSARY-DOMAIN-RELATIONSHIPS
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - edge-references.md
+  - edge-formalizes.md
+  - edge-realizes.md
+  - edge-projects.md

@@ -27,6 +27,17 @@ pub struct Config {
     pub ignore: IgnoreConfig,
     #[serde(default)]
     pub document_contracts: DocumentContractsConfig,
+    #[serde(default)]
+    pub governance: GovernanceConfig,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GovernanceConfig {
+    #[serde(default)]
+    pub manifests: Vec<PathBuf>,
+    #[serde(default)]
+    pub require_complete_vertical_derivation: bool,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -109,7 +120,7 @@ pub struct RequiredFieldConfig {
     pub pattern: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntryDocsConfig {
     #[serde(default)]
@@ -162,7 +173,7 @@ pub struct FilenamePatternConfig {
     pub numbered: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct I18nConfig {
     #[serde(default)]
@@ -202,7 +213,7 @@ pub struct AdaptersConfig {
     pub markdownlint: ToolAdapterConfig,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolAdapterConfig {
     #[serde(default)]
@@ -225,16 +236,6 @@ pub struct SuppressionConfig {
     pub reason: Option<String>,
 }
 
-impl Default for ToolAdapterConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            command: None,
-            args: Vec::new(),
-        }
-    }
-}
-
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IgnoreConfig {
@@ -251,26 +252,6 @@ impl Default for DocsConfig {
             max_lines: None,
             forbid_ascii_art: false,
             bases: Vec::new(),
-        }
-    }
-}
-
-impl Default for EntryDocsConfig {
-    fn default() -> Self {
-        Self {
-            required: Vec::new(),
-            optional: Vec::new(),
-        }
-    }
-}
-
-impl Default for I18nConfig {
-    fn default() -> Self {
-        Self {
-            root_lang: None,
-            languages: Vec::new(),
-            require_docs_parity: false,
-            require_number_parity: false,
         }
     }
 }

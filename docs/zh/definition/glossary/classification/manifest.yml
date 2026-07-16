@@ -1,0 +1,10 @@
+id: GLOSSARY-DOMAIN-CLASSIFICATION
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - layer-intent.md
+  - layer-definition.md
+  - layer-implementation.md
+  - role-body.md
+  - role-library.md

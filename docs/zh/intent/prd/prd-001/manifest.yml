@@ -1,0 +1,18 @@
+id: PRD-001
+version: 1.1.0
+type: product-requirement
+status: baselined
+layer: intent
+role: body
+references:
+  id: UL-001
+  version: 1.0.0
+members:
+  - index.md
+  - problem.md
+  - roles
+  - user-stories
+  - requirements
+  - acceptance
+  - non-goals.md
+  - delivery-status.md

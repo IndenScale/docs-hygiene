@@ -1,0 +1,14 @@
+id: PRD-001-DOMAIN-REQUIREMENTS
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - fr-001-asset-classification.md
+  - fr-002-horizontal-references.md
+  - fr-003-library-projection.md
+  - fr-004-body-traceability.md
+  - fr-005-evidence-plane.md
+  - fr-006-lifecycle.md
+  - fr-007-deterministic-checks.md
+  - fr-008-body-packages.md
+  - fr-009-library-trees.md

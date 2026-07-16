@@ -1,0 +1,11 @@
+id: PRD-002-DOMAIN-REQUIREMENTS
+version: 0.2.0
+kind: domain
+status: proposed
+members:
+  - portable-baseline.md
+  - stable-targets.md
+  - editor-navigation.md
+  - preview-interoperability.md
+  - governance-authority.md
+  - progressive-adoption.md

@@ -1,0 +1,9 @@
+id: PRD-001-DOMAIN-ROLES
+version: 1.0.0
+kind: domain
+status: baselined
+members:
+  - product-owner.md
+  - engineer.md
+  - reviewer.md
+  - documentation-maintainer.md

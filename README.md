@@ -29,6 +29,9 @@ It is not a Markdown syntax linter. Use markdownlint for Markdown formatting, ly
 - i18n parity between root docs and localized docs
 - path-inferred document contracts with maturity-aware required sections
 - concept foreign keys from highlighted terms to `concept/*.md`
+- versioned governance manifests for Intent, Definition, and Implementation assets
+- same-layer `Body -> Library` reference validation
+- adjacent-layer Body derivation and Library projection validation
 - adapter orchestration for tools such as markdownlint
 
 The product direction is to extend these foundations from structural hygiene
@@ -37,7 +40,7 @@ to semantic and traceability contracts:
 - governed ubiquitous language and versioned concept references
 - explicit local concepts and reviewable semantic change proposals
 - PRD entity, action, invariant, benefit, and acceptance relationships
-- traceability from shared intent to executable validation evidence
+- item-level coverage and traceability from shared intent to executable evidence
 
 These contracts are intended to expose cognitive debt before an implementation
 amplifies it. They do not ask an LLM to decide business meaning on behalf of a
@@ -50,8 +53,8 @@ Docs Hygiene governs three layers using the orthogonal roles Body and Reference 
 
 | Layer | Body | Reference Library |
 | --- | --- | --- |
-| Intent | PRD | Ubiquitous Language |
-| Definition | Spec and Test Definition | Glossary |
+| Intent | PRD directory Body Package | Recursive UL tree, one term per Markdown leaf |
+| Definition | Spec directory Body Package and Test Definition | Recursive Glossary tree, one term per Markdown leaf |
 | Implementation | Code and Configuration | SDK |
 
 The Body trace axis is `PRD → Spec/Test Definition → Code/Configuration`; the
@@ -59,8 +62,13 @@ Library projection axis is `UL → Glossary → SDK`. Test Definitions belong
 to Definition, while Test Results and runtime observations occupy the separate
 Evidence plane. This repository keeps Intent assets under `docs/intent`, Definition
 assets under `docs/definition`, and their Chinese counterparts under `docs/zh`.
-Implementation stays in the repository root: `src/lib.rs` is the SDK, while code and
-configuration relationships are declared in `implementation-manifest.yml`.
+UL lives under `docs/intent/ul/`, and Glossary under `docs/definition/glossary/`; each
+domain has a Manifest and each stable term is one Markdown leaf. PRD and Spec live
+under `docs/intent/prd/` and `docs/definition/spec/` as recursive Body Packages. Implementation stays
+in the repository root: `src/lib.rs` is the SDK, while code and configuration
+relationships are declared in `implementation-manifest.yml`. The core
+checker resolves these assets by stable ID and version, validates same-layer references,
+and validates adjacent-layer `formalizes`, `realizes`, and `projects` edges.
 
 ## Product Boundary
 

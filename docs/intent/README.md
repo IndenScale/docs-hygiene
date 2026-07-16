@@ -1,12 +1,15 @@
 # Intent Layer
 
-This directory contains the Intent Layer. Its Reference Library is the UL and
-its governed Body is the PRD.
+This directory contains the Intent Layer. Its Reference Library is the versioned
+`ul/` recursive domain tree, with one stable term per Markdown leaf. Its governed
+Bodies are recursive PRD Packages under `prd/`.
 
 ## Authority
 
-- The UL defines stable product meaning and semantic identities.
-- The PRD states desired behavior and pins the UL version it consumes.
+- Every UL domain manifest defines its identity, version, and direct member set.
+- Each Markdown leaf under `ul/` defines exactly one stable product term.
+- Each PRD manifest enumerates atomic roles, stories, requirements, and acceptance members.
+- A PRD pins the UL version and links to the terms it consumes.
 - A baselined PRD must be formalized by a Definition Layer Spec.
 - Current capability remains authoritative in code, configuration, tests, and evidence.
 
@@ -17,5 +20,6 @@ An abandoned proposal uses `abandoned` and does not become a normative baseline.
 
 ## Assets
 
-- [Ubiquitous Language](01_ubiquitous_language.md)
-- [PRD-001 Three-Layer Contract Governance](02_three_layer_contract_governance.md)
+- [Ubiquitous Language directory](ul/)
+- [PRD-001 Three-Layer Contract Governance](prd/prd-001/index.md)
+- [PRD-002 Governed Semantic Links and Editor Navigation](prd/prd-002/index.md) — Backlog

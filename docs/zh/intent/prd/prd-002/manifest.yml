@@ -1,0 +1,18 @@
+id: PRD-002
+version: 0.2.0
+type: product-requirement
+status: proposed
+delivery_status: backlog
+layer: intent
+role: body
+references:
+  id: UL-001
+  version: 1.0.0
+members:
+  - index.md
+  - problem.md
+  - roles.md
+  - requirements
+  - acceptance.md
+  - non-goals.md
+  - delivery-status.md

@@ -3,7 +3,9 @@ entryDocs:
     - README.md
     - README_ZH.md
     - CHANGELOG.md
+    - ROADMAP.md
     - LICENSE
+    - sdk-manifest.yml
     - implementation-manifest.yml
   optional:
     - AGENTS.md
@@ -40,6 +42,11 @@ docs:
         zh: docs/zh/intent
       requireContinuousNumbering: true
       maxLines: 200
+      ignore:
+        - docs/intent/ul/**
+        - docs/zh/intent/ul/**
+        - docs/intent/prd/**
+        - docs/zh/intent/prd/**
       patterns:
         - id: numbered-intent
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -55,6 +62,11 @@ docs:
         zh: docs/zh/definition
       requireContinuousNumbering: true
       maxLines: 200
+      ignore:
+        - docs/definition/glossary/**
+        - docs/zh/definition/glossary/**
+        - docs/definition/spec/**
+        - docs/zh/definition/spec/**
       patterns:
         - id: numbered-definition
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -63,6 +75,50 @@ docs:
         - id: definition-index
           regex: "^README\\.md$"
           role: index
+          numbered: false
+    - id: intent-library
+      root: docs/intent/ul
+      localizedRoots:
+        zh: docs/zh/intent/ul
+      requireContinuousNumbering: false
+      maxLines: 80
+      patterns:
+        - id: term
+          regex: "^[a-z0-9-]+\\.md$"
+          role: library-term
+          numbered: false
+    - id: definition-library
+      root: docs/definition/glossary
+      localizedRoots:
+        zh: docs/zh/definition/glossary
+      requireContinuousNumbering: false
+      maxLines: 80
+      patterns:
+        - id: term
+          regex: "^[a-z0-9-]+\\.md$"
+          role: library-term
+          numbered: false
+    - id: intent-body-packages
+      root: docs/intent/prd
+      localizedRoots:
+        zh: docs/zh/intent/prd
+      requireContinuousNumbering: false
+      maxLines: 80
+      patterns:
+        - id: body-item
+          regex: "^[a-z0-9-]+\\.md$"
+          role: body-item
+          numbered: false
+    - id: definition-body-packages
+      root: docs/definition/spec
+      localizedRoots:
+        zh: docs/zh/definition/spec
+      requireContinuousNumbering: false
+      maxLines: 80
+      patterns:
+        - id: body-item
+          regex: "^[a-z0-9-]+\\.md$"
+          role: body-item
           numbered: false
     - id: position
       root: docs/position
@@ -131,114 +187,24 @@ documentContracts:
       requiredFields:
         - id: position-status
           pattern: "(?m)^(?:Status:|状态：)\\s*(?:working|adopted|superseded)$"
-    - id: product-requirement
+    - id: package-member
       match:
         paths:
-          - docs/intent/02_*.md
-          - docs/zh/intent/02_*.md
-        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+          - docs/intent/prd/**/*.md
+          - docs/zh/intent/prd/**/*.md
+          - docs/definition/spec/**/*.md
+          - docs/zh/definition/spec/**/*.md
+        filenames: ["^[a-z0-9-]+\\.md$"]
       enforceFrom: maintained
       placeholdersAllowedUntil: growing
       placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
-      orderedSections: true
-      requiredSections:
-        - id: problem
-          headings: [Problem, 问题]
-        - id: users-and-benefits
-          headings: [Users and Benefits, 用户与收益]
-        - id: semantic-dependencies
-          headings: [Semantic Dependencies, 语义依赖]
-        - id: requirements
-          headings: [Requirements, 需求]
-        - id: non-goals
-          headings: [Non-goals, 非目标]
-        - id: acceptance-criteria
-          headings: [Acceptance Criteria, 验收标准]
-        - id: delivery-status
-          headings: [Delivery Status, 交付状态]
       requiredFields:
-        - id: prd-id
-          pattern: "(?m)^id: PRD-[0-9]+$"
-        - id: prd-version
+        - id: member-id
+          pattern: "(?m)^id: [A-Za-z0-9._-]+$"
+        - id: member-version
           pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
         - id: lifecycle-status
           pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
-        - id: ul-registry
-          pattern: "(?m)^ul_registry: [a-z0-9_-]+$"
-        - id: ul-version
-          pattern: "(?m)^ul_version: [0-9]+\\.[0-9]+\\.[0-9]+$"
-    - id: ubiquitous-language
-      match:
-        paths:
-          - docs/intent/01_ubiquitous_language.md
-          - docs/zh/intent/01_ubiquitous_language.md
-        filenames: ["^01_ubiquitous_language\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
-      requiredSections:
-        - id: product-concepts
-          headings: [Product Concepts, 产品概念]
-        - id: product-actions
-          headings: [Product Actions, 产品动作]
-        - id: invariants
-          headings: [Invariants, 不变量]
-        - id: results-and-benefits
-          headings: [Results and Benefits, 结果与用户收益]
-        - id: change-rules
-          headings: [Change Rules, 变更规则]
-      requiredFields:
-        - id: registry-id
-          pattern: "(?m)^Registry ID(?:：|:) `docs-hygiene`$"
-        - id: registry-version
-          pattern: "(?m)^Registry (?:version|版本)(?:：|:) `?[0-9]+\\.[0-9]+\\.[0-9]+`?$"
-    - id: definition-glossary
-      match:
-        paths:
-          - docs/definition/01_*_glossary.md
-          - docs/zh/definition/01_*_glossary.md
-        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
-      requiredSections:
-        - id: source-semantics
-          headings: [Source Semantics, 来源语义]
-        - id: definition-identities
-          headings: [Definition Identities, 定义身份]
-        - id: projection-rules
-          headings: [Projection Rules, 投影规则]
-      requiredFields:
-        - id: glossary-id
-          pattern: "(?m)^id: GLOSSARY-[0-9]+$"
-        - id: glossary-version
-          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
-        - id: ul-version
-          pattern: "(?m)^ul_version: [0-9]+\\.[0-9]+\\.[0-9]+$"
-    - id: definition-specification
-      match:
-        paths:
-          - docs/definition/02_*_spec.md
-          - docs/zh/definition/02_*_spec.md
-        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
-      requiredSections:
-        - id: intent-source
-          headings: [Intent Source, 意图来源]
-        - id: inputs
-          headings: [Inputs, 输入]
-        - id: constraints
-          headings: [Constraints, 约束]
-        - id: verification
-          headings: [Verification, 验证]
-      requiredFields:
-        - id: spec-id
-          pattern: "(?m)^id: SPEC-[0-9]+$"
-        - id: spec-version
-          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
-        - id: prd-id
-          pattern: "(?m)^prd: PRD-[0-9]+$"
-        - id: glossary-id
-          pattern: "(?m)^glossary: GLOSSARY-[0-9]+$"
     - id: repository-readme
       match:
         paths: [README.md, README_ZH.md]
@@ -262,6 +228,32 @@ documentContracts:
       requiredFields:
         - id: released-version
           pattern: "(?m)^## \\d+\\.\\d+\\.\\d+(?: |$)"
+    - id: roadmap
+      match:
+        paths: [ROADMAP.md]
+        filenames: ["^ROADMAP\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: current-baseline
+          headings: [Current Baseline, 当前基线]
+        - id: planned
+          headings: [Planned, 已计划]
+        - id: backlog
+          headings: [Backlog, 待办]
+        - id: decision-boundaries
+          headings: [Decision Boundaries, 决策边界]
+
+governance:
+  manifests:
+    - docs/intent/ul/manifest.yml
+    - docs/intent/prd/prd-001/manifest.yml
+    - docs/intent/prd/prd-002/manifest.yml
+    - docs/definition/glossary/manifest.yml
+    - docs/definition/spec/spec-001/manifest.yml
+    - sdk-manifest.yml
+    - implementation-manifest.yml
+  requireCompleteVerticalDerivation: true
 
 adapters:
   markdownlint:
@@ -271,6 +263,7 @@ adapters:
       - README.md
       - README_ZH.md
       - CHANGELOG.md
+      - ROADMAP.md
       - "docs/**/*.md"
 
 suppressions: []

@@ -151,6 +151,10 @@ language:
 
 `documentContracts.maturity.declared` controls enforcement. Repository-size recommendations emit information but never raise the declared maturity automatically.
 
+## Governance Graph
+
+`governance.manifests` enables versioned asset resolution, mandatory horizontal references, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract.
+
 ## Forbid ASCII Art
 
 `docs.forbidAsciiArt` is disabled by default. Enable it to report ASCII flowcharts and box diagrams in prose:

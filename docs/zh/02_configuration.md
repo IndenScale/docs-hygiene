@@ -136,6 +136,12 @@ language:
 
 `documentContracts.maturity.declared` 控制门禁强度。仓库规模建议只产生信息，不会自动提高项目声明的成熟度。
 
+## 治理关系图
+
+`governance.manifests` 启用版本化资产解析、强制水平引用、垂直派生和递归 Package
+成员校验。UL 与 Glossary 是 Library Tree；PRD 与 Spec 是目录 Body Package。
+Manifest Schema、关系规则和完整性策略见[治理关系图](07_governance_graph.md)。
+
 ## 禁止 ASCII 字符画
 
 `docs.forbidAsciiArt` 默认关闭。开启后，文档中的 ASCII 流程图、框图等字符画会产生 `DH_ASCII_001`。普通正文和 `text`、`ascii`、`diagram` fenced block 会检查；`python`、`bash`、`yaml` 等代码示例不检查。
