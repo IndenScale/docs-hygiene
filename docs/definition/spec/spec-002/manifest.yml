@@ -1,0 +1,12 @@
+id: SPEC-002
+status: baselined
+refinementLevel: definition
+referenceRelation: body
+prd: PRD-003
+formalizes: PRD-003
+members:
+  - index.md
+  - intent-source.md
+  - inputs.md
+  - constraints
+  - verification.md

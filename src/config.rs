@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
@@ -29,6 +29,24 @@ pub struct Config {
     pub document_contracts: DocumentContractsConfig,
     #[serde(default)]
     pub governance: GovernanceConfig,
+    #[serde(default)]
+    pub rules: BTreeMap<String, RulePolicyConfig>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum RuleMode {
+    #[default]
+    Auto,
+    Required,
+    Disabled,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RulePolicyConfig {
+    #[serde(default)]
+    pub mode: RuleMode,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -69,11 +87,11 @@ pub struct MaturityConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MaturityRecommendationConfig {
     pub level: MaturityLevel,
-    pub min_repository_lines: Option<usize>,
-    pub min_repository_bytes: Option<u64>,
+    pub min_project_lines: Option<usize>,
+    pub min_project_bytes: Option<u64>,
     pub min_managed_documents: Option<usize>,
 }
 
@@ -328,15 +346,33 @@ language:
   zh:
     minCjkRatio: 0.15
 
+rules:
+  project.entry-docs:
+    mode: auto
+  docs.structure:
+    mode: auto
+  documents.contracts:
+    mode: auto
+  localization.parity:
+    mode: auto
+  concepts.references:
+    mode: auto
+  governance.identity:
+    mode: auto
+  governance.traceability:
+    mode: auto
+  adapters.external:
+    mode: auto
+
 documentContracts:
   maturity:
     declared: growing
     recommendations:
       - level: maintained
-        minRepositoryLines: 10000
+        minProjectLines: 10000
         minManagedDocuments: 20
   profiles:
-    - id: repository-readme
+    - id: project-readme
       match:
         paths: [README.md, README_ZH.md]
         filenames: ["^README(?:_ZH)?\\.md$"]

@@ -1,0 +1,14 @@
+id: PRD-003
+type: product-requirement
+status: baselined
+delivery_status: delivered
+refinementLevel: intent
+referenceRelation: body
+members:
+  - index.md
+  - problem.md
+  - roles.md
+  - requirements
+  - acceptance.md
+  - non-goals.md
+  - delivery-status.md

@@ -158,7 +158,7 @@ documentContracts:
     declared: maintained
     recommendations:
       - level: governed
-        minRepositoryLines: 20000
+        minProjectLines: 20000
         minManagedDocuments: 20
   profiles:
     - id: product-position
@@ -201,7 +201,7 @@ documentContracts:
           pattern: "(?m)^id: [A-Za-z0-9._-]+$"
         - id: lifecycle-status
           pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
-    - id: repository-readme
+    - id: project-readme
       match:
         paths: [README.md, README_ZH.md]
         filenames: ["^README(?:_ZH)?\\.md$"]
@@ -245,8 +245,10 @@ governance:
     - docs/intent/ul/manifest.yml
     - docs/intent/prd/prd-001/manifest.yml
     - docs/intent/prd/prd-002/manifest.yml
+    - docs/intent/prd/prd-003/manifest.yml
     - docs/definition/glossary/manifest.yml
     - docs/definition/spec/spec-001/manifest.yml
+    - docs/definition/spec/spec-002/manifest.yml
     - sdk-manifest.yml
     - implementation-manifest.yml
   requireCompleteVerticalDerivation: true

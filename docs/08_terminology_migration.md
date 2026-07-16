@@ -11,5 +11,7 @@ The three-dimensional governance model introduces breaking configuration names:
 | `i18n.languages` | `languageRepresentations.localized` |
 | `i18n.requireDocsParity` | `languageRepresentations.requireDocumentParity` |
 | `lang add --root` | `lang add --canonical` |
+| `minRepositoryLines` | `minProjectLines` |
+| `minRepositoryBytes` | `minProjectBytes` |
 
 The previous names are no longer accepted. Update configuration, manifests, automation, and diagnostic consumers together; language-representation parity diagnostics are now `DH_REPRESENTATION_001/002`.

@@ -1,14 +1,14 @@
 # Document Contracts
 
-Docs Hygiene infers document intent from repository conventions instead of requiring every Markdown file to declare its own type. A profile matches both a repository-relative path glob and a file-name regular expression. Profiles are evaluated in configuration order, and the first match owns the document.
+Docs Hygiene infers document intent from project-root conventions instead of requiring every Markdown file to declare its own type. A profile matches both a project-root-relative path glob and a file-name regular expression. Profiles are evaluated in configuration order, and the first match owns the document.
 
 ## Decision
 
 Document governance follows four rules:
 
-1. Path and file-name conventions classify documents such as repository READMEs, section indexes, CHANGELOGs, ROADMAPs, and ADRs.
+1. Path and file-name conventions classify project entry documents, section indexes, CHANGELOGs, ROADMAPs, and ADRs.
 2. A profile defines only required fields and semantic sections. Additional sections remain valid.
-3. The declared project maturity controls whether an incomplete contract is advisory or blocking. Repository size signals may recommend a higher maturity but never change it automatically.
+3. The declared project maturity controls whether an incomplete profile contract is advisory or blocking. Project-scale signals may recommend a higher profile maturity but never change it automatically.
 4. One semantic section can accept localized heading aliases. Translation freshness remains a separate concern from structural parity.
 
 This keeps standard entry documents readable by GitHub and package tooling, avoids frontmatter used only as a type tag, and lets early repositories adopt governance incrementally.
@@ -46,18 +46,21 @@ orderedSections: true
 
 The maturity order is `seed`, `growing`, `maintained`, and `governed`. A profile's `enforceFrom` selects the first level where missing requirements become errors. Before that level they remain warnings.
 
-Configured placeholder expressions make an admitted gap visible. A placeholder is informational through `placeholdersAllowedUntil` and becomes an error after that maturity. Recommendations can use repository lines, repository bytes, and the number of managed documents. Every configured threshold in one recommendation must be met.
+Configured placeholder expressions make an admitted gap visible. A placeholder is informational through `placeholdersAllowedUntil` and becomes an error after that maturity. Recommendations can use project-root lines, bytes, and the number of managed documents. Every configured threshold in one recommendation must be met.
 
 ```yaml
 maturity:
   declared: growing
   recommendations:
     - level: maintained
-      minRepositoryLines: 10000
+      minProjectLines: 10000
       minManagedDocuments: 20
 ```
 
-The recommendation is diagnostic only. A repository must explicitly raise `declared` before stronger gates take effect.
+The recommendation is diagnostic only. A project explicitly raises `declared`
+before stronger profile gates take effect. General rule-family applicability is
+derived separately through [Progressive Rule Activation](10_progressive_rule_activation.md),
+so projects do not need to select one global maturity for every governance rule.
 
 ## Multilingual Boundary
 

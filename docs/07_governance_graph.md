@@ -59,7 +59,7 @@ frontmatter containing `id` and lifecycle `status`. Localized
 trees preserve every canonical path and identity. Library failures produce
 `DH_LIBRARY_001`; Body Package failures produce `DH_BODY_001`.
 
-An Implementation Body may group repository-relative file members by kind, such
+An Implementation Body may group project-root-relative file members by kind, such
 as `code` or `configuration`. When declared, these paths must be safe, unique,
 and resolve to existing files.
 

@@ -68,6 +68,24 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 Docs Hygiene 不替代 Markdown 格式、外部 URL、拼写或文风工具，也不从自然语言推断
 语义等价、翻译新鲜度或业务矛盾。条目级需求覆盖和符号级语义映射仍属于后续方向。
 
+## 渐进式治理
+
+DH 从项目事实渐进激活治理要求，不要求每个项目预先选择一个全局成熟度。本地化文档、
+受治理 Manifest、多个精化层级、frontmatter 和语义 Wiki Link 等结构存在性信号会
+激活对应规则族；文档和代码规模可以引入非阻断建议，但不会意外让 CI 变红。
+
+每个稳定规则族具有 `inactive`、`advisory`、`warning` 或 `error` 状态。项目策略通过
+`auto`、`required` 和 `disabled` 模式保留最终权威。使用以下命令查看当前决策及其
+证据：
+
+```bash
+docs-hygiene explain-rules
+docs-hygiene explain-rules --format json
+```
+
+事实模型、规则 ID、覆盖优先级和严重程度契约见
+[渐进式规则激活](docs/zh/10_progressive_rule_activation.md)。
+
 ## 快速开始
 
 在本仓库构建二进制：
@@ -102,7 +120,8 @@ docs-hygiene check --fail-on-warning
 docs-hygiene check --format json
 ```
 
-其他命令包括 `init`、`lang` 和 `explain`。运行 `docs-hygiene --help` 查看完整界面。
+其他命令包括 `init`、`lang`、`explain` 和 `explain-rules`。运行
+`docs-hygiene --help` 查看完整界面。
 
 ## 策略
 
@@ -143,5 +162,6 @@ adapters:
 - [CI 与 JSON 输出](docs/zh/05_ci.md)
 - [文档契约](docs/zh/06_document_contracts.md)
 - [治理关系图](docs/zh/07_governance_graph.md)
+- [渐进式规则激活](docs/zh/10_progressive_rule_activation.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

@@ -66,7 +66,7 @@ impl Report {
 
     pub fn explain(code: &str) -> Option<&'static str> {
         match code {
-            "DH_REQUIRED_001" => Some("A required repository documentation file is missing."),
+            "DH_REQUIRED_001" => Some("A required project documentation file is missing."),
             "DH_NAME_001" => Some("A docs file name does not match the configured pattern."),
             "DH_SEQ_001" => Some("A numbered docs directory has a gap in its sequence."),
             "DH_SEQ_002" => Some("A numbered docs directory uses the same number more than once."),
@@ -97,12 +97,15 @@ impl Report {
                 Some("Required document sections are not in the configured order.")
             }
             "DH_MATURITY_001" => {
-                Some("Repository size signals recommend a higher document governance maturity.")
+                Some("Project scale signals recommend stronger document governance.")
             }
+            "DH_ACTIVATION_001" => Some(
+                "Project facts activated a governance rule without an explicit feature policy; the diagnostic records the evidence and override path.",
+            ),
             "DH_CONCEPT_001" => Some("A highlighted term is missing a concept definition file."),
             "DH_CONCEPT_002" => Some("A concept definition file is not referenced by docs."),
             "DH_LINK_001" => Some(
-                "A repository-local Markdown Link or image target does not resolve to an existing path; external URL reachability is outside this rule.",
+                "A project-root-local Markdown Link or image target does not resolve to an existing path; external URL reachability is outside this rule.",
             ),
             "DH_GOVERNANCE_001" => {
                 Some("A governance manifest is missing, malformed, duplicated, or invalid.")

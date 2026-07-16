@@ -1,10 +1,10 @@
 # Configuration
 
-Docs Hygiene reads `docs-hygiene.yml` from the checked repository root unless `--config` points to another file. Breaking field renames are listed in [Terminology Migration](08_terminology_migration.md).
+Docs Hygiene reads `docs-hygiene.yml` from the checked project root unless `--config` points to another file. Breaking field renames are listed in [Terminology Migration](08_terminology_migration.md).
 
 ## Required Files
 
-`entryDocs` declares repository root entry documents. The repository root uses
+`entryDocs` declares project-root entry documents. The project root uses
 an allow-by-default posture because project-level AI tooling can introduce
 files such as `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`.
 
@@ -56,30 +56,9 @@ single-base shorthand.
 
 ## Multiple Bases
 
-Different documentation areas can use different naming rules. When a parent
-docs base contains a child docs base, use the parent base's `ignore` list to
-avoid checking the child files twice.
-
-```yaml
-docs:
-  bases:
-    - id: guide
-      root: docs
-      requireContinuousNumbering: true
-      ignore:
-        - docs/adr/**
-      patterns:
-        - id: numbered
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          numbered: true
-    - id: adr
-      root: docs/adr
-      patterns:
-        - id: adr
-          regex: "^ADR-\\d{4}_[a-z0-9_-]+\\.md$"
-          documentKind: freeform
-          numbered: false
-```
+Documentation areas can use different naming rules. When a parent base contains
+a child base, exclude the child root through the parent's `ignore` list so each
+file has one governing base.
 
 ## Language Representations
 
@@ -148,7 +127,29 @@ language:
 
 `documentContracts.profiles` infers a document type from path and file name. The first matching profile applies. Required sections accept localized heading aliases; additional sections are always allowed. See [Document Contracts](06_document_contracts.md) for the decision and full model.
 
-`documentContracts.maturity.declared` controls enforcement. Repository-size recommendations emit information but never raise the declared maturity automatically.
+`documentContracts.maturity.declared` remains a severity floor for configured
+document profiles. Project-scale recommendations emit information; general rule
+applicability is derived independently through progressive activation.
+
+## Rule Activation
+
+`rules` controls stable rule families independently from document-contract
+maturity. The default `auto` mode derives applicability from centralized project
+facts. `required` forces an error state and `disabled` forces an inactive state.
+
+```yaml
+rules:
+  governance.traceability:
+    mode: auto
+  localization.parity:
+    mode: required
+  adapters.external:
+    mode: disabled
+```
+
+Explicit modes override heuristics. Scale-only signals produce at most advisory
+information; structural signals and explicit feature policy can produce warning
+or error states. See [Progressive Rule Activation](10_progressive_rule_activation.md) for details.
 
 ## Governance Graph
 
@@ -181,7 +182,7 @@ expected to be noisy.
 
 ## Ignore Paths
 
-`ignore.paths` accepts glob patterns relative to the repository root.
+`ignore.paths` accepts glob patterns relative to the project root.
 Docs Hygiene only checks Markdown files under each docs base root; other file
 extensions are ignored by the built-in policy engine. Use `ignore.paths` for
 generated directories, archives, fixtures, or any subtree that should not be

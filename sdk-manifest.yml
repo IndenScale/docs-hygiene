@@ -6,6 +6,10 @@ status: current
 projects: GLOSSARY-001
 
 members:
+  - src/activation.rs
+  - src/activation/decisions.rs
+  - src/activation/output.rs
+  - src/activation/tests.rs
   - src/lib.rs
   - src/checks.rs
   - src/checks/derivation.rs

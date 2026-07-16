@@ -21,6 +21,88 @@ fn help_and_version_are_available() {
 }
 
 #[test]
+fn explain_rules_reports_stable_text_and_json_contracts() {
+    let temp = tempdir().unwrap();
+    std::fs::write(temp.path().join("docs-hygiene.yml"), "{}\n").unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["explain-rules", temp.path().to_str().unwrap()])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("project.entry-docs"))
+        .stdout(predicate::str::contains("State"))
+        .stdout(predicate::str::contains("Facts:"));
+
+    let output = Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args([
+            "explain-rules",
+            temp.path().to_str().unwrap(),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let value: Value = serde_json::from_slice(&output).unwrap();
+
+    assert_eq!(value["schemaVersion"], "docs-hygiene.rule-activation.v1");
+    assert_eq!(value["decisions"].as_array().unwrap().len(), 8);
+    assert_eq!(value["decisions"][0]["rule"], "project.entry-docs");
+    assert!(value["decisions"][0]["rationale"].is_string());
+    assert!(value["decisions"][0]["remediation"].is_string());
+}
+
+#[test]
+fn scale_only_activation_remains_non_blocking() {
+    let temp = tempdir().unwrap();
+    std::fs::write(temp.path().join("docs-hygiene.yml"), "{}\n").unwrap();
+    for index in 0..20 {
+        std::fs::write(
+            temp.path().join(format!("doc-{index:02}.md")),
+            format!("# Document {index}\n"),
+        )
+        .unwrap();
+    }
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap(), "--fail-on-warning"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DH_ACTIVATION_001 Info"))
+        .stdout(predicate::str::contains("Activated because:"))
+        .stdout(predicate::str::contains("Why this matters:"))
+        .stdout(predicate::str::contains("How to fix:"));
+}
+
+#[test]
+fn disabled_rule_suppresses_its_checker_diagnostics() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        r#"
+entryDocs:
+  required: [README.md]
+rules:
+  project.entry-docs:
+    mode: disabled
+"#,
+    )
+    .unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DH_REQUIRED_001").not());
+}
+
+#[test]
 fn scaffold_creates_starter_docs_tree() {
     let temp = tempdir().unwrap();
 
@@ -136,6 +218,25 @@ fn legacy_configuration_names_are_rejected() {
 }
 
 #[test]
+fn repository_scale_names_are_rejected_in_favor_of_project_scale() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        "documentContracts:\n  maturity:\n    recommendations:\n      - level: growing\n        minRepositoryLines: 10\n",
+    )
+    .unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "unknown field `minRepositoryLines`",
+        ));
+}
+
+#[test]
 fn json_output_uses_versioned_lsp_style_diagnostics() {
     let temp = tempdir().unwrap();
     std::fs::write(
@@ -223,7 +324,7 @@ documentContracts:
     declared: seed
     recommendations:
       - level: growing
-        minRepositoryLines: 1
+        minProjectLines: 1
 "#,
     )
     .unwrap();

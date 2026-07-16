@@ -22,6 +22,7 @@ Docs Hygiene 负责需要项目上下文的文档卫生规则：
 - 死的语义 Wiki Link 和项目根目录内 Markdown Link 目标
 - 受治理的 YAML frontmatter 契约
 - 特定文档类型的 Profile 与递归 Package 目录结构
+- 从确定性项目事实派生的可解释渐进式激活
 - 外部 adapter 编排
 
 它不负责通用 Markdown 格式、外部 URL 爬取、拼写或文风；这些能力继续交给

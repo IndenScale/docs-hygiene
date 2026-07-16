@@ -66,7 +66,7 @@ fn check_markdown_links(
                             Severity::Error,
                             rel.display().to_string(),
                             format!(
-                                "Markdown Link target '{destination}' does not resolve to a repository path."
+                                "Markdown Link target '{destination}' does not resolve to a project-root path."
                             ),
                         )
                         .at_line(index + 1),

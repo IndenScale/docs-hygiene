@@ -6,13 +6,13 @@ remain the authority for delivered behavior.
 
 ## Current Baseline
 
-- Governed documents use standard Markdown links for repository navigation and
+- Governed documents use standard Markdown links for project-root navigation and
   semantic Wiki Links for Library identities.
 - Horizontal references are derived from Body content; vertical derivation and
   projection remain explicit Manifest relationships.
-- Document contracts, concept foreign keys, repository structure, and the
+- Document contracts, concept foreign keys, project structure, and the
   existing CLI diagnostics are the currently delivered policy surface.
-- Repository-local Markdown Link and image targets are checked for existence;
+- Project-root-local Markdown Link and image targets are checked for existence;
   external URL reachability remains outside the deterministic local baseline.
 - Native governance checks validate same-refinement-level Wiki Links, optional
   SHA-256 content anchors, and vertical adjacent-refinement-level Body derivation
@@ -24,6 +24,9 @@ remain the authority for delivered behavior.
 - Source files are governed by a 500-line warning and a 1,000-line CI error;
   the core checker is split into responsibility-focused private units and the
   current repository passes without warnings or exceptions.
+- Progressive rule activation derives eight stable rule-family decisions from
+  deterministic project facts, supports per-rule auto/required/disabled policy,
+  and exposes evidence through versioned `explain-rules` text and JSON output.
 
 ## Planned
 

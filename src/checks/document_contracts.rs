@@ -242,8 +242,8 @@ fn check_maturity_recommendation(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Result<()> {
     let declared = config.document_contracts.maturity.declared;
-    let mut repository_lines = 0usize;
-    let mut repository_bytes = 0u64;
+    let mut project_lines = 0usize;
+    let mut project_bytes = 0u64;
     for entry in WalkDir::new(root)
         .into_iter()
         .filter_entry(|entry| entry.depth() == 0 || entry.file_name() != ".git")
@@ -256,9 +256,9 @@ fn check_maturity_recommendation(
         if ignore.is_match(rel) {
             continue;
         }
-        repository_bytes = repository_bytes.saturating_add(entry.metadata()?.len());
+        project_bytes = project_bytes.saturating_add(entry.metadata()?.len());
         if let Ok(text) = std::fs::read_to_string(entry.path()) {
-            repository_lines = repository_lines.saturating_add(text.lines().count());
+            project_lines = project_lines.saturating_add(text.lines().count());
         }
     }
 
@@ -269,16 +269,16 @@ fn check_maturity_recommendation(
         .iter()
         .filter(|recommendation| recommendation.level > declared)
         .filter(|recommendation| {
-            let has_signal = recommendation.min_repository_lines.is_some()
-                || recommendation.min_repository_bytes.is_some()
+            let has_signal = recommendation.min_project_lines.is_some()
+                || recommendation.min_project_bytes.is_some()
                 || recommendation.min_managed_documents.is_some();
             has_signal
                 && recommendation
-                    .min_repository_lines
-                    .is_none_or(|minimum| repository_lines >= minimum)
+                    .min_project_lines
+                    .is_none_or(|minimum| project_lines >= minimum)
                 && recommendation
-                    .min_repository_bytes
-                    .is_none_or(|minimum| repository_bytes >= minimum)
+                    .min_project_bytes
+                    .is_none_or(|minimum| project_bytes >= minimum)
                 && recommendation
                     .min_managed_documents
                     .is_none_or(|minimum| managed_documents >= minimum)
@@ -292,8 +292,8 @@ fn check_maturity_recommendation(
             Severity::Info,
             ".",
             format!(
-                "Repository signals recommend document governance maturity {:?}; declared {:?} ({} lines, {} bytes, {} managed docs).",
-                level, declared, repository_lines, repository_bytes, managed_documents
+                "Project signals recommend document governance maturity {:?}; declared {:?} ({} lines, {} bytes, {} managed docs).",
+                level, declared, project_lines, project_bytes, managed_documents
             ),
         ));
     }

@@ -1,0 +1,10 @@
+id: SPEC-002-DOMAIN-CONSTRAINTS
+kind: domain
+status: baselined
+members:
+  - fact-snapshot.md
+  - stable-rule-families.md
+  - activation-order.md
+  - evidence-and-remediation.md
+  - checker-enforcement.md
+  - deterministic-output.md

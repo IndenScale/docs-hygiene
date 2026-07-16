@@ -1,10 +1,10 @@
 # 配置
 
-Docs Hygiene 默认从被检查仓库根目录读取 `docs-hygiene.yml`，也可以用 `--config` 指定其他配置文件。破坏性字段改名见[术语迁移](08_terminology_migration.md)。
+Docs Hygiene 默认从被检查项目根目录读取 `docs-hygiene.yml`，也可以用 `--config` 指定其他配置文件。破坏性字段改名见[术语迁移](08_terminology_migration.md)。
 
 ## 必需文件
 
-`entryDocs` 声明仓库根目录入口文档。仓库根目录采用默认允许策略，因为项目级 AI 工具可能引入 `AGENTS.md`、`CLAUDE.md` 或 `GEMINI.md` 等文件。
+`entryDocs` 声明项目根目录入口文档。项目根目录采用默认允许策略，因为项目级 AI 工具可能引入 `AGENTS.md`、`CLAUDE.md` 或 `GEMINI.md` 等文件。
 
 ```yaml
 entryDocs:
@@ -134,7 +134,27 @@ language:
 
 `documentContracts.profiles` 根据路径和文件名推导文档类型，第一个匹配的 profile 生效。必要章节可以声明多语言标题别名，其他章节始终开放。完整决策和模型见[文档契约](06_document_contracts.md)。
 
-`documentContracts.maturity.declared` 控制门禁强度。仓库规模建议只产生信息，不会自动提高项目声明的成熟度。
+`documentContracts.maturity.declared` 仍是已配置文档 Profile 的严重程度下限。项目规模
+建议只产生信息；通用规则适用性由渐进式激活独立推导。
+
+## 规则激活
+
+`rules` 独立于文档契约成熟度控制稳定规则族。默认 `auto` 模式从集中式项目事实推导
+适用性；`required` 强制 error 状态，`disabled` 强制 inactive 状态。
+
+```yaml
+rules:
+  governance.traceability:
+    mode: auto
+  localization.parity:
+    mode: required
+  adapters.external:
+    mode: disabled
+```
+
+显式模式覆盖启发式。纯规模信号最高只产生 advisory 信息；结构信号和显式功能策略
+可以产生 warning 或 error。稳定 ID、证据和 checker 行为见
+[渐进式规则激活](10_progressive_rule_activation.md)。
 
 ## 治理关系图
 
@@ -167,7 +187,7 @@ suppressions:
 
 ## 忽略路径
 
-`ignore.paths` 接受相对仓库根目录的 glob 模式。
+`ignore.paths` 接受相对项目根目录的 glob 模式。
 Docs Hygiene 的内置 policy engine 只检查每个 docs base 根目录下的 Markdown 文件；其他扩展名会被忽略。生成目录、归档、fixtures，或任何不应纳入当前文档契约的子树，都可以通过 `ignore.paths` 排除。
 
 `docs.bases[].ignore` 只对单个 docs base 生效。父级文档目录里包含 ADR、用户故事等独立检查子树时，优先用它排除这些子树。

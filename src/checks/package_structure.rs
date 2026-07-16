@@ -172,7 +172,7 @@ fn check_implementation_body_members(
                     Severity::Error,
                     asset.path.clone(),
                     format!(
-                        "Implementation Body member '{member}' must be a repository-relative path without traversal."
+                        "Implementation Body member '{member}' must be a project-root-relative path without traversal."
                     ),
                 ));
                 continue;

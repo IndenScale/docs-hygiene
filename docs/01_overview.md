@@ -24,6 +24,7 @@ Docs Hygiene owns documentation hygiene rules that require project context:
 - dead semantic Wiki Links and project-root-local Markdown Link targets
 - governed YAML frontmatter contracts
 - type-specific document profiles and recursive Package directory structure
+- explainable progressive activation from deterministic project facts
 - external adapter orchestration
 
 It does not own general Markdown formatting, external URL crawling, spelling,

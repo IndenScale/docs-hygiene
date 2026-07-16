@@ -1,0 +1,11 @@
+id: PRD-003-DOMAIN-REQUIREMENTS
+kind: domain
+status: baselined
+members:
+  - centralized-facts.md
+  - monotonic-activation.md
+  - structural-signals.md
+  - explainable-decisions.md
+  - explicit-overrides.md
+  - severity-progression.md
+  - public-contract.md

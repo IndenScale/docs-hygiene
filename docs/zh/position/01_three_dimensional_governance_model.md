@@ -77,4 +77,4 @@ edges      = references | formalizes | realizes | projects
 
 ## 边界
 
-当前检查校验仓库内 Markdown 目标、受治理 frontmatter、资产身份、生命周期、三维分类、特定类型 Package 结构、语言同位、Wiki Link 引用、可选内容哈希锚定和治理图可达性。外部 URL 可达性和通用文风质量仍是集成工具的职责；检查器尚不推断自然语言等价性、译文新鲜度、条目级覆盖或语义矛盾。
+当前检查校验项目根目录内 Markdown 目标、受治理 frontmatter、资产身份、生命周期、三维分类、特定类型 Package 结构、语言同位、Wiki Link 引用、可选内容哈希锚定和治理图可达性。外部 URL 可达性和通用文风质量仍是集成工具的职责；检查器尚不推断自然语言等价性、译文新鲜度、条目级覆盖或语义矛盾。

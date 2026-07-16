@@ -83,4 +83,4 @@ Governance is based on semantic authority rather than file extension. YAML can e
 
 ## Boundaries
 
-Current checks validate repository-local Markdown targets, governed frontmatter, asset identity, lifecycle, the three-dimensional classification, type-specific package structure, language parity, Wiki Link references, optional content-hash anchors, and graph reachability. External URL reachability and general prose quality remain integration concerns. The checker does not infer natural-language equivalence, translation freshness, item-level coverage, or semantic contradictions.
+Current checks validate project-root-local Markdown targets, governed frontmatter, asset identity, lifecycle, the three-dimensional classification, type-specific package structure, language parity, Wiki Link references, optional content-hash anchors, and graph reachability. External URL reachability and general prose quality remain integration concerns. The checker does not infer natural-language equivalence, translation freshness, item-level coverage, or semantic contradictions.

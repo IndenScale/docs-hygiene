@@ -320,8 +320,8 @@ documentContracts:
     declared: seed
     recommendations:
       - level: growing
-        minRepositoryLines: 2
-        minRepositoryBytes: 10
+        minProjectLines: 2
+        minProjectBytes: 10
 "#,
         )
         .unwrap();

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add deterministic progressive rule activation with eight stable rule-family
+  IDs, auto/required/disabled modes, four activation states, checker enforcement,
+  and versioned `explain-rules` text and JSON output.
+
 - Replace the overloaded governance fields `layer` and `role` with
   `refinementLevel` and `referenceRelation`; replace filename-pattern `role`
   with `documentKind`.

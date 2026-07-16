@@ -1,14 +1,14 @@
 # 文档契约
 
-Docs Hygiene 根据仓库约定推导文档意图，不要求每个 Markdown 文件自行声明类型。一个 profile 同时匹配仓库相对路径 glob 与文件名正则；配置顺序决定优先级，第一个匹配项获得该文档的治理权。
+Docs Hygiene 根据项目根目录约定推导文档意图，不要求每个 Markdown 文件自行声明类型。一个 profile 同时匹配项目根目录相对路径 glob 与文件名正则；配置顺序决定优先级，第一个匹配项获得该文档的治理权。
 
 ## 决策
 
 文档治理遵循四项规则：
 
-1. 用路径与文件名约定识别仓库 README、目录索引、CHANGELOG、ROADMAP 和 ADR 等文档类型。
+1. 用路径与文件名约定识别项目入口文档、目录索引、CHANGELOG、ROADMAP 和 ADR 等文档类型。
 2. Profile 只定义必要字段和语义章节，允许作者开放补充其他章节。
-3. 项目声明的成熟度决定契约缺口是建议还是阻断；仓库规模只能建议升级，不能自动改变门禁。
+3. 项目声明的成熟度决定 Profile 契约缺口是建议还是阻断；项目规模只能建议提高 Profile 成熟度，不能自动改变门禁。
 4. 同一个语义章节可以接受多语言标题别名；译文新鲜度与结构同位分别治理。
 
 这项决策保持 GitHub 和包工具对标准入口文档的正常阅读体验，避免仅为声明类型而添加 frontmatter，并允许早期项目渐进采用治理能力。
@@ -46,18 +46,20 @@ orderedSections: true
 
 成熟度依次为 `seed`、`growing`、`maintained` 和 `governed`。Profile 的 `enforceFrom` 指定缺失要求从哪个等级开始成为错误；在此之前只产生 warning。
 
-配置的占位符表达式用于显式暴露尚未完成的章节。占位符在 `placeholdersAllowedUntil` 及以前产生信息提示，超过该成熟度后成为错误。成熟度建议可以使用仓库总行数、总字节数和受管文档数量；同一建议中配置的阈值必须全部满足。
+配置的占位符表达式用于显式暴露尚未完成的章节。占位符在 `placeholdersAllowedUntil` 及以前产生信息提示，超过该成熟度后成为错误。成熟度建议可以使用项目根目录总行数、总字节数和受管文档数量；同一建议中配置的阈值必须全部满足。
 
 ```yaml
 maturity:
   declared: growing
   recommendations:
     - level: maintained
-      minRepositoryLines: 10000
+      minProjectLines: 10000
       minManagedDocuments: 20
 ```
 
-建议只产生诊断。仓库必须显式提高 `declared`，更强门禁才会生效。
+建议只产生诊断。项目必须显式提高 `declared`，更强的 Profile 门禁才会生效。通用规则族
+的适用性由[渐进式规则激活](10_progressive_rule_activation.md)独立推导，因此项目不必
+为所有治理规则选择一个全局成熟度。
 
 ## 多语言边界
 

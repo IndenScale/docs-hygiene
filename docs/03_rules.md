@@ -46,7 +46,7 @@ When `docs.forbidAsciiArt` is enabled, `DH_ASCII_001` reports consecutive ASCII 
 
 `DH_CONTRACT_004` reports required sections in the wrong order.
 
-`DH_MATURITY_001` recommends a higher declared governance maturity from configured repository-size signals.
+`DH_MATURITY_001` recommends a higher declared profile maturity from configured project-scale signals.
 
 ## Concepts
 
@@ -56,14 +56,18 @@ definition file.
 `DH_CONCEPT_002` reports a concept definition file that is not referenced by
 docs.
 
-## Repository Links
+## Project-Root Links
 
-`DH_LINK_001` reports a repository-local inline Markdown Link, reference-style
+`DH_LINK_001` reports a project-root-local inline Markdown Link, reference-style
 link definition, or image target that does not resolve to an existing file or
 directory. Fenced and inline code, same-document fragments, and external URI
 schemes are excluded. External URL reachability remains an adapter concern.
 
 ## Governance Graph
+
+`DH_ACTIVATION_001` reports that project facts activated an unconfigured rule
+family. The diagnostic includes the activation state, ordered evidence, and the
+per-rule override path. Scale-only activation is informational.
 
 `DH_GOVERNANCE_001` reports an unreadable or malformed manifest, duplicate
 semantic identity, invalid lifecycle status, or the removed document-level

@@ -81,6 +81,27 @@ spelling, or prose quality. It does not infer natural-language equivalence,
 translation freshness, or business contradictions. Item-level requirement
 coverage and symbol-level semantic mapping remain future work.
 
+## Progressive Governance
+
+DH activates governance progressively from project facts instead of requiring
+every project to select a global maturity up front. Structure-presence signals
+such as localized documents, governed Manifests, multiple refinement levels,
+frontmatter, and semantic Wiki Links activate their corresponding rule families.
+Document and code scale can introduce non-blocking advice without unexpectedly
+turning CI red.
+
+Each stable rule family has an `inactive`, `advisory`, `warning`, or `error`
+state. Project policy retains final authority through `auto`, `required`, and
+`disabled` modes. Inspect the current decisions and their evidence with:
+
+```bash
+docs-hygiene explain-rules
+docs-hygiene explain-rules --format json
+```
+
+See [Progressive Rule Activation](docs/10_progressive_rule_activation.md) for
+the fact model, rule IDs, override precedence, and severity contract.
+
 ## Quick Start
 
 Build the binary from this repository:
@@ -115,7 +136,7 @@ promotes warnings to a gate. Use JSON when another tool consumes the report:
 docs-hygiene check --format json
 ```
 
-Other commands include `init`, `lang`, and `explain`. Run
+Other commands include `init`, `lang`, `explain`, and `explain-rules`. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy
@@ -163,5 +184,6 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [CI and JSON output](docs/05_ci.md)
 - [Document Contracts](docs/06_document_contracts.md)
 - [Governance Graph](docs/07_governance_graph.md)
+- [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

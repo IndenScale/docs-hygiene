@@ -3,7 +3,9 @@ refinementLevel: implementation
 referenceRelation: body
 status: current
 
-realizes: SPEC-001
+realizes:
+  - SPEC-001
+  - SPEC-002
 
 members:
   code:

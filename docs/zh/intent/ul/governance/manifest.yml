@@ -5,4 +5,5 @@ members:
   - library.md
   - governed-body.md
   - concept-reference.md
+  - rule-activation.md
   - contracts

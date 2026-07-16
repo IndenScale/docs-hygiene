@@ -8,3 +8,4 @@ members:
   - reference-relation-body.md
   - reference-relation-library.md
   - language-representation.md
+  - rule-activation-decision.md

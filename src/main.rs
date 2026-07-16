@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
-use docs_hygiene::{Config, Report, print_json_report, print_text_report, run_checks};
+use docs_hygiene::{
+    Config, Report, evaluate_rule_activation, print_json_activation, print_json_report,
+    print_text_activation, print_text_report, run_checks,
+};
 
 // Governance Library: [[SDK-001]]
 
@@ -15,8 +18,10 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// Check repository documentation against docs-hygiene policy.
+    /// Check project documentation against docs-hygiene policy.
     Check(CheckArgs),
+    /// Explain which rule families are active and why.
+    ExplainRules(ExplainRulesArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -124,7 +129,7 @@ struct LangSetThresholdArgs {
 
 #[derive(Debug, Parser)]
 struct CheckArgs {
-    /// Repository root to check.
+    /// Project root to check.
     #[arg(default_value = ".")]
     root: PathBuf,
 
@@ -141,6 +146,21 @@ struct CheckArgs {
     fail_on_warning: bool,
 }
 
+#[derive(Debug, Parser)]
+struct ExplainRulesArgs {
+    /// Project root to inspect.
+    #[arg(default_value = ".")]
+    root: PathBuf,
+
+    /// Config file path. Defaults to docs-hygiene.yml under the project root.
+    #[arg(long)]
+    config: Option<PathBuf>,
+
+    /// Output format.
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    format: OutputFormat,
+}
+
 #[derive(Clone, Debug, ValueEnum)]
 enum OutputFormat {
     Text,
@@ -151,11 +171,24 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command.unwrap_or_else(default_command) {
         Command::Check(args) => check(args),
+        Command::ExplainRules(args) => explain_rules(args),
         Command::Init { path } => init(path),
         Command::Scaffold { path, force } => scaffold(path, force),
         Command::Lang { command } => lang(command),
         Command::Explain { code } => explain(&code),
     }
+}
+
+fn explain_rules(args: ExplainRulesArgs) -> Result<()> {
+    let root = args.root.canonicalize()?;
+    let config_path = args.config.unwrap_or_else(|| root.join("docs-hygiene.yml"));
+    let config = Config::load(&config_path)?;
+    let report = evaluate_rule_activation(&root, &config)?;
+    match args.format {
+        OutputFormat::Text => print_text_activation(&report),
+        OutputFormat::Json => print_json_activation(&report)?,
+    }
+    Ok(())
 }
 
 fn default_command() -> Command {
@@ -208,12 +241,12 @@ fn scaffold(path: PathBuf, force: bool) -> Result<()> {
     write_scaffold_file(&path.join(".markdownlint.yaml"), "MD013: false\n", force)?;
     write_scaffold_file(
         &path.join("README.md"),
-        "# Project\n\nThis repository uses Docs Hygiene.\n",
+        "# Project\n\nThis project uses Docs Hygiene.\n",
         force,
     )?;
     write_scaffold_file(
         &path.join("README_ZH.md"),
-        "# Project\n\n本仓库使用 Docs Hygiene。\n",
+        "# Project\n\n本项目使用 Docs Hygiene。\n",
         force,
     )?;
     write_scaffold_file(&path.join("CHANGELOG.md"), "# Changelog\n", force)?;
