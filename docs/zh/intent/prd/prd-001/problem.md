@@ -6,4 +6,4 @@ status: baselined
 
 # 问题
 
-AI Coding Agent 放大实现的速度快于团队验证共享业务含义的速度。Docs Hygiene 必须将 Intent、Definition 和 Implementation 治理为可追溯 Package，不能把文档存在误当成实现证据。
+AI Coding Agent 加快实现的速度，也放大了文档之间的不一致。Docs Hygiene 需要让意图、规格和实现文档保持可追溯，而不是让它们成为互不关联的孤岛。

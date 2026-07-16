@@ -11,7 +11,6 @@ Package 与 Test Definition。
 - 每个 Spec Manifest 枚举原子约束和验证成员。
 - Spec 固定 Glossary 版本，并使用这些身份形式化来源 PRD。
 - Test Case、模型、Oracle 和 Verifier 是 Definition Body。
-- Test Result 和运行观察属于独立 Evidence 平面。
 
 ## 资产
 

@@ -97,4 +97,4 @@ other non-baselined assets can remain without downstream derivation.
 The current graph validates asset-level identity, version, role, layer, edge type,
 reachability, recursive Package membership, and localization identity parity. It does not yet validate item-level requirement
 coverage, term-level projection completeness, symbol-level semantic mappings,
-Evidence, or natural-language contradictions.
+or natural-language contradictions.

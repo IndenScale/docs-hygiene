@@ -6,4 +6,4 @@ status: baselined
 
 # Problem
 
-AI coding agents amplify implementation faster than teams can validate shared business meaning. Docs Hygiene must govern Intent, Definition, and Implementation as traceable packages instead of treating document existence as implementation evidence.
+AI coding agents amplify implementation faster than teams can align on shared business meaning. Docs Hygiene keeps Intent, Definition, and Implementation documents traceable instead of treating isolated documents as sufficient.

@@ -175,11 +175,9 @@ documentContracts:
         - id: model
           headings: [Model, 模型]
         - id: reference-axis
-          headings: [Reference Axis, Reference 轴]
+          headings: [Reference Axis, Reference 轴, 引用轴]
         - id: subject-axis
           headings: [Subject Axis, 主体轴]
-        - id: evidence-plane
-          headings: [Evidence Plane, Evidence 平面]
         - id: governance-implications
           headings: [Governance Implications, 治理含义]
         - id: boundaries

@@ -5,6 +5,5 @@ status: baselined
 members:
   - reference-library.md
   - governed-body.md
-  - evidence-plane.md
   - concept-reference.md
   - contracts

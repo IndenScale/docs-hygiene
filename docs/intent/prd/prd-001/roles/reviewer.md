@@ -6,4 +6,4 @@ status: baselined
 
 # Reviewer
 
-Traces requirements to falsifiable definitions and runtime evidence.
+Traces requirements to precise definitions and implementations.

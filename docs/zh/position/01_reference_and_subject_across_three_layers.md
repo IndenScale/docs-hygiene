@@ -1,4 +1,4 @@
-# 三个层次中的 Reference 与主体
+# 三层文档中的主体与引用
 
 状态：adopted
 
@@ -6,27 +6,24 @@
 
 ## 立场主张
 
-AI 辅助研发正在把稀缺控制点从代码生产推向共享意图和验证。Docs Hygiene 因此把
-仓库理解为三个相互关联的层次：Intent、Definition 和 Implementation。
+Docs Hygiene 治理的对象是文档。为了让文档既能表达具体事项，又能复用已有知识，
+仓库中的文档分为主体和引用，并按意图、规格、实现三个层次组织。
 
 每个层次都包含两种不同的资产角色：
 
-- Reference Library 提供被多个 Body 复用的语言或原语；
-- Body 表达当前接受治理的具体意图、定义或实现。
+- 引用（Reference）提供可被多个主体复用的术语、类型或规则；
+- 主体（Body）表达当前项目具体的意图、规格或实现。
 
-这里的 Library 是角色，不限定为代码包。Intent Library 是版本化 UL 目录，Definition
-Library 是版本化 Glossary 目录，Implementation Library 是 SDK 及其共享类型、Schema、
-接口和规则。UL 与 Glossary 是递归领域树，每个稳定术语占用一个 Markdown 叶子，
-每个领域 Manifest 声明身份、版本和直属成员。PRD 与 Spec 是包含原子主张的递归
-Body Package。两类角色的区别是共享复用与具体主张。
+两类角色的区别很简单：主体说明“这次要做什么”，引用保存“多处都会用到的共同
+含义”。意图层的引用是 UL，规格层的引用是 Glossary，实现层的引用是 SDK。
 
 ## 模型
 
-| 层次 | Reference Library | Body | 核心问题 |
+| 层次 | 引用 | 主体 | 核心问题 |
 | --- | --- | --- | --- |
-| Intent | UL 目录（每个术语一个 Markdown） | PRD | 应该存在什么，它意味着什么？ |
-| Definition | Glossary 目录（每个术语一个 Markdown） | Spec 与 Test Definition | 怎样才精确地算正确？ |
-| Implementation | SDK | Code 与 Configuration | 定义如何被实现？ |
+| 意图 | UL 目录（每个术语一个 Markdown） | PRD | 为什么做、为谁做、期望什么结果？ |
+| 规格 | Glossary 目录（每个术语一个 Markdown） | Spec 与测试定义 | 怎样才精确地算正确？ |
+| 实现 | SDK | 代码与配置 | 规格如何被实现？ |
 
 ```mermaid
 flowchart TB
@@ -54,71 +51,58 @@ flowchart TB
     Spec -->|实现为| Code
 ```
 
-## Reference 轴
+## 引用轴
 
-Reference 轴是 `UL → Glossary → SDK`。
+引用轴是 `UL → Glossary → SDK`。
 
-UL 是强制存在的可复用 Intent Library 目录。每个业务和产品概念、关系、动作、状态、
+UL 是意图层的引用目录。每个业务和产品概念、关系、动作、状态、
 不变量、结果与收益拥有一个 Markdown 文件和稳定身份；目录 Manifest 为成员集定版，
 但不把这些含义绑定到某一种技术表示。
 
-Glossary 是强制存在的可复用 Definition Library 目录。每个 Markdown 文件把一个 UL
+Glossary 是规格层的引用目录。每个 Markdown 文件把一个 UL
 术语投影为状态名、事件名、枚举值、Schema 术语或判断词汇等精确规格身份；目录
 Manifest 为成员集定版。投影可以针对定义语境收窄表达，但不能静默改变来源含义。
 
-SDK 是可复用的 Implementation Reference Library。它把定义身份实现为共享类型、
+SDK 是实现层的引用。它把定义身份实现为共享类型、
 Schema、接口、模块、规则或领域原语，供具体代码和配置依赖。
 
-三类 Reference 是相互关联的投影，不是三个独立含义来源。当下游 Reference 无法
+三层引用相互关联，不是三个独立的含义来源。当下游引用无法
 追溯到它所实现的上游身份和语义版本时，就产生了漂移。
 
 ## 主体轴
 
-Body 轴（主体轴）是 `PRD → Spec/Test Definition → Code/Configuration`。
+主体轴是 `PRD → Spec/测试定义 → 代码/配置`。
 
-PRD Body Package 通过原子角色、故事、需求和验收成员提出具体产品主张。成员使用
-标准 Markdown Link 指向 UL 术语叶子，Package Manifest 同时固定 UL Library 版本。
+PRD 主体通过角色、故事、需求和验收条目提出具体产品主张。条目使用标准 Markdown
+链接指向 UL 术语文件，PRD 的 Manifest 同时固定 UL 版本。
 
-Spec Body Package 或 Test Definition 通过原子模型、约束、场景和验证成员形式化
-该主张，并使用 Markdown Link 指向 Glossary 术语文件，同时由资产 Manifest 固定
-Glossary Library 版本；它说明怎样才算正确，但不规定每一个实现步骤。
+Spec 主体或测试定义通过模型、约束、场景和验证条目精确定义该主张，并链接到
+Glossary 术语文件。它说明怎样才算正确，但不规定每一个实现步骤。
 
-Code 与 Configuration 使用 Library 和其他实现依赖兑现定义。只要上游意图和定义
+代码与配置使用 SDK 和其他依赖实现规格。只要上游意图和规格
 保持成立，它们可以被重构或替换。
 
 当 PRD 没有形式定义、Spec 没有实现，或实现主张无法回到它应满足的定义时，主体
 追溯关系就已经断裂。
 
-## Evidence 平面
-
-Testing 必须拆分为定义与证据：
-
-- Test Case、模型、Oracle 或 Verifier 属于 Definition Layer；
-- Test Result、验收记录、运行观察或指标值属于 Evidence 平面。
-
-Evidence 跨越三个层次。它证明 Implementation 是否满足 Definition，以及最终行为
-是否兑现 Intent 主张的收益。写了测试不等于测试通过；产生了指标也不等于指标仍然
-代表预期用户价值。
-
 ## 治理含义
 
-Docs Hygiene 最终应能治理三类关系：
+Docs Hygiene 治理两类关系：
 
 1. 同层引用：`PRD → UL`、`Spec/Test → Glossary`、
    `Code/Configuration → SDK`；
-2. 主体追溯：`PRD → Spec/Test → Code/Configuration → Evidence`；
-3. Reference 投影：`UL → Glossary → SDK`。
+2. 跨层关系：主体沿 `PRD → Spec/Test → Code/Configuration` 逐层落实，引用沿
+   `UL → Glossary → SDK` 逐层细化。
 
 这些关系暴露不同形态的认知债：
 
 - 主体中出现匿名概念或竞争性含义；
 - 形式定义没有覆盖意图中的不变量或收益；
 - 可复用符号的语义偏离 Glossary；
-- 实现主张没有验证证据；
-- 证据证明了技术行为，却没有证明预期用户收益。
+- 规格没有对应实现。
 
 治理必须按职责和权威分类资产，不能按文件扩展名机械分类。YAML 既可能表达意图
-策略、定义 Schema、运行配置，也可能是生成证据；它属于哪一层取决于实际角色。
+策略、定义 Schema 或运行配置；它属于哪一层取决于实际角色。
 
 ## 边界
 
@@ -126,5 +110,4 @@ Docs Hygiene 最终应能治理三类关系：
 代码，而是定义 Coding Agent 自适应选择执行计划时仍需保持可检查的关系。
 
 这张模型是产品立场，不代表所有关系检查已经实现。当前能力仍以 CLI、配置、测试
-和规则页面为准。新的确定性门禁必须先进入 PRD 和可执行验收证据，才能被描述为
-已经交付。
+和规则页面为准。新的确定性门禁必须先进入 PRD 和测试，才能被描述为已经交付。

@@ -2,12 +2,11 @@
 
 This directory records the product model used to reason about Docs Hygiene.
 Position documents explain the picture that guides terminology and requirements;
-they do not replace the UL directory, PRDs, Glossary directory, specifications,
-or implementation evidence.
+they do not replace the UL directory, PRDs, Glossary directory, or specifications.
 
 ## Documents
 
-- [Reference and Subject Across Three Layers](01_reference_and_subject_across_three_layers.md)
+- [Bodies and References Across Three Document Layers](01_reference_and_subject_across_three_layers.md)
 
 ## Change Routing
 
@@ -16,4 +15,4 @@ or implementation evidence.
 - A formal definition belongs in `docs/definition/`.
 - A change to the explanatory model belongs here.
 - A claim about shipped behavior must be checked against root-level code,
-  configuration, tests, and runtime evidence.
+  configuration, and tests.

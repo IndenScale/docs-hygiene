@@ -23,8 +23,7 @@ remain the authority for delivered behavior.
 
 - [PRD-001 Three-Layer Contract Governance](docs/intent/prd/prd-001/index.md)
   will extend the delivered asset graph with item-level requirement coverage,
-  symbol-level semantic projection, Evidence validation, and end-to-end benefit
-  traces.
+  symbol-level semantic projection and end-to-end traces from intent to implementation.
 
 ## Backlog
 

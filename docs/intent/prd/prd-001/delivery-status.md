@@ -6,4 +6,4 @@ status: baselined
 
 # Delivery Status
 
-Package-level governance, recursive Library trees, directory Body packages, horizontal references, adjacent-layer derivation, projection, and repository dogfooding are delivered. Item-level semantic coverage and Evidence validation remain planned.
+Package-level governance, recursive Reference trees, directory Body packages, same-layer references, adjacent-layer derivation, projection, and repository dogfooding are delivered. Item-level semantic coverage remains planned.

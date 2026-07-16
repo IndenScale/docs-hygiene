@@ -17,10 +17,3 @@ members:
     - src/main.rs
   configuration:
     - docs-hygiene.yml
-
-evidence:
-  definition:
-    - cargo test
-    - cargo test --test dogfood
-  repository:
-    - cargo run -- check --fail-on-warning

@@ -11,7 +11,7 @@ Bodies are recursive PRD Packages under `prd/`.
 - Each PRD manifest enumerates atomic roles, stories, requirements, and acceptance members.
 - A PRD pins the UL version and links to the terms it consumes.
 - A baselined PRD must be formalized by a Definition Layer Spec.
-- Current capability remains authoritative in code, configuration, tests, and evidence.
+- Delivered capability remains authoritative in code, configuration, and tests.
 
 ## Lifecycle
 

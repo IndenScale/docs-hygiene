@@ -6,4 +6,4 @@ status: baselined
 
 # Three-Layer Model
 
-Product architecture organizing Body, Library, typed relationships, and Evidence across Intent, Definition, and Implementation.
+Product architecture organizing Bodies, References, and typed relationships across Intent, Definition, and Implementation.
