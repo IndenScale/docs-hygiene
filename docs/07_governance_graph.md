@@ -1,7 +1,7 @@
 # Governance Graph
 
-Docs Hygiene builds a deterministic graph from explicitly configured, versioned
-asset manifests. It validates relationship structure and reachability; it does
+Docs Hygiene builds a deterministic graph from explicitly configured asset
+manifests and semantic Wiki Links in Body content. It validates relationship structure and reachability; it does
 not infer business meaning from prose.
 
 ## Asset Sources
@@ -24,24 +24,26 @@ governance:
 
 ## Asset Contract
 
-Every declaration provides a stable `id`, semantic `version`, `refinementLevel`,
-`referenceRelation`, and lifecycle `status`. Supported refinement levels are
+Every declaration provides a stable `id`, `refinementLevel`, `referenceRelation`,
+and lifecycle `status`. Supported refinement levels are
 `intent`, `definition`, and `implementation`; supported reference relations are
 `body` and `library`. Language representation is derived from the canonical root
 or its configured `localizedRoots`, so localized files do not repeat the asset declaration.
+Document-level `version` fields are rejected. Git history records past states;
+review-sensitive dependencies may use content-hash anchors instead.
+Manifest-level `references` and leaf-level `source` metadata are also rejected;
+semantic dependencies belong in governed content as Wiki Links.
 
 ```yaml
 id: SPEC-001
-version: 1.1.0
 refinementLevel: definition
 referenceRelation: body
 status: baselined
-references: { id: GLOSSARY-001, version: 1.1.0 }
-formalizes: { id: PRD-001, version: 1.2.0 }
+formalizes: PRD-001
 ```
 
-Each relationship accepts one target mapping or a list. Targets always include
-an exact identity and semantic version.
+Vertical relationships accept one stable target ID or a list. Horizontal Library
+references live in Body content rather than Manifest metadata.
 
 ## Recursive Package Trees
 
@@ -53,25 +55,35 @@ duplicate identities, and undeclared children are errors.
 
 Library leaves are stable terms and Body leaves are atomic roles, stories,
 requirements, constraints, or verification statements. Every leaf has YAML
-frontmatter containing `id`, semantic `version`, and lifecycle `status`. Localized
+frontmatter containing `id` and lifecycle `status`. Localized
 trees preserve every canonical path and identity. Library failures produce
 `DH_LIBRARY_001`; Body Package failures produce `DH_BODY_001`.
 
+An Implementation Body may group repository-relative file members by kind, such
+as `code` or `configuration`. When declared, these paths must be safe, unique,
+and resolve to existing files.
+
 UL and Glossary are recursive Library trees rather than monolithic term lists. PRD
-and Spec are directory Body Packages rather than monolithic documents. Bodies use
-normal Markdown links for individual terms while governance edges pin package versions.
+and Spec are directory Body Packages rather than monolithic documents.
 
 ## Horizontal References
 
-Every Body declares at least one `references` edge to a Library at the same
-refinement level:
+Every Body contains at least one semantic Wiki Link to a Library identity at the
+same refinement level:
 
 - Intent Body to UL;
 - Definition Body to Glossary;
 - Implementation Body to SDK.
 
-A missing target, a Body target, or a target at another refinement level is an error. A
-Library cannot use `references` as a substitute for `projects`.
+A Definition or Implementation Library also contains at least one Wiki Link to
+an adjacent upstream Library identity. These content links replace per-leaf
+`source` frontmatter while the package-level `projects` edge remains explicit.
+
+`[[DH-LIBRARY]]` resolves by semantic ID. `[[DH-LIBRARY|Library]]` adds a display
+label. `[[DH-LIBRARY@sha256:<hash>|Library]]` additionally anchors the canonical
+target bytes. A missing target, an invalid refinement direction, or a stale hash
+is an error. Canonical and localized packages preserve the same Wiki Link targets
+and hash anchors.
 
 ## Vertical Derivation
 
@@ -83,7 +95,7 @@ Vertical edges point from a downstream asset to adjacent upstream authority:
 - Implementation Library `projects` Definition Library.
 
 Skipping a refinement level, reversing an edge, using the wrong reference relation, or resolving an
-unknown `id@version` is an error. A horizontal edge cannot satisfy a missing
+unknown ID is an error. A horizontal edge cannot satisfy a missing
 vertical edge.
 
 ## Reverse Completeness
@@ -96,8 +108,9 @@ other non-baselined assets can remain without downstream derivation.
 
 ## Boundaries
 
-The current graph validates asset-level identity, version, refinement level,
-reference relation, edge type, reachability, recursive Package membership, and
-language-representation identity parity. It does not yet validate item-level requirement
+The current graph validates asset-level identity, refinement level, reference
+relation, edge type, reachability, semantic Wiki Links, optional content-hash
+anchors, recursive Package membership, and language-representation identity parity.
+Git history remains the authority for historical document states. It does not yet validate item-level requirement
 coverage, term-level projection completeness, symbol-level semantic mappings,
 or natural-language contradictions.

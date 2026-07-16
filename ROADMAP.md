@@ -7,13 +7,16 @@ remain the authority for delivered behavior.
 ## Current Baseline
 
 - Governed documents use standard Markdown links for repository navigation and
-  editor preview.
-- Stable semantic identities and typed governance relationships are declared in
-  structured metadata rather than inferred from navigation links.
+  semantic Wiki Links for Library identities.
+- Horizontal references are derived from Body content; vertical derivation and
+  projection remain explicit Manifest relationships.
 - Document contracts, concept foreign keys, repository structure, and the
   existing CLI diagnostics are the currently delivered policy surface.
-- Native governance manifests validate horizontal same-refinement-level references and
-  vertical adjacent-refinement-level Body derivation and Library projection.
+- Repository-local Markdown Link and image targets are checked for existence;
+  external URL reachability remains outside the deterministic local baseline.
+- Native governance checks validate same-refinement-level Wiki Links, optional
+  SHA-256 content anchors, and vertical adjacent-refinement-level Body derivation
+  and Library projection.
 - UL and Glossary are mandatory recursive Library trees; each domain manifest
   declares direct children and each term has its own Markdown leaf.
 - PRD and Spec are recursive directory Body Packages whose manifests enumerate
@@ -28,12 +31,13 @@ remain the authority for delivered behavior.
 ## Backlog
 
 - [PRD-002 Governed Semantic Links and Editor Navigation](docs/intent/prd/prd-002/index.md)
-  records optional semantic-link authoring, preview, and IDE navigation as
-  backlog work. It is not part of the current CLI or editor contract.
+  retains preview and IDE navigation as backlog work. Semantic Wiki Link validation
+  is part of the current CLI contract.
 
 ## Decision Boundaries
 
-- A Markdown link provides navigation; it does not establish a typed governance
-  relationship or prove semantic consistency.
-- Wiki Link syntax is not a current repository convention or required input.
+- A Markdown link provides path navigation; a Wiki Link establishes a semantic
+  identity reference but does not prove natural-language consistency.
+- Document versions are not part of the governance identity model. Git records
+  history, while optional content hashes anchor review-sensitive dependencies.
 - LSP or editor integration is not required by the current delivery baseline.

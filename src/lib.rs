@@ -1,7 +1,8 @@
 //! Public implementation reference for Docs Hygiene policies.
 //!
-//! This crate is `SDK-001` version `0.1.0`. It projects `GLOSSARY-001` version
-//! `0.1.0` into the Implementation Layer. The CLI is one consumer of this API.
+//! This crate is governed as `SDK-001` by `sdk-manifest.yml`. The manifest declares
+//! its Glossary projection. The CLI is one consumer of this API.
+//! Semantic source: [[GLOSSARY-001]].
 
 pub mod checks;
 pub mod config;

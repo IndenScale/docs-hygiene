@@ -1,10 +1,10 @@
 ---
 id: edge.realizes
-version: 1.0.0
-source: DH-TRACEABILITY-CONTRACT@1.0.0
 status: baselined
 ---
 
 # edge.realizes
+
+Semantic source: [[DH-TRACEABILITY-CONTRACT]].
 
 An Implementation Body declaring the Definition Body that it implements.

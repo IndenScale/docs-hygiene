@@ -14,10 +14,10 @@ equivalent quality system. Docs Hygiene makes documentation continuously checkab
 ## Documents
 
 Docs Hygiene treats README files, PRDs, specifications, ADRs, and other written
-material as maintained repository assets. Today it provides repository-level
-structural checks:
+material as maintained repository assets. Today it provides deterministic
+repository-level governance checks:
 
-It is not a Markdown syntax linter. Use markdownlint for Markdown formatting, lychee for links, and Vale or cspell for prose quality. Docs Hygiene focuses on repository-level documentation governance:
+It is not a general-purpose Markdown syntax or prose linter. Use markdownlint for formatting, lychee for external URL crawling, and Vale or cspell for prose quality. Docs Hygiene focuses on repository-level documentation governance:
 
 - required files such as README, CHANGELOG, and LICENSE
 - numbered docs under `docs/`
@@ -25,15 +25,16 @@ It is not a Markdown syntax linter. Use markdownlint for Markdown formatting, ly
 - parity between canonical and localized language representations
 - path-inferred document contracts with maturity-aware required sections
 - concept foreign keys from highlighted terms to `concept/*.md`
-- versioned manifests for Intent, Definition, and Implementation documents
-- references from Bodies to Libraries at the same refinement level
+- dead semantic Wiki Links and repository-local Markdown Link targets
+- governed YAML frontmatter and type-specific directory contracts
+- identity manifests for Intent, Definition, and Implementation documents
+- semantic Wiki Links from Bodies to Libraries at the same refinement level
 - adjacent-refinement-level traceability from intent through definition to implementation
 - adapter orchestration for tools such as markdownlint
 
 The product direction is to extend these foundations from structural hygiene
 to semantic and traceability contracts:
 
-- governed ubiquitous language and versioned concept references
 - explicit local concepts and reviewable semantic change proposals
 - PRD entity, action, invariant, benefit, and acceptance relationships
 - item-level coverage and traceability from intent to definition and implementation
@@ -51,7 +52,7 @@ Every governed asset is located by three independent dimensions:
 - **Reference relation**: a project-specific Body or a shared Library;
 - **Language representation**: `en`, `zh`, or another configured language code.
 
-One representation is canonical. Localized representations preserve the same semantic identity, version, lifecycle, structure, and governance edges; they are not separate assets.
+One representation is canonical. Localized representations preserve the same semantic identity, lifecycle, structure, and governance edges; they are not separate assets.
 
 ## Refinement Levels and Reference Relations
 
@@ -71,7 +72,7 @@ domain has a Manifest and each stable term is one Markdown leaf. PRD and Spec li
 under `docs/intent/prd/` and `docs/definition/spec/` as directory Bodies. Implementation stays
 in the repository root: `src/lib.rs` is the SDK, while code and configuration
 relationships are declared in `implementation-manifest.yml`. The core
-checker resolves these assets by stable ID and version, validates same-refinement-level references,
+checker resolves these assets by stable ID, validates content-level Wiki Link references and optional SHA-256 anchors,
 and validates adjacent-refinement-level `formalizes`, `realizes`, and `projects` edges.
 
 ## Product Boundary

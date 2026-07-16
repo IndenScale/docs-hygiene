@@ -101,17 +101,20 @@ impl Report {
             }
             "DH_CONCEPT_001" => Some("A highlighted term is missing a concept definition file."),
             "DH_CONCEPT_002" => Some("A concept definition file is not referenced by docs."),
+            "DH_LINK_001" => Some(
+                "A repository-local Markdown Link or image target does not resolve to an existing path; external URL reachability is outside this rule.",
+            ),
             "DH_GOVERNANCE_001" => {
                 Some("A governance manifest is missing, malformed, duplicated, or invalid.")
             }
-            "DH_REFERENCE_001" => {
-                Some("A Body is missing a valid same-refinement-level reference to a Library.")
-            }
+            "DH_REFERENCE_001" => Some(
+                "A governed asset has a missing, invalid, or content-hash-stale semantic Wiki Link to a Library identity.",
+            ),
             "DH_LIBRARY_001" => Some(
                 "A Library directory has a missing, malformed, duplicate, or undeclared member term.",
             ),
             "DH_BODY_001" => Some(
-                "A directory Body Package has a missing, malformed, duplicate, undeclared, or localized-mismatched member.",
+                "A Body Package has a missing, malformed, duplicate, unsafe, undeclared, or localized-mismatched member.",
             ),
             "DH_DERIVATION_001" => {
                 Some("A Body has a missing or invalid adjacent-refinement-level derivation.")

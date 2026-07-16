@@ -1,10 +1,8 @@
 ---
 id: SPEC-001-C-002
-version: 1.1.0
 status: baselined
 ---
 
 # C-002 同一精化层级引用
 
-每个 Body 使用 [edge.references](../../../glossary/relationships/edge-references.md)固定精确的同一精化层级 Library。
-该目标必须能够按稳定身份和固定版本解析，不能由普通正文链接代替。
+每个 Body 使用 [[edge.references]] 通过语义 Wiki Link 引用同一精化层级 Library 身份。目标按稳定 ID 解析；可选 `@sha256:<hash>` 锚用于发现 Library 内容变化影响的 Body。

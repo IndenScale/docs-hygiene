@@ -1,6 +1,5 @@
 ---
 id: DH-TRACEABILITY-CONTRACT
-version: 1.0.0
 status: proposed
 ---
 

@@ -1,6 +1,5 @@
 ---
 id: DH-THREE-DIMENSIONAL-GOVERNANCE-MODEL
-version: 1.0.0
 status: baselined
 ---
 

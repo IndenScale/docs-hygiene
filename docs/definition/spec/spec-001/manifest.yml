@@ -1,15 +1,9 @@
 id: SPEC-001
-version: 1.1.0
 status: baselined
 refinementLevel: definition
 referenceRelation: body
 prd: PRD-001
-references:
-  id: GLOSSARY-001
-  version: 1.1.0
-formalizes:
-  id: PRD-001
-  version: 1.2.0
+formalizes: PRD-001
 members:
   - index.md
   - intent-source.md

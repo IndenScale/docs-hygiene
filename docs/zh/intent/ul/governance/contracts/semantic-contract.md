@@ -1,6 +1,5 @@
 ---
 id: DH-SEMANTIC-CONTRACT
-version: 1.0.0
 status: proposed
 ---
 

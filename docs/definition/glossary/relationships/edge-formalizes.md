@@ -1,10 +1,10 @@
 ---
 id: edge.formalizes
-version: 1.0.0
-source: DH-TRACEABILITY-CONTRACT@1.0.0
 status: baselined
 ---
 
 # edge.formalizes
+
+Semantic source: [[DH-TRACEABILITY-CONTRACT]].
 
 A Definition Body declaring the Intent Body that it makes falsifiable.

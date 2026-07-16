@@ -1,6 +1,5 @@
 ---
 id: SPEC-001-VERIFICATION
-version: 1.1.0
 status: baselined
 ---
 

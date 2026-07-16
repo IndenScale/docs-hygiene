@@ -1,6 +1,5 @@
 ---
 id: PRD-001-ROLE-DOC-MAINTAINER
-version: 1.0.0
 status: baselined
 ---
 

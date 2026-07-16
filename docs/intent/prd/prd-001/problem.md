@@ -1,6 +1,5 @@
 ---
 id: PRD-001-PROBLEM
-version: 1.0.0
 status: baselined
 ---
 

@@ -247,17 +247,17 @@ fn governance_graph_failures_block_the_cli_gate() {
     .unwrap();
     std::fs::write(
         temp.path().join("ul.yml"),
-        "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(
         temp.path().join("term.md"),
-        "---\nid: TERM-1\nversion: 1.0.0\nstatus: baselined\n---\n\n# Term\n",
+        "---\nid: TERM-1\nstatus: baselined\n---\n\n# Term\n",
     )
     .unwrap();
     std::fs::write(
         temp.path().join("spec.yml"),
-        "id: SPEC-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\n",
+        "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\n",
     )
     .unwrap();
 

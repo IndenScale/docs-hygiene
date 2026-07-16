@@ -1,9 +1,8 @@
 ---
 id: DH-LIBRARY
-version: 1.0.0
 status: baselined
 ---
 
 # Library
 
-由可复用身份或原语组成的版本化目录，每个术语分别使用一个 Markdown 文件表达。
+由可复用术语或原语组成的身份治理目录，每个语义身份分别使用一个 Markdown 文件表达。

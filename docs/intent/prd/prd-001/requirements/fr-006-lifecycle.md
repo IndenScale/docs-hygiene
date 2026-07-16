@@ -1,9 +1,8 @@
 ---
 id: PRD-001-FR-006
-version: 1.0.0
 status: baselined
 ---
 
 # FR-006 Lifecycle
 
-Baselined assets use fixed resolvable references while drafts and proposals remain explicitly classified.
+Baselined assets use resolvable semantic identities and may pin content hashes, while drafts and proposals remain explicitly classified.

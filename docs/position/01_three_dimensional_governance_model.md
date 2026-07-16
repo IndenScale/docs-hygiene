@@ -28,7 +28,7 @@ The Body derivation chain is `PRD → Spec/Test → Code/Configuration`. The Lib
 
 ## Reference Relation
 
-A Body expresses a concrete project assertion. A Library maintains reusable terms, types, or rules that supply shared meaning. A `references` edge points from a Body to a Library at the same refinement level:
+A Body expresses a concrete project assertion. A Library maintains reusable terms, types, or rules that supply shared meaning. A semantic Wiki Link in Body content establishes a `references` edge to a Library identity at the same refinement level:
 
 - `PRD → UL`;
 - `Spec/Test → Glossary`;
@@ -40,10 +40,10 @@ A Body expresses a concrete project assertion. A Library maintains reusable term
 
 Language codes such as `en`, `zh`, and `ja` are values on the language-representation dimension. `canonical` and `localized` are authority properties, not language values.
 
-One semantic asset has one canonical representation and zero or more localized representations. Localized representations preserve canonical path, identity, semantic version, lifecycle, package structure, and governance edges. They are not independent graph nodes or competing sources of meaning.
+One semantic asset has one canonical representation and zero or more localized representations. Localized representations preserve canonical path, identity, lifecycle, package structure, and governance edges. They are not independent graph nodes or competing sources of meaning.
 
 ```text
-PRD-001@1.2.0
+PRD-001
 ├── en  canonical
 └── zh  localized
 ```
@@ -57,7 +57,7 @@ coordinate = (refinementLevel, referenceRelation, languageRepresentation)
 edges      = references | formalizes | realizes | projects
 ```
 
-- `references` connects a Body to a Library at the same refinement level;
+- `references` is derived from a semantic Wiki Link connecting a Body to a Library identity at the same refinement level;
 - `formalizes` connects a Definition Body to an Intent Body;
 - `realizes` connects an Implementation Body to a Definition Body;
 - `projects` connects a downstream Library to its adjacent upstream Library.
@@ -66,4 +66,4 @@ Governance is based on semantic authority rather than file extension. YAML can e
 
 ## Boundaries
 
-Current checks validate asset identity, version, lifecycle, the three-dimensional classification, package structure, language parity, and graph reachability. They do not infer natural-language equivalence, translation freshness, item-level coverage, or semantic contradictions.
+Current checks validate repository-local Markdown targets, governed frontmatter, asset identity, lifecycle, the three-dimensional classification, type-specific package structure, language parity, Wiki Link references, optional content-hash anchors, and graph reachability. External URL reachability and general prose quality remain integration concerns. The checker does not infer natural-language equivalence, translation freshness, item-level coverage, or semantic contradictions.

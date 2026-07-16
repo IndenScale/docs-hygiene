@@ -1,6 +1,5 @@
 ---
 id: PRD-002-FR-004
-version: 0.2.0
 status: proposed
 ---
 

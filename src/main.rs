@@ -4,6 +4,8 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use docs_hygiene::{Config, Report, print_json_report, print_text_report, run_checks};
 
+// Governance Library: [[SDK-001]]
+
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Cli {

@@ -1,12 +1,8 @@
 id: PRD-001
-version: 1.2.0
 type: product-requirement
 status: baselined
 refinementLevel: intent
 referenceRelation: body
-references:
-  id: UL-001
-  version: 1.1.0
 members:
   - index.md
   - problem.md

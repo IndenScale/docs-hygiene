@@ -1,9 +1,8 @@
 ---
 id: BENEFIT-REPLAYABLE-INTENT
-version: 1.0.0
 status: baselined
 ---
 
 # 可重放意图
 
-审阅者可以解析某个基线实际使用的精确版本化产品术语和验收含义。
+审阅者可以解析某个基线使用的稳定语义身份，并发现其 Library 含义的内容哈希漂移。

@@ -56,19 +56,29 @@ definition file.
 `DH_CONCEPT_002` reports a concept definition file that is not referenced by
 docs.
 
+## Repository Links
+
+`DH_LINK_001` reports a repository-local inline Markdown Link, reference-style
+link definition, or image target that does not resolve to an existing file or
+directory. Fenced and inline code, same-document fragments, and external URI
+schemes are excluded. External URL reachability remains an adapter concern.
+
 ## Governance Graph
 
 `DH_GOVERNANCE_001` reports an unreadable or malformed manifest, duplicate
-`id@version`, invalid semantic version, or invalid lifecycle status.
+semantic identity, invalid lifecycle status, or the removed document-level
+`version` or Manifest-level `references` fields.
 
-`DH_REFERENCE_001` reports a missing target or a `Body -> Library` reference
-whose target is not a Library at the same refinement level.
+`DH_REFERENCE_001` reports a missing, unresolved, refinement-invalid, or
+content-hash-stale semantic Wiki Link to a Library identity.
 
 `DH_LIBRARY_001` reports a missing, malformed, duplicate, or undeclared member
-of a recursive Library tree.
+of a recursive Library tree, including removed leaf-level `version` or `source` metadata.
 
 `DH_BODY_001` reports the same structural or localization failure in a directory
-PRD or Spec Body Package.
+PRD or Spec Body Package, or a malformed, duplicated, unsafe, or missing declared
+Implementation Body member. Removed leaf-level `version` or `source` metadata is
+also invalid.
 
 `DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
 adjacent-refinement-level Body derivation through `formalizes` or `realizes`.

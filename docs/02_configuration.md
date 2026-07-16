@@ -152,7 +152,7 @@ language:
 
 ## Governance Graph
 
-`governance.manifests` enables versioned asset resolution, mandatory horizontal references, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract.
+`governance.manifests` enables ID-based asset resolution, mandatory semantic Wiki Link references, optional content-hash anchors, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract.
 
 ## Forbid ASCII Art
 

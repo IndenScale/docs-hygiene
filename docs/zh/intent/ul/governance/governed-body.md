@@ -1,6 +1,5 @@
 ---
 id: DH-GOVERNED-BODY
-version: 1.1.0
 status: baselined
 ---
 

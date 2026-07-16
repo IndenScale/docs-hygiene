@@ -1,6 +1,5 @@
 ---
 id: DH-REFERENCE-RELATION
-version: 1.0.0
 status: baselined
 ---
 

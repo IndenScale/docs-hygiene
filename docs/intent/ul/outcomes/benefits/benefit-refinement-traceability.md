@@ -1,6 +1,5 @@
 ---
 id: BENEFIT-REFINEMENT-TRACEABILITY
-version: 1.0.0
 status: baselined
 ---
 

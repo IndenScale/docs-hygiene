@@ -1,6 +1,5 @@
 ---
 id: SPEC-001-C-008
-version: 1.0.0
 status: baselined
 ---
 

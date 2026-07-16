@@ -1,6 +1,5 @@
 ---
 id: PRD-001-NON-GOALS
-version: 1.1.0
 status: baselined
 ---
 

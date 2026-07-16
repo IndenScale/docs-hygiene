@@ -1,13 +1,9 @@
 id: PRD-002
-version: 0.3.0
 type: product-requirement
 status: proposed
-delivery_status: backlog
+delivery_status: partial
 refinementLevel: intent
 referenceRelation: body
-references:
-  id: UL-001
-  version: 1.1.0
 members:
   - index.md
   - problem.md

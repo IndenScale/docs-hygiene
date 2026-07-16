@@ -1,6 +1,5 @@
 ---
 id: BENEFIT-EARLY-DRIFT-DETECTION
-version: 1.0.0
 status: baselined
 ---
 

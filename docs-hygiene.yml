@@ -199,8 +199,6 @@ documentContracts:
       requiredFields:
         - id: member-id
           pattern: "(?m)^id: [A-Za-z0-9._-]+$"
-        - id: member-version
-          pattern: "(?m)^version: [0-9]+\\.[0-9]+\\.[0-9]+$"
         - id: lifecycle-status
           pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
     - id: repository-readme

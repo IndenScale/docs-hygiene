@@ -1,16 +1,9 @@
 id: IMPL-001
-version: 0.2.0
 refinementLevel: implementation
 referenceRelation: body
 status: current
 
-realizes:
-  id: SPEC-001
-  version: 1.1.0
-
-references:
-  id: SDK-001
-  version: 0.2.0
+realizes: SPEC-001
 
 members:
   code:

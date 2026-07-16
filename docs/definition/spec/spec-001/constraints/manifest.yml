@@ -1,5 +1,4 @@
 id: SPEC-001-DOMAIN-CONSTRAINTS
-version: 1.1.0
 kind: domain
 status: baselined
 members:

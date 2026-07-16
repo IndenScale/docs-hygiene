@@ -1,6 +1,5 @@
 ---
 id: DH-REFINEMENT-LEVEL-IMPLEMENTATION
-version: 1.0.0
 status: baselined
 ---
 

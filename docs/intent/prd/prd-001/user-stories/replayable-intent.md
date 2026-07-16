@@ -1,9 +1,8 @@
 ---
 id: PRD-001-STORY-REPLAYABLE-INTENT
-version: 1.0.0
 status: baselined
 ---
 
 # Replayable Intent
 
-As an engineer, I want exact versioned product terms and acceptance meaning, so I gain [replayable intent](../../../ul/outcomes/benefits/benefit-replayable-intent.md) for a baseline.
+As an engineer, I want stable semantic identities and optional content-hash anchors, so I gain [[BENEFIT-REPLAYABLE-INTENT|replayable intent]] for a baseline without maintaining document versions.

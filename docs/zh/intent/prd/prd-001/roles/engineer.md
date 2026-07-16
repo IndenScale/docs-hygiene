@@ -1,6 +1,5 @@
 ---
 id: PRD-001-ROLE-ENGINEER
-version: 1.0.0
 status: baselined
 ---
 

@@ -1,6 +1,5 @@
 ---
 id: DH-REFINEMENT-LEVEL-INTENT
-version: 1.0.0
 status: baselined
 ---
 

@@ -9,7 +9,7 @@
 
 ## 变更路由
 
-- 中文共享产品含义的表示进入 `docs/zh/intent/ul/` 下的对应术语文件，并与 canonical UL 保持身份和版本一致。
+- 中文共享产品含义的表示进入 `docs/zh/intent/ul/` 下的对应术语文件，并与 canonical UL 保持身份和结构一致。
 - 期望产品行为的变化进入 `docs/zh/intent/prd/` 下的原子成员。
 - 形式定义进入 `docs/definition/`。
 - 对解释模型的调整进入本目录。

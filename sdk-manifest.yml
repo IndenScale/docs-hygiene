@@ -1,15 +1,21 @@
 id: SDK-001
-version: 0.2.0
 refinementLevel: implementation
 referenceRelation: library
 status: current
 
-projects:
-  id: GLOSSARY-001
-  version: 1.1.0
+projects: GLOSSARY-001
 
 members:
   - src/lib.rs
   - src/checks.rs
+  - src/checks/derivation.rs
+  - src/checks/document_contracts.rs
+  - src/checks/governance_models.rs
+  - src/checks/package_localization.rs
+  - src/checks/package_structure.rs
+  - src/checks/repository_content.rs
+  - src/checks/repository_structure.rs
+  - src/checks/support.rs
+  - src/checks/wiki_references.rs
   - src/config.rs
   - src/report.rs

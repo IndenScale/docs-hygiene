@@ -1,10 +1,10 @@
 ---
 id: edge.references
-version: 1.1.0
-source: DH-LIBRARY@1.0.0
 status: baselined
 ---
 
 # edge.references
 
-A same-refinement-level dependency from a Body to its Library.
+Semantic source: [[DH-LIBRARY]].
+
+A same-refinement-level dependency expressed by a semantic Wiki Link from Body content to a Library identity.

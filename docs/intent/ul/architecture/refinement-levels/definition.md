@@ -1,6 +1,5 @@
 ---
 id: DH-REFINEMENT-LEVEL-DEFINITION
-version: 1.0.0
 status: baselined
 ---
 

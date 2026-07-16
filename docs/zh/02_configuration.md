@@ -138,7 +138,7 @@ language:
 
 ## 治理关系图
 
-`governance.manifests` 启用版本化资产解析、强制水平引用、垂直派生和递归 Package
+`governance.manifests` 启用基于 ID 的资产解析、强制语义 Wiki Link、可选内容哈希锚、垂直派生和递归 Package
 成员校验。UL 与 Glossary 是 Library Tree；PRD 与 Spec 是目录 Body Package。
 Manifest Schema、关系规则和完整性策略见[治理关系图](07_governance_graph.md)。
 
