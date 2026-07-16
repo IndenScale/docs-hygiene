@@ -17,6 +17,9 @@ docs:
       root: docs
       requireContinuousNumbering: true
       maxLines: 200
+      ignore:
+        - docs/references/**
+        - docs/prd/**
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
@@ -24,6 +27,32 @@ docs:
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
+          role: index
+          numbered: false
+    - id: references
+      root: docs/references
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-reference
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: reference-index
+          regex: "^README\\.md$"
+          role: index
+          numbered: false
+    - id: prd
+      root: docs/prd
+      requireContinuousNumbering: true
+      maxLines: 200
+      patterns:
+        - id: numbered-prd
+          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
+          role: numbered
+          numbered: true
+        - id: prd-index
+          regex: "^README\\.md$"
           role: index
           numbered: false
 
@@ -52,6 +81,64 @@ documentContracts:
         minRepositoryLines: 20000
         minManagedDocuments: 20
   profiles:
+    - id: product-requirement
+      match:
+        paths:
+          - docs/prd/[0-9][0-9]_*.md
+          - docs/prd/zh/[0-9][0-9]_*.md
+        filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
+      orderedSections: true
+      requiredSections:
+        - id: problem
+          headings: [Problem, 问题]
+        - id: users-and-benefits
+          headings: [Users and Benefits, 用户与收益]
+        - id: semantic-dependencies
+          headings: [Semantic Dependencies, 语义依赖]
+        - id: requirements
+          headings: [Requirements, 需求]
+        - id: non-goals
+          headings: [Non-goals, 非目标]
+        - id: acceptance-criteria
+          headings: [Acceptance Criteria, 验收标准]
+        - id: delivery-status
+          headings: [Delivery Status, 交付状态]
+      requiredFields:
+        - id: prd-id
+          pattern: "(?m)^id: PRD-[0-9]+$"
+        - id: lifecycle-status
+          pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
+        - id: ul-registry
+          pattern: "(?m)^ul_registry: [a-z0-9_-]+$"
+        - id: ul-version
+          pattern: "(?m)^ul_version: [0-9]+\\.[0-9]+\\.[0-9]+$"
+    - id: ubiquitous-language
+      match:
+        paths:
+          - docs/references/01_ubiquitous_language.md
+          - docs/references/zh/01_ubiquitous_language.md
+        filenames: ["^01_ubiquitous_language\\.md$"]
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: product-concepts
+          headings: [Product Concepts, 产品概念]
+        - id: product-actions
+          headings: [Product Actions, 产品动作]
+        - id: invariants
+          headings: [Invariants, 不变量]
+        - id: results-and-benefits
+          headings: [Results and Benefits, 结果与用户收益]
+        - id: change-rules
+          headings: [Change Rules, 变更规则]
+      requiredFields:
+        - id: registry-id
+          pattern: "(?m)^Registry ID(?:：|:) `docs-hygiene`$"
+        - id: registry-version
+          pattern: "(?m)^Registry (?:version|版本)(?:：|:) `?[0-9]+\\.[0-9]+\\.[0-9]+`?$"
     - id: repository-readme
       match:
         paths: [README.md, README_ZH.md]
