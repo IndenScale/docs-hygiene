@@ -24,11 +24,11 @@ not match `docs.filenamePattern`.
 
 When `docs.forbidAsciiArt` is enabled, `DH_ASCII_001` reports consecutive ASCII art blocks in document prose. Fenced code blocks, ordinary Markdown tables, and horizontal rules are excluded.
 
-## I18n
+## Language Representations
 
-`DH_I18N_001` reports a root docs file without a localized counterpart.
+`DH_REPRESENTATION_001` reports a canonical document without a localized representation.
 
-`DH_I18N_002` reports a localized docs file without a root counterpart.
+`DH_REPRESENTATION_002` reports a localized representation without a canonical document.
 
 ## Language
 
@@ -62,7 +62,7 @@ docs.
 `id@version`, invalid semantic version, or invalid lifecycle status.
 
 `DH_REFERENCE_001` reports a missing target or a `Body -> Library` reference
-whose target is not a Library in the same layer.
+whose target is not a Library at the same refinement level.
 
 `DH_LIBRARY_001` reports a missing, malformed, duplicate, or undeclared member
 of a recursive Library tree.
@@ -71,10 +71,10 @@ of a recursive Library tree.
 PRD or Spec Body Package.
 
 `DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
-adjacent-layer Body derivation through `formalizes` or `realizes`.
+adjacent-refinement-level Body derivation through `formalizes` or `realizes`.
 
 `DH_DERIVATION_002` reports a missing, unresolved, wrongly typed, or incomplete
-adjacent-layer Library projection through `projects`.
+adjacent-refinement-level Library projection through `projects`.
 
 ## Adapters
 

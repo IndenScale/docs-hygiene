@@ -1,7 +1,6 @@
 # Configuration
 
-Docs Hygiene reads `docs-hygiene.yml` from the checked repository root unless
-`--config` points to another file.
+Docs Hygiene reads `docs-hygiene.yml` from the checked repository root unless `--config` points to another file. Breaking field renames are listed in [Terminology Migration](08_terminology_migration.md).
 
 ## Required Files
 
@@ -41,11 +40,11 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
-          role: index
+          documentKind: index
           numbered: false
 ```
 
@@ -78,19 +77,19 @@ docs:
       patterns:
         - id: adr
           regex: "^ADR-\\d{4}_[a-z0-9_-]+\\.md$"
-          role: freeform
+          documentKind: freeform
           numbered: false
 ```
 
-## I18n
+## Language Representations
 
-`i18n` defines the root language and localized docs directories.
+`languageRepresentations` defines the canonical language and localized representations.
 
 ```yaml
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 ```
 
@@ -112,12 +111,12 @@ docs:
 ```
 
 The localized root is checked with the same filename patterns, numbering,
-line budget, and document contracts as the root-language directory.
+line budget, and document contracts as the canonical-language directory.
 
 For this layout, `docs/01_overview.md` should have
 `docs/zh/01_overview.md`.
 
-## Language CRUD
+## Language Representation CRUD
 
 Language policy can be edited through CLI commands instead of manual YAML
 patches.
@@ -125,7 +124,7 @@ patches.
 ```bash
 docs-hygiene lang list
 docs-hygiene lang add ja --min-cjk-ratio 0.10
-docs-hygiene lang add en --root --max-cjk-ratio 0.05
+docs-hygiene lang add en --canonical --max-cjk-ratio 0.05
 docs-hygiene lang set-threshold ja --max-cjk-ratio 0.90
 docs-hygiene lang remove ja
 ```

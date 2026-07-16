@@ -12,8 +12,8 @@ remain the authority for delivered behavior.
   structured metadata rather than inferred from navigation links.
 - Document contracts, concept foreign keys, repository structure, and the
   existing CLI diagnostics are the currently delivered policy surface.
-- Native governance manifests validate horizontal same-layer references and
-  vertical adjacent-layer Body derivation and Library projection.
+- Native governance manifests validate horizontal same-refinement-level references and
+  vertical adjacent-refinement-level Body derivation and Library projection.
 - UL and Glossary are mandatory recursive Library trees; each domain manifest
   declares direct children and each term has its own Markdown leaf.
 - PRD and Spec are recursive directory Body Packages whose manifests enumerate

@@ -1,6 +1,6 @@
 # 配置
 
-Docs Hygiene 默认从被检查仓库根目录读取 `docs-hygiene.yml`。也可以用 `--config` 指定其他配置文件。
+Docs Hygiene 默认从被检查仓库根目录读取 `docs-hygiene.yml`，也可以用 `--config` 指定其他配置文件。破坏性字段改名见[术语迁移](08_terminology_migration.md)。
 
 ## 必需文件
 
@@ -35,11 +35,11 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
-          role: index
+          documentKind: index
           numbered: false
 ```
 
@@ -68,19 +68,19 @@ docs:
       patterns:
         - id: adr
           regex: "^ADR-\\d{4}_[a-z0-9_-]+\\.md$"
-          role: freeform
+          documentKind: freeform
           numbered: false
 ```
 
-## I18n
+## 语言表示
 
-`i18n` 定义根语言和本地化文档目录。
+`languageRepresentations` 定义 canonical 语言和本地化语言表示。
 
 ```yaml
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 ```
 
@@ -102,16 +102,16 @@ docs:
           numbered: true
 ```
 
-本地化根目录使用与根语言目录相同的文件名规则、编号、行数预算和文档契约。
+本地化根目录使用与 canonical 语言目录相同的文件名规则、编号、行数预算和文档契约。
 
-## 语言 CRUD
+## 语言表示 CRUD
 
 语言策略可以通过 CLI 命令编辑，不必手动修改 YAML。
 
 ```bash
 docs-hygiene lang list
 docs-hygiene lang add ja --min-cjk-ratio 0.10
-docs-hygiene lang add en --root --max-cjk-ratio 0.05
+docs-hygiene lang add en --canonical --max-cjk-ratio 0.05
 docs-hygiene lang set-threshold ja --max-cjk-ratio 0.90
 docs-hygiene lang remove ja
 ```

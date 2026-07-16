@@ -6,7 +6,7 @@ they do not replace the UL directory, PRDs, Glossary directory, or specification
 
 ## Documents
 
-- [Bodies and References Across Three Document Layers](01_reference_and_subject_across_three_layers.md)
+- [Three-Dimensional Governance Model](01_three_dimensional_governance_model.md)
 
 ## Change Routing
 

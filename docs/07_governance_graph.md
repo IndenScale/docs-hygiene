@@ -24,18 +24,20 @@ governance:
 
 ## Asset Contract
 
-Every declaration provides a stable `id`, semantic `version`, `layer`, `role`,
-and lifecycle `status`. Supported layers are `intent`, `definition`, and
-`implementation`; supported roles are `body` and `library`.
+Every declaration provides a stable `id`, semantic `version`, `refinementLevel`,
+`referenceRelation`, and lifecycle `status`. Supported refinement levels are
+`intent`, `definition`, and `implementation`; supported reference relations are
+`body` and `library`. Language representation is derived from the canonical root
+or its configured `localizedRoots`, so localized files do not repeat the asset declaration.
 
 ```yaml
 id: SPEC-001
-version: 1.0.0
-layer: definition
-role: body
+version: 1.1.0
+refinementLevel: definition
+referenceRelation: body
 status: baselined
-references: { id: GLOSSARY-001, version: 1.0.0 }
-formalizes: { id: PRD-001, version: 1.1.0 }
+references: { id: GLOSSARY-001, version: 1.1.0 }
+formalizes: { id: PRD-001, version: 1.2.0 }
 ```
 
 Each relationship accepts one target mapping or a list. Targets always include
@@ -61,14 +63,14 @@ normal Markdown links for individual terms while governance edges pin package ve
 
 ## Horizontal References
 
-Every Body declares at least one `references` edge to a Library in the same
-layer:
+Every Body declares at least one `references` edge to a Library at the same
+refinement level:
 
 - Intent Body to UL;
 - Definition Body to Glossary;
 - Implementation Body to SDK.
 
-A missing target, a Body target, or a target in another layer is an error. A
+A missing target, a Body target, or a target at another refinement level is an error. A
 Library cannot use `references` as a substitute for `projects`.
 
 ## Vertical Derivation
@@ -80,7 +82,7 @@ Vertical edges point from a downstream asset to adjacent upstream authority:
 - Definition Library `projects` Intent Library;
 - Implementation Library `projects` Definition Library.
 
-Skipping a layer, reversing an edge, using the wrong role, or resolving an
+Skipping a refinement level, reversing an edge, using the wrong reference relation, or resolving an
 unknown `id@version` is an error. A horizontal edge cannot satisfy a missing
 vertical edge.
 
@@ -94,7 +96,8 @@ other non-baselined assets can remain without downstream derivation.
 
 ## Boundaries
 
-The current graph validates asset-level identity, version, role, layer, edge type,
-reachability, recursive Package membership, and localization identity parity. It does not yet validate item-level requirement
+The current graph validates asset-level identity, version, refinement level,
+reference relation, edge type, reachability, recursive Package membership, and
+language-representation identity parity. It does not yet validate item-level requirement
 coverage, term-level projection completeness, symbol-level semantic mappings,
 or natural-language contradictions.

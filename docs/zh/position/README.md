@@ -5,7 +5,7 @@
 
 ## 文档
 
-- [三层文档中的主体与引用](01_reference_and_subject_across_three_layers.md)
+- [三维治理模型](01_three_dimensional_governance_model.md)
 
 ## 变更路由
 

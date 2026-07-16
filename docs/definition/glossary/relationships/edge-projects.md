@@ -1,7 +1,7 @@
 ---
 id: edge.projects
-version: 1.0.0
-source: DH-REFERENCE-LIBRARY@1.0.0
+version: 1.1.0
+source: DH-LIBRARY@1.0.0
 status: baselined
 ---
 

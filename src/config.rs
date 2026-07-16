@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
     pub required_files: Vec<PathBuf>,
@@ -14,7 +14,7 @@ pub struct Config {
     #[serde(default)]
     pub docs: DocsConfig,
     #[serde(default)]
-    pub i18n: I18nConfig,
+    pub language_representations: LanguageRepresentationsConfig,
     #[serde(default)]
     pub concepts: ConceptsConfig,
     #[serde(default)]
@@ -163,25 +163,25 @@ pub struct DocsBaseConfig {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FilenamePatternConfig {
     pub id: String,
     pub regex: String,
-    #[serde(default = "default_pattern_role")]
-    pub role: String,
+    #[serde(default = "default_document_kind")]
+    pub document_kind: String,
     #[serde(default)]
     pub numbered: bool,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct I18nConfig {
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LanguageRepresentationsConfig {
     #[serde(default)]
-    pub root_lang: Option<String>,
+    pub canonical: Option<String>,
     #[serde(default)]
-    pub languages: Vec<String>,
+    pub localized: Vec<String>,
     #[serde(default)]
-    pub require_docs_parity: bool,
+    pub require_document_parity: bool,
     #[serde(default)]
     pub require_number_parity: bool,
 }
@@ -304,17 +304,17 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
-          role: index
+          documentKind: index
           numbered: false
 
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 
 concepts:
@@ -381,7 +381,7 @@ fn default_filename_pattern() -> String {
     r"^\d{2}_[a-z0-9_-]+\.md$".to_string()
 }
 
-fn default_pattern_role() -> String {
+fn default_document_kind() -> String {
     "numbered".to_string()
 }
 

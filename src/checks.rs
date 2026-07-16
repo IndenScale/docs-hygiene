@@ -141,7 +141,7 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     check_required_files(root, config, &mut diagnostics);
     let docs = collect_docs(root, config, &ignore, &mut diagnostics)?;
     check_numbering(config, &docs, &mut diagnostics);
-    check_i18n(config, &docs, &mut diagnostics);
+    check_language_representations(config, &docs, &mut diagnostics);
     check_max_lines(root, config, &docs, &mut diagnostics)?;
     check_ascii_art(root, config, &docs, &mut diagnostics)?;
     check_language(root, config, &docs, &mut diagnostics)?;
@@ -156,13 +156,13 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
-enum GovernanceLayer {
+enum RefinementLevel {
     Intent,
     Definition,
     Implementation,
 }
 
-impl GovernanceLayer {
+impl RefinementLevel {
     fn label(self) -> &'static str {
         match self {
             Self::Intent => "intent",
@@ -174,12 +174,12 @@ impl GovernanceLayer {
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
-enum GovernanceRole {
+enum ReferenceRelation {
     Body,
     Library,
 }
 
-impl GovernanceRole {
+impl ReferenceRelation {
     fn label(self) -> &'static str {
         match self {
             Self::Body => "body",
@@ -227,11 +227,12 @@ impl<'de> Deserialize<'de> for GovernanceTargets {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct GovernanceAsset {
     id: String,
     version: String,
-    layer: GovernanceLayer,
-    role: GovernanceRole,
+    refinement_level: RefinementLevel,
+    reference_relation: ReferenceRelation,
     status: String,
     #[serde(default)]
     references: GovernanceTargets,
@@ -408,19 +409,19 @@ fn check_package_members(
     let manifest_rel = Path::new(&asset.path);
     let is_directory_package = manifest_rel.file_name().and_then(|value| value.to_str())
         == Some("manifest.yml")
-        && asset.layer != GovernanceLayer::Implementation;
-    if asset.role != GovernanceRole::Library && !is_directory_package {
+        && asset.refinement_level != RefinementLevel::Implementation;
+    if asset.reference_relation != ReferenceRelation::Library && !is_directory_package {
         return;
     }
     let Some(serde_yaml::Value::Sequence(members)) = &asset.members else {
-        let code = package_diagnostic_code(asset.role);
+        let code = package_diagnostic_code(asset.reference_relation);
         diagnostics.push(Diagnostic::new(
             code,
             Severity::Error,
             asset.path.clone(),
             format!(
                 "{} '{}@{}' must declare a member list.",
-                asset.role.label(),
+                asset.reference_relation.label(),
                 asset.id,
                 asset.version
             ),
@@ -428,14 +429,14 @@ fn check_package_members(
         return;
     };
     if members.is_empty() {
-        let code = package_diagnostic_code(asset.role);
+        let code = package_diagnostic_code(asset.reference_relation);
         diagnostics.push(Diagnostic::new(
             code,
             Severity::Error,
             asset.path.clone(),
             format!(
                 "{} '{}@{}' cannot have an empty member list.",
-                asset.role.label(),
+                asset.reference_relation.label(),
                 asset.id,
                 asset.version
             ),
@@ -451,7 +452,7 @@ fn check_package_members(
     let package_rel = manifest_rel.parent().unwrap_or_else(|| Path::new(""));
     let Some(members) = member_strings(members) else {
         diagnostics.push(Diagnostic::new(
-            package_diagnostic_code(asset.role),
+            package_diagnostic_code(asset.reference_relation),
             Severity::Error,
             asset.path.clone(),
             "Package members must be path strings relative to their directory manifest.",
@@ -478,7 +479,7 @@ fn check_package_members(
         package_rel,
         Path::new(""),
         &members,
-        asset.role,
+        asset.reference_relation,
         &mut identities,
         &mut canonical_nodes,
         diagnostics,
@@ -487,16 +488,16 @@ fn check_package_members(
         root,
         config,
         package_rel,
-        asset.role,
+        asset.reference_relation,
         &canonical_nodes,
         diagnostics,
     );
 }
 
-fn package_diagnostic_code(role: GovernanceRole) -> &'static str {
-    match role {
-        GovernanceRole::Library => "DH_LIBRARY_001",
-        GovernanceRole::Body => "DH_BODY_001",
+fn package_diagnostic_code(reference_relation: ReferenceRelation) -> &'static str {
+    match reference_relation {
+        ReferenceRelation::Library => "DH_LIBRARY_001",
+        ReferenceRelation::Body => "DH_BODY_001",
     }
 }
 
@@ -542,12 +543,12 @@ fn check_package_directory(
     package_rel: &Path,
     directory_rel: &Path,
     members: &[String],
-    role: GovernanceRole,
+    reference_relation: ReferenceRelation,
     identities: &mut BTreeSet<String>,
     canonical_nodes: &mut BTreeMap<PathBuf, CanonicalPackageNode>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    let code = package_diagnostic_code(role);
+    let code = package_diagnostic_code(reference_relation);
     let directory = root.join(package_rel).join(directory_rel);
     let mut declared = BTreeSet::new();
     for member in members {
@@ -622,7 +623,7 @@ fn check_package_directory(
                 package_rel,
                 &node_rel,
                 &domain.members,
-                role,
+                reference_relation,
                 identities,
                 canonical_nodes,
                 diagnostics,
@@ -770,11 +771,11 @@ fn check_localized_package(
     root: &Path,
     config: &Config,
     package_rel: &Path,
-    role: GovernanceRole,
+    reference_relation: ReferenceRelation,
     canonical_nodes: &BTreeMap<PathBuf, CanonicalPackageNode>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    let code = package_diagnostic_code(role);
+    let code = package_diagnostic_code(reference_relation);
     let Some(base) = config
         .docs
         .bases
@@ -912,7 +913,7 @@ fn check_horizontal_reference(
     index: &BTreeMap<(&str, &str), usize>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if asset.role == GovernanceRole::Library {
+    if asset.reference_relation == ReferenceRelation::Library {
         if !asset.references.is_empty() {
             diagnostics.push(Diagnostic::new(
                 "DH_REFERENCE_001",
@@ -932,10 +933,10 @@ fn check_horizontal_reference(
             Severity::Error,
             asset.path.clone(),
             format!(
-                "Body '{}@{}' must reference a Library in the same {} layer.",
+                "Body '{}@{}' must reference a Library at the same {} refinement level.",
                 asset.id,
                 asset.version,
-                asset.layer.label()
+                asset.refinement_level.label()
             ),
         ));
         return;
@@ -953,21 +954,23 @@ fn check_horizontal_reference(
             ));
             continue;
         };
-        if target_asset.role != GovernanceRole::Library || target_asset.layer != asset.layer {
+        if target_asset.reference_relation != ReferenceRelation::Library
+            || target_asset.refinement_level != asset.refinement_level
+        {
             diagnostics.push(
                 Diagnostic::new(
                     "DH_REFERENCE_001",
                     Severity::Error,
                     asset.path.clone(),
                     format!(
-                        "Body '{}@{}' must reference a Library in the same {} layer, but target '{}@{}' is {} {}.",
+                        "Body '{}@{}' must reference a Library at the same {} refinement level, but target '{}@{}' is {} {}.",
                         asset.id,
                         asset.version,
-                        asset.layer.label(),
+                        asset.refinement_level.label(),
                         target_asset.id,
                         target_asset.version,
-                        target_asset.layer.label(),
-                        target_asset.role.label()
+                        target_asset.refinement_level.label(),
+                        target_asset.reference_relation.label()
                     ),
                 )
                 .with_related(RelatedInformation::new(
@@ -985,8 +988,8 @@ fn check_vertical_derivation(
     index: &BTreeMap<(&str, &str), usize>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    match (asset.layer, asset.role) {
-        (GovernanceLayer::Intent, GovernanceRole::Body) => {
+    match (asset.refinement_level, asset.reference_relation) {
+        (RefinementLevel::Intent, ReferenceRelation::Body) => {
             reject_vertical_edges(
                 asset,
                 "formalizes",
@@ -1009,13 +1012,13 @@ fn check_vertical_derivation(
                 diagnostics,
             );
         }
-        (GovernanceLayer::Definition, GovernanceRole::Body) => {
+        (RefinementLevel::Definition, ReferenceRelation::Body) => {
             require_vertical_edge(
                 asset,
                 "formalizes",
                 &asset.formalizes,
-                GovernanceLayer::Intent,
-                GovernanceRole::Body,
+                RefinementLevel::Intent,
+                ReferenceRelation::Body,
                 "DH_DERIVATION_001",
                 assets,
                 index,
@@ -1036,13 +1039,13 @@ fn check_vertical_derivation(
                 diagnostics,
             );
         }
-        (GovernanceLayer::Implementation, GovernanceRole::Body) => {
+        (RefinementLevel::Implementation, ReferenceRelation::Body) => {
             require_vertical_edge(
                 asset,
                 "realizes",
                 &asset.realizes,
-                GovernanceLayer::Definition,
-                GovernanceRole::Body,
+                RefinementLevel::Definition,
+                ReferenceRelation::Body,
                 "DH_DERIVATION_001",
                 assets,
                 index,
@@ -1063,7 +1066,7 @@ fn check_vertical_derivation(
                 diagnostics,
             );
         }
-        (GovernanceLayer::Intent, GovernanceRole::Library) => {
+        (RefinementLevel::Intent, ReferenceRelation::Library) => {
             reject_vertical_edges(
                 asset,
                 "formalizes",
@@ -1086,13 +1089,13 @@ fn check_vertical_derivation(
                 diagnostics,
             );
         }
-        (GovernanceLayer::Definition, GovernanceRole::Library) => {
+        (RefinementLevel::Definition, ReferenceRelation::Library) => {
             require_vertical_edge(
                 asset,
                 "projects",
                 &asset.projects,
-                GovernanceLayer::Intent,
-                GovernanceRole::Library,
+                RefinementLevel::Intent,
+                ReferenceRelation::Library,
                 "DH_DERIVATION_002",
                 assets,
                 index,
@@ -1113,13 +1116,13 @@ fn check_vertical_derivation(
                 diagnostics,
             );
         }
-        (GovernanceLayer::Implementation, GovernanceRole::Library) => {
+        (RefinementLevel::Implementation, ReferenceRelation::Library) => {
             require_vertical_edge(
                 asset,
                 "projects",
                 &asset.projects,
-                GovernanceLayer::Definition,
-                GovernanceRole::Library,
+                RefinementLevel::Definition,
+                ReferenceRelation::Library,
                 "DH_DERIVATION_002",
                 assets,
                 index,
@@ -1157,8 +1160,8 @@ fn reject_vertical_edges(
             asset.path.clone(),
             format!(
                 "{} {} '{}@{}' cannot declare vertical '{}' edges.",
-                asset.layer.label(),
-                asset.role.label(),
+                asset.refinement_level.label(),
+                asset.reference_relation.label(),
                 asset.id,
                 asset.version,
                 edge_name
@@ -1172,8 +1175,8 @@ fn require_vertical_edge(
     asset: &GovernanceAsset,
     edge_name: &str,
     targets: &GovernanceTargets,
-    expected_layer: GovernanceLayer,
-    expected_role: GovernanceRole,
+    expected_refinement_level: RefinementLevel,
+    expected_reference_relation: ReferenceRelation,
     code: &'static str,
     assets: &[GovernanceAsset],
     index: &BTreeMap<(&str, &str), usize>,
@@ -1186,13 +1189,13 @@ fn require_vertical_edge(
             asset.path.clone(),
             format!(
                 "{} {} '{}@{}' must declare a vertical '{}' edge to an {} {}.",
-                asset.layer.label(),
-                asset.role.label(),
+                asset.refinement_level.label(),
+                asset.reference_relation.label(),
                 asset.id,
                 asset.version,
                 edge_name,
-                expected_layer.label(),
-                expected_role.label()
+                expected_refinement_level.label(),
+                expected_reference_relation.label()
             ),
         ));
         return;
@@ -1210,7 +1213,9 @@ fn require_vertical_edge(
             ));
             continue;
         };
-        if target_asset.layer != expected_layer || target_asset.role != expected_role {
+        if target_asset.refinement_level != expected_refinement_level
+            || target_asset.reference_relation != expected_reference_relation
+        {
             diagnostics.push(
                 Diagnostic::new(
                     code,
@@ -1221,12 +1226,12 @@ fn require_vertical_edge(
                         edge_name,
                         asset.id,
                         asset.version,
-                        expected_layer.label(),
-                        expected_role.label(),
+                        expected_refinement_level.label(),
+                        expected_reference_relation.label(),
                         target_asset.id,
                         target_asset.version,
-                        target_asset.layer.label(),
-                        target_asset.role.label()
+                        target_asset.refinement_level.label(),
+                        target_asset.reference_relation.label()
                     ),
                 )
                 .with_related(RelatedInformation::new(
@@ -1244,28 +1249,28 @@ fn check_vertical_derivation_completeness(
 ) {
     for upstream in assets.iter().filter(|asset| {
         matches!(asset.status.as_str(), "baselined" | "current")
-            && asset.layer != GovernanceLayer::Implementation
+            && asset.refinement_level != RefinementLevel::Implementation
     }) {
-        let derived = assets
-            .iter()
-            .any(|downstream| match (upstream.layer, upstream.role) {
-                (GovernanceLayer::Intent, GovernanceRole::Body) => downstream
+        let derived = assets.iter().any(|downstream| {
+            match (upstream.refinement_level, upstream.reference_relation) {
+                (RefinementLevel::Intent, ReferenceRelation::Body) => downstream
                     .formalizes
                     .iter()
                     .any(|target| target.id == upstream.id && target.version == upstream.version),
-                (GovernanceLayer::Definition, GovernanceRole::Body) => downstream
+                (RefinementLevel::Definition, ReferenceRelation::Body) => downstream
                     .realizes
                     .iter()
                     .any(|target| target.id == upstream.id && target.version == upstream.version),
-                (GovernanceLayer::Intent, GovernanceRole::Library)
-                | (GovernanceLayer::Definition, GovernanceRole::Library) => downstream
+                (RefinementLevel::Intent, ReferenceRelation::Library)
+                | (RefinementLevel::Definition, ReferenceRelation::Library) => downstream
                     .projects
                     .iter()
                     .any(|target| target.id == upstream.id && target.version == upstream.version),
-                (GovernanceLayer::Implementation, _) => true,
-            });
+                (RefinementLevel::Implementation, _) => true,
+            }
+        });
         if !derived {
-            let code = if upstream.role == GovernanceRole::Body {
+            let code = if upstream.reference_relation == ReferenceRelation::Body {
                 "DH_DERIVATION_001"
             } else {
                 "DH_DERIVATION_002"
@@ -1276,7 +1281,7 @@ fn check_vertical_derivation_completeness(
                 upstream.path.clone(),
                 format!(
                     "Baselined {} '{}@{}' has no adjacent downstream derivation.",
-                    upstream.role.label(),
+                    upstream.reference_relation.label(),
                     upstream.id,
                     upstream.version
                 ),
@@ -1609,7 +1614,12 @@ fn collect_docs(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Result<Vec<DocFile>> {
     let bases = normalized_bases(config);
-    let lang_set: BTreeSet<_> = config.i18n.languages.iter().cloned().collect();
+    let lang_set: BTreeSet<_> = config
+        .language_representations
+        .localized
+        .iter()
+        .cloned()
+        .collect();
     let mut docs = Vec::new();
 
     for base in bases {
@@ -1734,11 +1744,17 @@ fn check_numbering(config: &Config, docs: &[DocFile], diagnostics: &mut Vec<Diag
     }
 }
 
-fn check_i18n(config: &Config, docs: &[DocFile], diagnostics: &mut Vec<Diagnostic>) {
-    if !config.i18n.require_docs_parity && !config.i18n.require_number_parity {
+fn check_language_representations(
+    config: &Config,
+    docs: &[DocFile],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if !config.language_representations.require_document_parity
+        && !config.language_representations.require_number_parity
+    {
         return;
     }
-    let Some(root_lang) = config.i18n.root_lang.as_ref() else {
+    let Some(canonical_language) = config.language_representations.canonical.as_ref() else {
         return;
     };
 
@@ -1747,7 +1763,10 @@ fn check_i18n(config: &Config, docs: &[DocFile], diagnostics: &mut Vec<Diagnosti
         if !doc.numbered {
             continue;
         }
-        let lang = doc.lang.clone().unwrap_or_else(|| root_lang.clone());
+        let lang = doc
+            .lang
+            .clone()
+            .unwrap_or_else(|| canonical_language.clone());
         let Some(number) = doc.number else {
             continue;
         };
@@ -1757,14 +1776,14 @@ fn check_i18n(config: &Config, docs: &[DocFile], diagnostics: &mut Vec<Diagnosti
             .insert((number, doc.stem.clone()));
     }
 
-    let root_docs = by_lang.get(root_lang).cloned().unwrap_or_default();
-    for lang in &config.i18n.languages {
+    let canonical_documents = by_lang.get(canonical_language).cloned().unwrap_or_default();
+    for lang in &config.language_representations.localized {
         let localized = by_lang.get(lang).cloned().unwrap_or_default();
-        for key in &root_docs {
+        for key in &canonical_documents {
             if !localized.contains(key) {
-                let root_path = root_doc_path(docs, root_lang, key);
+                let canonical_path = canonical_document_path(docs, canonical_language, key);
                 let mut diagnostic = Diagnostic::new(
-                    "DH_I18N_001",
+                    "DH_REPRESENTATION_001",
                     Severity::Error,
                     lang.to_string(),
                     format!(
@@ -1772,24 +1791,24 @@ fn check_i18n(config: &Config, docs: &[DocFile], diagnostics: &mut Vec<Diagnosti
                         key.0, key.1
                     ),
                 );
-                if let Some(path) = root_path {
+                if let Some(path) = canonical_path {
                     diagnostic = diagnostic.with_related(RelatedInformation::new(
                         path,
-                        "Root document that requires localization.",
+                        "Canonical document that requires localization.",
                     ));
                 }
                 diagnostics.push(diagnostic);
             }
         }
         for key in &localized {
-            if !root_docs.contains(key) {
+            if !canonical_documents.contains(key) {
                 let path = localized_doc_path(docs, lang, key).unwrap_or_else(|| lang.to_string());
                 diagnostics.push(Diagnostic::new(
-                    "DH_I18N_002",
+                    "DH_REPRESENTATION_002",
                     Severity::Warning,
                     path,
                     format!(
-                        "Localized document has no root counterpart: {:02}_{}.md.",
+                        "Localized document has no canonical counterpart: {:02}_{}.md.",
                         key.0, key.1
                     ),
                 ));
@@ -1937,7 +1956,7 @@ fn check_language(
     docs: &[DocFile],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Result<()> {
-    let Some(root_lang) = config.i18n.root_lang.as_ref() else {
+    let Some(canonical_language) = config.language_representations.canonical.as_ref() else {
         return Ok(());
     };
     if config.language.is_empty() {
@@ -1945,7 +1964,7 @@ fn check_language(
     }
 
     for doc in docs {
-        let lang = doc.lang.as_ref().unwrap_or(root_lang);
+        let lang = doc.lang.as_ref().unwrap_or(canonical_language);
         let Some(rule) = config.language.get(lang) else {
             continue;
         };
@@ -2150,13 +2169,17 @@ fn group_label(base_id: &str, lang: &Option<String>) -> String {
     }
 }
 
-fn root_doc_path(docs: &[DocFile], root_lang: &str, key: &(u32, String)) -> Option<String> {
+fn canonical_document_path(
+    docs: &[DocFile],
+    canonical_language: &str,
+    key: &(u32, String),
+) -> Option<String> {
     docs.iter()
         .find(|doc| {
             doc.numbered
                 && doc.number == Some(key.0)
                 && doc.stem == key.1
-                && doc.lang.as_deref().unwrap_or(root_lang) == root_lang
+                && doc.lang.as_deref().unwrap_or(canonical_language) == canonical_language
         })
         .map(|doc| doc.rel.display().to_string())
 }
@@ -2211,7 +2234,7 @@ fn default_patterns(regex: &str) -> Vec<FilenamePatternConfig> {
     vec![FilenamePatternConfig {
         id: "numbered".to_string(),
         regex: regex.to_string(),
-        role: "numbered".to_string(),
+        document_kind: "numbered".to_string(),
         numbered: true,
     }]
 }
@@ -2378,10 +2401,10 @@ docs:
   filenamePattern: "^\\d{2}_[a-z0-9_-]+\\.md$"
   requireContinuousNumbering: true
   maxLines: 20
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 concepts:
   dir: concept
@@ -2423,12 +2446,12 @@ concepts:
 
         assert!(codes.contains(&"DH_REQUIRED_001"));
         assert!(codes.contains(&"DH_SEQ_001"));
-        assert!(codes.contains(&"DH_I18N_001"));
+        assert!(codes.contains(&"DH_REPRESENTATION_001"));
         assert!(codes.contains(&"DH_CONCEPT_001"));
     }
 
     #[test]
-    fn accepts_clean_numbered_i18n_docs_with_concept() {
+    fn accepts_clean_numbered_language_representations_with_concept() {
         let temp = tempdir().unwrap();
         fs::create_dir_all(temp.path().join("docs/zh")).unwrap();
         fs::create_dir_all(temp.path().join("concept")).unwrap();
@@ -2642,11 +2665,11 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
-          role: index
+          documentKind: index
           numbered: false
 "#,
         )
@@ -2691,14 +2714,14 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
     - id: adr
       root: docs/adr
       patterns:
         - id: adr
           regex: "^ADR-\\d{4}_[a-z0-9_-]+\\.md$"
-          role: freeform
+          documentKind: freeform
           numbered: false
 "#,
         )
@@ -2740,10 +2763,10 @@ docs:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
           numbered: true
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 "#,
         )
@@ -2777,7 +2800,7 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
     - id: records
       root: docs/records
@@ -2785,7 +2808,7 @@ docs:
       patterns:
         - id: record
           regex: "^\\d{4}-[a-z0-9_-]+\\.md$"
-          role: record
+          documentKind: record
           numbered: false
 "#,
         )
@@ -2843,8 +2866,8 @@ requiredFiles:
 docs:
   root: docs
   filenamePattern: "^\\d{2}_[a-z0-9_-]+\\.md$"
-i18n:
-  rootLang: en
+languageRepresentations:
+  canonical: en
 language:
   en:
     maxCjkRatio: 0.05
@@ -2914,8 +2937,8 @@ requiredFiles:
 docs:
   root: docs
   filenamePattern: "^\\d{2}_[a-z0-9_-]+\\.md$"
-i18n:
-  rootLang: en
+languageRepresentations:
+  canonical: en
 language:
   en:
     maxCjkRatio: 0.05
@@ -2955,8 +2978,8 @@ requiredFiles:
 docs:
   root: docs
   filenamePattern: "^\\d{2}_[a-z0-9_-]+\\.md$"
-i18n:
-  rootLang: en
+languageRepresentations:
+  canonical: en
 language:
   en:
     maxCjkRatio: 0.05
@@ -2997,7 +3020,7 @@ docs:
       patterns:
         - id: adr
           regex: "^\\d{4}-[a-z0-9-]+\\.md$"
-          role: adr
+          documentKind: adr
 documentContracts:
   maturity:
     declared: maintained
@@ -3122,7 +3145,7 @@ documentContracts:
         if let Some(parent) = asset_path.parent() {
             fs::create_dir_all(parent).unwrap();
         }
-        if yaml.contains("role: library") && !yaml.contains("members:") {
+        if yaml.contains("referenceRelation: library") && !yaml.contains("members:") {
             let stem = Path::new(path)
                 .file_stem()
                 .and_then(|value| value.to_str())
@@ -3153,32 +3176,32 @@ documentContracts:
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd.yml",
-            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
+            "id: PRD-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "glossary.yml",
-            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
+            "id: GLOSSARY-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "spec.yml",
-            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: baselined\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
+            "id: SPEC-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: body\nstatus: baselined\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "sdk.yml",
-            "id: SDK-1\nversion: 1.0.0\nlayer: implementation\nrole: library\nstatus: current\nprojects: { id: GLOSSARY-1, version: 1.0.0 }\n",
+            "id: SDK-1\nversion: 1.0.0\nrefinementLevel: implementation\nreferenceRelation: library\nstatus: current\nprojects: { id: GLOSSARY-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "impl.yml",
-            "id: IMPL-1\nversion: 1.0.0\nlayer: implementation\nrole: body\nstatus: current\nreferences: { id: SDK-1, version: 1.0.0 }\nrealizes: { id: SPEC-1, version: 1.0.0 }\n",
+            "id: IMPL-1\nversion: 1.0.0\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nreferences: { id: SDK-1, version: 1.0.0 }\nrealizes: { id: SPEC-1, version: 1.0.0 }\n",
         );
 
         let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
@@ -3193,7 +3216,7 @@ documentContracts:
         fs::create_dir_all(&library).unwrap();
         fs::write(
             library.join("manifest.yml"),
-            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\nmembers: [declared.md, ../escaped.md]\n",
+            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [declared.md, ../escaped.md]\n",
         )
         .unwrap();
         fs::write(
@@ -3275,7 +3298,7 @@ governance:
             fs::create_dir_all(package.join("stories")).unwrap();
             fs::write(
                 package.join("manifest.yml"),
-                "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: proposed\nmembers: [stories]\n",
+                "id: PRD-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [stories]\n",
             )
             .unwrap();
             fs::write(
@@ -3348,23 +3371,23 @@ governance:
     }
 
     #[test]
-    fn reports_missing_and_cross_layer_horizontal_references() {
+    fn reports_missing_and_cross_refinement_level_horizontal_references() {
         let temp = tempdir().unwrap();
         let manifests = ["ul.yml", "prd-missing.yml", "prd-wrong.yml"];
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd-missing.yml",
-            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: proposed\n",
+            "id: PRD-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\n",
         );
         write_asset(
             temp.path(),
             "prd-wrong.yml",
-            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
+            "id: SPEC-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\nformalizes: { id: PRD-1, version: 1.0.0 }\n",
         );
 
         let report = run_checks(temp.path(), &governance_config(&manifests, false)).unwrap();
@@ -3394,22 +3417,22 @@ governance:
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "glossary.yml",
-            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
+            "id: GLOSSARY-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\nprojects: { id: UL-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "spec.yml",
-            "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\n",
+            "id: SPEC-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "impl.yml",
-            "id: IMPL-1\nversion: 1.0.0\nlayer: implementation\nrole: body\nstatus: current\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nrealizes: { id: GLOSSARY-1, version: 1.0.0 }\n",
+            "id: IMPL-1\nversion: 1.0.0\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nreferences: { id: GLOSSARY-1, version: 1.0.0 }\nrealizes: { id: GLOSSARY-1, version: 1.0.0 }\n",
         );
 
         let report = run_checks(temp.path(), &governance_config(&manifests, false)).unwrap();
@@ -3439,17 +3462,17 @@ governance:
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\n",
+            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd.yml",
-            "id: PRD-1\nversion: 1.0.0\nlayer: intent\nrole: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
+            "id: PRD-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: body\nstatus: baselined\nreferences: { id: UL-1, version: 1.0.0 }\n",
         );
         write_asset(
             temp.path(),
             "glossary.yml",
-            "id: GLOSSARY-1\nversion: 1.0.0\nlayer: definition\nrole: library\nstatus: baselined\n",
+            "id: GLOSSARY-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\n",
         );
 
         let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();

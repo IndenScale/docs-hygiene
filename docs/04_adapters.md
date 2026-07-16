@@ -32,6 +32,6 @@ Use Docs Hygiene for repository-level policy:
 
 - required documentation entry files
 - numbered docs structure
-- i18n parity
+- language-representation parity
 - language thresholds
 - concept foreign keys

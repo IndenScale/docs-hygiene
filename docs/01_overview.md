@@ -17,7 +17,7 @@ Docs Hygiene owns documentation hygiene rules that require repository context:
 - root entry docs with an allow-by-default posture
 - docs bases with a deny-by-default posture
 - numbered docs structure and index files
-- i18n parity between root docs and localized docs
+- language-representation parity between canonical and localized documents
 - language threshold checks
 - concept foreign keys
 - external adapter orchestration

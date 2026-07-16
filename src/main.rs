@@ -71,9 +71,9 @@ struct LangAddArgs {
     #[arg(long, default_value = "docs-hygiene.yml")]
     config: PathBuf,
 
-    /// Mark this language as the root language.
+    /// Mark this language as the canonical representation.
     #[arg(long)]
-    root: bool,
+    canonical: bool,
 
     /// Minimum CJK ratio for this language.
     #[arg(long)]
@@ -243,9 +243,13 @@ fn lang(command: LangCommand) -> Result<()> {
 
 fn lang_list(path: PathBuf) -> Result<()> {
     let config = Config::load(&path)?;
-    let root = config.i18n.root_lang.as_deref().unwrap_or("-");
-    println!("rootLang: {root}");
-    for lang in &config.i18n.languages {
+    let canonical = config
+        .language_representations
+        .canonical
+        .as_deref()
+        .unwrap_or("-");
+    println!("canonical: {canonical}");
+    for lang in &config.language_representations.localized {
         let threshold = config.language.get(lang);
         let min = threshold
             .and_then(|value| value.min_cjk_ratio)
@@ -262,11 +266,18 @@ fn lang_list(path: PathBuf) -> Result<()> {
 
 fn lang_add(args: LangAddArgs) -> Result<()> {
     let mut config = Config::load(&args.config)?;
-    if args.root {
-        config.i18n.root_lang = Some(args.code.clone());
-    } else if !config.i18n.languages.contains(&args.code) {
-        config.i18n.languages.push(args.code.clone());
-        config.i18n.languages.sort();
+    if args.canonical {
+        config.language_representations.canonical = Some(args.code.clone());
+    } else if !config
+        .language_representations
+        .localized
+        .contains(&args.code)
+    {
+        config
+            .language_representations
+            .localized
+            .push(args.code.clone());
+        config.language_representations.localized.sort();
     }
     let entry = config.language.entry(args.code).or_default();
     if args.min_cjk_ratio.is_some() {
@@ -280,10 +291,13 @@ fn lang_add(args: LangAddArgs) -> Result<()> {
 
 fn lang_remove(args: LangRemoveArgs) -> Result<()> {
     let mut config = Config::load(&args.config)?;
-    config.i18n.languages.retain(|lang| lang != &args.code);
+    config
+        .language_representations
+        .localized
+        .retain(|lang| lang != &args.code);
     config.language.remove(&args.code);
-    if config.i18n.root_lang.as_deref() == Some(args.code.as_str()) {
-        config.i18n.root_lang = None;
+    if config.language_representations.canonical.as_deref() == Some(args.code.as_str()) {
+        config.language_representations.canonical = None;
     }
     config.save(&args.config)
 }

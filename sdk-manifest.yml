@@ -1,12 +1,12 @@
 id: SDK-001
-version: 0.1.0
-layer: implementation
-role: library
+version: 0.2.0
+refinementLevel: implementation
+referenceRelation: library
 status: current
 
 projects:
   id: GLOSSARY-001
-  version: 1.0.0
+  version: 1.1.0
 
 members:
   - src/lib.rs

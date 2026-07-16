@@ -1,9 +1,9 @@
 ---
 id: DH-GOVERNED-BODY
-version: 1.0.0
+version: 1.1.0
 status: baselined
 ---
 
 # Governed Body
 
-A concrete governed assertion within one layer, such as a PRD, Spec, Test Definition, code, or configuration.
+A concrete governed assertion at one refinement level, such as a PRD, Spec, Test Definition, code, or configuration.

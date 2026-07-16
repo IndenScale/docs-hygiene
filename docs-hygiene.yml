@@ -30,11 +30,11 @@ docs:
       patterns:
         - id: numbered
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: index
           regex: "^INDEX\\.md$"
-          role: index
+          documentKind: index
           numbered: false
     - id: intent
       root: docs/intent
@@ -50,11 +50,11 @@ docs:
       patterns:
         - id: numbered-intent
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: intent-index
           regex: "^README\\.md$"
-          role: index
+          documentKind: index
           numbered: false
     - id: definition
       root: docs/definition
@@ -70,11 +70,11 @@ docs:
       patterns:
         - id: numbered-definition
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: definition-index
           regex: "^README\\.md$"
-          role: index
+          documentKind: index
           numbered: false
     - id: intent-library
       root: docs/intent/ul
@@ -85,7 +85,7 @@ docs:
       patterns:
         - id: term
           regex: "^[a-z0-9-]+\\.md$"
-          role: library-term
+          documentKind: library-term
           numbered: false
     - id: definition-library
       root: docs/definition/glossary
@@ -96,7 +96,7 @@ docs:
       patterns:
         - id: term
           regex: "^[a-z0-9-]+\\.md$"
-          role: library-term
+          documentKind: library-term
           numbered: false
     - id: intent-body-packages
       root: docs/intent/prd
@@ -107,7 +107,7 @@ docs:
       patterns:
         - id: body-item
           regex: "^[a-z0-9-]+\\.md$"
-          role: body-item
+          documentKind: body-item
           numbered: false
     - id: definition-body-packages
       root: docs/definition/spec
@@ -118,7 +118,7 @@ docs:
       patterns:
         - id: body-item
           regex: "^[a-z0-9-]+\\.md$"
-          role: body-item
+          documentKind: body-item
           numbered: false
     - id: position
       root: docs/position
@@ -129,17 +129,17 @@ docs:
       patterns:
         - id: numbered-position
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          role: numbered
+          documentKind: numbered
           numbered: true
         - id: position-index
           regex: "^README\\.md$"
-          role: index
+          documentKind: index
           numbered: false
 
-i18n:
-  rootLang: en
-  languages: [zh]
-  requireDocsParity: true
+languageRepresentations:
+  canonical: en
+  localized: [zh]
+  requireDocumentParity: true
   requireNumberParity: true
 
 concepts:
@@ -171,15 +171,15 @@ documentContracts:
       orderedSections: true
       requiredSections:
         - id: position-statement
-          headings: [Position Statement, 立场主张]
-        - id: model
-          headings: [Model, 模型]
-        - id: reference-axis
-          headings: [Reference Axis, Reference 轴, 引用轴]
-        - id: subject-axis
-          headings: [Subject Axis, 主体轴]
-        - id: governance-implications
-          headings: [Governance Implications, 治理含义]
+          headings: [Position, 立场主张]
+        - id: refinement-level
+          headings: [Refinement Level, 精化层级]
+        - id: reference-relation
+          headings: [Reference Relation, 引用关系]
+        - id: language-representation
+          headings: [Language Representation, 语言表示]
+        - id: governance-graph
+          headings: [Governance Graph, 治理关系图]
         - id: boundaries
           headings: [Boundaries, 边界]
       requiredFields:

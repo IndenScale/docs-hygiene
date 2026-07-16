@@ -1,6 +1,6 @@
-# Definition Layer
+# Definition Refinement Level
 
-This directory contains the Definition Layer. Its Reference Library is the versioned
+This directory contains the Definition Refinement Level. Its Library is the versioned
 `glossary/` recursive domain tree, with one precise identity per Markdown leaf. Its
 governed Bodies are recursive Spec Packages under `spec/` and Test Definitions.
 
@@ -14,5 +14,5 @@ governed Bodies are recursive Spec Packages under `spec/` and Test Definitions.
 
 ## Assets
 
-- [Three-Layer Governance Glossary directory](glossary/)
-- [Three-Layer Governance Spec](spec/spec-001/index.md)
+- [Three-Dimensional Governance Glossary directory](glossary/)
+- [Three-Dimensional Governance Spec](spec/spec-001/index.md)

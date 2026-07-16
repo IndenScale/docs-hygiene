@@ -1,8 +1,8 @@
 # Docs Hygiene
 
 Docs Hygiene is a repository documentation checker. It runs locally and in CI
-to verify that documents are complete, clearly organized, and traceable across
-layers.
+to verify that documents are complete, clearly organized, and traceable from
+intent through definition to implementation.
 
 In AI-assisted development, implementation capacity scales faster than shared
 understanding and business verification. A vague requirement can now drive
@@ -22,12 +22,12 @@ It is not a Markdown syntax linter. Use markdownlint for Markdown formatting, ly
 - required files such as README, CHANGELOG, and LICENSE
 - numbered docs under `docs/`
 - document length budgets
-- i18n parity between root docs and localized docs
+- parity between canonical and localized language representations
 - path-inferred document contracts with maturity-aware required sections
 - concept foreign keys from highlighted terms to `concept/*.md`
 - versioned manifests for Intent, Definition, and Implementation documents
-- references from subject documents to same-layer reference documents
-- adjacent-layer traceability from intent through definition to implementation
+- references from Bodies to Libraries at the same refinement level
+- adjacent-refinement-level traceability from intent through definition to implementation
 - adapter orchestration for tools such as markdownlint
 
 The product direction is to extend these foundations from structural hygiene
@@ -43,34 +43,36 @@ amplifies it. They do not ask an LLM to decide business meaning on behalf of a
 team; deterministic checks block broken references and incomplete contracts,
 while ambiguous semantic differences become explicit review items.
 
-## Subjects and References
+## Three Governance Dimensions
 
-Each layer contains two document roles:
+Every governed asset is located by three independent dimensions:
 
-- a **Body** describes what this project specifically intends, defines, or implements;
-- a **Reference** stores reusable terms, types, and rules so multiple Bodies can share
-  a coherent vocabulary.
+- **Refinement level**: Intent, Definition, or Implementation;
+- **Reference relation**: a project-specific Body or a shared Library;
+- **Language representation**: `en`, `zh`, or another configured language code.
 
-## Three Document Layers
+One representation is canonical. Localized representations preserve the same semantic identity, version, lifecycle, structure, and governance edges; they are not separate assets.
 
-Documents are organized into Intent, Definition, and Implementation:
+## Refinement Levels and Reference Relations
 
-| Layer | Body | Reference |
+Refinement progressively reduces ambiguity and implementation freedom:
+
+| Refinement level | Body | Library |
 | --- | --- | --- |
 | Intent | PRDs: why, for whom, and what outcome is wanted | Ubiquitous Language (UL): shared product terms |
 | Definition | Specs and test definitions: what precisely counts as correct | Glossary: precise definitions of product terms |
 | Implementation | Code and configuration: how the definition is implemented | SDK: reusable types, interfaces, and rules |
 
 Bodies progress through `PRD → Spec/Test Definition → Code/Configuration`;
-references are refined through `UL → Glossary → SDK`. This repository keeps Intent assets under `docs/intent`, Definition
+Libraries are refined through `UL → Glossary → SDK`. This repository keeps Intent assets under `docs/intent`, Definition
 assets under `docs/definition`, and their Chinese counterparts under `docs/zh`.
 UL lives under `docs/intent/ul/`, and Glossary under `docs/definition/glossary/`; each
 domain has a Manifest and each stable term is one Markdown leaf. PRD and Spec live
 under `docs/intent/prd/` and `docs/definition/spec/` as directory Bodies. Implementation stays
 in the repository root: `src/lib.rs` is the SDK, while code and configuration
 relationships are declared in `implementation-manifest.yml`. The core
-checker resolves these assets by stable ID and version, validates same-layer references,
-and validates adjacent-layer `formalizes`, `realizes`, and `projects` edges.
+checker resolves these assets by stable ID and version, validates same-refinement-level references,
+and validates adjacent-refinement-level `formalizes`, `realizes`, and `projects` edges.
 
 ## Product Boundary
 

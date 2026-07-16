@@ -48,6 +48,24 @@ fn lang_commands_update_config() {
         .assert()
         .success();
 
+    let initialized = std::fs::read_to_string(&config).unwrap();
+    assert!(initialized.contains("languageRepresentations:"));
+    assert!(initialized.contains("canonical: en"));
+    assert!(initialized.contains("documentKind: numbered"));
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args([
+            "lang",
+            "add",
+            "en",
+            "--canonical",
+            "--config",
+            config.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
     Command::cargo_bin("docs-hygiene")
         .unwrap()
         .args([
@@ -81,6 +99,7 @@ fn lang_commands_update_config() {
         .args(["lang", "list", "--config", config.to_str().unwrap()])
         .assert()
         .success()
+        .stdout(predicate::str::contains("canonical: en"))
         .stdout(predicate::str::contains("ja"))
         .stdout(predicate::str::contains("minCjkRatio=0.1"))
         .stdout(predicate::str::contains("maxCjkRatio=0.9"));
@@ -97,6 +116,23 @@ fn lang_commands_update_config() {
         .assert()
         .success()
         .stdout(predicate::str::contains("ja").not());
+}
+
+#[test]
+fn legacy_configuration_names_are_rejected() {
+    let temp = tempdir().unwrap();
+    std::fs::write(
+        temp.path().join("docs-hygiene.yml"),
+        "i18n:\n  rootLang: en\n  languages: [zh]\n",
+    )
+    .unwrap();
+
+    Command::cargo_bin("docs-hygiene")
+        .unwrap()
+        .args(["check", temp.path().to_str().unwrap()])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown field `i18n`"));
 }
 
 #[test]
@@ -211,7 +247,7 @@ fn governance_graph_failures_block_the_cli_gate() {
     .unwrap();
     std::fs::write(
         temp.path().join("ul.yml"),
-        "id: UL-1\nversion: 1.0.0\nlayer: intent\nrole: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(
@@ -221,7 +257,7 @@ fn governance_graph_failures_block_the_cli_gate() {
     .unwrap();
     std::fs::write(
         temp.path().join("spec.yml"),
-        "id: SPEC-1\nversion: 1.0.0\nlayer: definition\nrole: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\n",
+        "id: SPEC-1\nversion: 1.0.0\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\nreferences: { id: UL-1, version: 1.0.0 }\n",
     )
     .unwrap();
 

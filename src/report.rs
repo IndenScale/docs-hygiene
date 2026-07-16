@@ -72,8 +72,12 @@ impl Report {
             "DH_SEQ_002" => Some("A numbered docs directory uses the same number more than once."),
             "DH_SIZE_001" => Some("A docs file exceeds the configured line budget."),
             "DH_ASCII_001" => Some("A document contains a forbidden ASCII art block."),
-            "DH_I18N_001" => Some("A root docs file is missing a localized counterpart."),
-            "DH_I18N_002" => Some("A localized docs file has no root counterpart."),
+            "DH_REPRESENTATION_001" => {
+                Some("A canonical document is missing a localized representation.")
+            }
+            "DH_REPRESENTATION_002" => {
+                Some("A localized representation has no canonical document.")
+            }
             "DH_LANG_001" => {
                 Some("A document has less CJK content than its language policy expects.")
             }
@@ -101,7 +105,7 @@ impl Report {
                 Some("A governance manifest is missing, malformed, duplicated, or invalid.")
             }
             "DH_REFERENCE_001" => {
-                Some("A Body is missing a valid same-layer reference to a Library.")
+                Some("A Body is missing a valid same-refinement-level reference to a Library.")
             }
             "DH_LIBRARY_001" => Some(
                 "A Library directory has a missing, malformed, duplicate, or undeclared member term.",
@@ -110,10 +114,10 @@ impl Report {
                 "A directory Body Package has a missing, malformed, duplicate, undeclared, or localized-mismatched member.",
             ),
             "DH_DERIVATION_001" => {
-                Some("A Body has a missing or invalid adjacent-layer derivation.")
+                Some("A Body has a missing or invalid adjacent-refinement-level derivation.")
             }
             "DH_DERIVATION_002" => {
-                Some("A Library has a missing or invalid adjacent-layer projection.")
+                Some("A Library has a missing or invalid adjacent-refinement-level projection.")
             }
             "DH_ADAPTER_001" => Some("An external documentation adapter reported a failure."),
             "DH_SUPPRESSION_001" => Some("A diagnostic was suppressed by configuration."),

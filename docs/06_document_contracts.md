@@ -61,4 +61,4 @@ The recommendation is diagnostic only. A repository must explicitly raise `decla
 
 ## Multilingual Boundary
 
-Localized headings map to the same semantic section ID, so structural contracts do not require identical visible titles. Existing i18n parity checks still govern counterpart presence. Detecting stale translated content needs a source revision or content hash and is intentionally outside this first contract increment.
+Localized headings map to the same semantic section ID, so structural contracts do not require identical visible titles. Existing language-representation parity checks still govern counterpart presence. Detecting stale translated content needs a source revision or content hash and is intentionally outside this first contract increment.

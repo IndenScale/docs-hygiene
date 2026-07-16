@@ -1,6 +1,6 @@
-# Definition Layer
+# Definition Refinement Level
 
-本目录保存 Definition Layer。它的 Reference Library 是版本化 `glossary/` 递归领域
+本目录保存 Definition Refinement Level。它的 Library 是版本化 `glossary/` 递归领域
 树，每个 Markdown 叶子只定义一个精确身份；受治理 Body 是 `spec/` 下的递归 Spec
 Package 与 Test Definition。
 
@@ -14,5 +14,5 @@ Package 与 Test Definition。
 
 ## 资产
 
-- [三层治理 Glossary 目录](glossary/)
-- [三层治理 Spec](spec/spec-001/index.md)
+- [三维治理 Glossary 目录](glossary/)
+- [三维治理 Spec](spec/spec-001/index.md)
