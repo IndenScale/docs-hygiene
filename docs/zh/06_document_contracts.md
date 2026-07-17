@@ -42,6 +42,35 @@ requiredFields:
 orderedSections: true
 ```
 
+## 可复用模板注册表
+
+`documentContracts.templates` 把共享契约策略从单个 Profile 中提取出来。Profile 指定一个
+模板，并可追加自己的章节、字段或占位符表达式。解析时模板列表成员在 Profile 成员之前；
+Profile 标量覆盖模板标量。解析后重复的章节或字段 ID 属于配置错误，而非隐式覆盖。
+
+```yaml
+documentContracts:
+  templates:
+    - id: maintained-open-contract
+      revision: 1
+      compatibleFrom: 1
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      orderedSections: true
+  profiles:
+    - id: project-readme
+      template: maintained-open-contract
+      templateRevision: 1
+      match:
+        paths: [README.md, README_ZH.md]
+```
+
+画像报告公开模板绑定和不完整覆盖。受控复用要求注册表有效、每个 Profile 都已绑定且每个
+模板都被使用。旧内联 Profile 保持兼容，但不能证明复用。治理级模板进一步声明正整数
+revision 窗口和精确 Profile pin。使用 `docs-hygiene migrate-templates --check` 检测缺失或
+兼容但过期的 pin，使用 `docs-hygiene migrate-templates` 原子推进；不兼容 pin 会阻止全部
+写入。详见 [SPEC-003 C-010](definition/spec/spec-003/constraints/template-lifecycle.md)。
+
 ## 成熟度与占位符
 
 成熟度依次为 `seed`、`growing`、`maintained` 和 `governed`。Profile 的 `enforceFrom` 指定缺失要求从哪个等级开始成为错误；在此之前只产生 warning。
@@ -60,6 +89,9 @@ maturity:
 建议只产生诊断。项目必须显式提高 `declared`，更强的 Profile 门禁才会生效。通用规则族
 的适用性由[渐进式规则激活](10_progressive_rule_activation.md)独立推导，因此项目不必
 为所有治理规则选择一个全局成熟度。
+
+这四个名称仍是已交付的文档契约兼容模型。[PRD-004](intent/prd/prd-004/index.md)提出在
+每个能力维度上应用独立的三层成熟度，但不会追溯性地改变当前配置契约。
 
 ## 多语言边界
 

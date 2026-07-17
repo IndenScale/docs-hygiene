@@ -132,15 +132,15 @@ language:
 
 ## 文档契约
 
-`documentContracts.profiles` 根据路径和文件名推导文档类型，第一个匹配的 profile 生效。必要章节可以声明多语言标题别名，其他章节始终开放。完整决策和模型见[文档契约](06_document_contracts.md)。
+`documentContracts.profiles` 根据路径和文件名推导文档类型，`documentContracts.templates` 通过稳定绑定提供可复用契约片段；第一个匹配的 Profile 生效。合并、成熟度和迁移边界见[文档契约](06_document_contracts.md)。
 
-`documentContracts.maturity.declared` 仍是已配置文档 Profile 的严重程度下限。项目规模
-建议只产生信息；通用规则适用性由渐进式激活独立推导。
+`documentContracts.maturity.declared` 仍是已配置文档 Profile 的严重程度下限。项目规模建议只产生信息；通用规则适用性由渐进式激活独立推导。
+
+多维 `hygieneProfile.dimensions` 的配置、迁移、证据、输出和 CI 语义见[文档卫生画像](12_hygiene_profile.md)。
 
 ## 规则激活
 
-`rules` 独立于文档契约成熟度控制稳定规则族。默认 `auto` 模式从集中式项目事实推导
-适用性；`required` 强制 error 状态，`disabled` 强制 inactive 状态。
+`rules` 独立于文档契约成熟度控制稳定规则族。默认 `auto` 模式从集中式项目事实推导适用性；`required` 强制 error 状态，`disabled` 强制 inactive 状态。
 
 ```yaml
 rules:
@@ -158,9 +158,7 @@ rules:
 
 ## 治理关系图
 
-`governance.manifests` 启用基于 ID 的资产解析、强制语义 Wiki Link、可选内容哈希锚、垂直派生和递归 Package
-成员校验。UL 与 Glossary 是 Library Tree；PRD 与 Spec 是目录 Body Package。
-Manifest Schema、关系规则和完整性策略见[治理关系图](07_governance_graph.md)。
+`governance.manifests` 启用关系图；`governance.topology` 可选地执行 Fan 与循环阈值；`governance.contentAnchors.verifyGitCommits` 显式启用 commit 锚的本地 Git 校验，默认关闭，file 与 block SHA-256 锚不需要该开关。完整契约见[治理关系图](07_governance_graph.md)。
 
 ## 禁止 ASCII 字符画
 

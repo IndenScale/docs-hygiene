@@ -28,3 +28,6 @@ Docs Hygiene 负责需要项目上下文的文档卫生规则：
 它不负责通用 Markdown 格式、外部 URL 爬取、拼写或文风；这些能力继续交给
 markdownlint、lychee、Vale、cspell 或 slop-lint。这个边界不排除对项目根目录内
 Markdown 目标、Wiki Link 身份、frontmatter 和文档结构的治理校验。
+
+计划中的[文档卫生治理模型](11_hygiene_governance_model.md)分离能力维度、成熟度和执行
+状态。在 PRD-004 实现之前，它不会改变已交付的产品边界。

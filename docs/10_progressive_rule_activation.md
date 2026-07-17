@@ -15,7 +15,8 @@ project files and policy
 
 Facts include Markdown document and line counts, code lines, localized
 documents, concept documents, Manifests, frontmatter, semantic Wiki Links,
-configured document profiles, governed refinement levels, and enabled Adapters.
+configured document profiles, governed refinement levels, explicit topology
+policies, and enabled Adapters.
 Ignore policy is applied before facts are counted.
 
 ## Stable Rule Families
@@ -27,13 +28,23 @@ Ignore policy is applied before facts are counted.
 | `documents.contracts` | path-inferred semantic document contracts |
 | `localization.parity` | language thresholds and representation parity |
 | `concepts.references` | concept foreign keys and orphan concepts |
-| `governance.identity` | identities, packages, and semantic references |
+| `governance.identity` | identities, packages, semantic references, and heading selectors |
 | `governance.traceability` | adjacent-level derivation and projection |
+| `governance.topology` | explicit Fan-In, Fan-Out, and cycle policy |
 | `adapters.external` | external Adapter execution |
 
 Every decision has a `mode`, a state, ordered evidence, a rationale, and
 remediation. States progress through `inactive`, `advisory`, `warning`, and
 `error`.
+
+## Maturity Boundary
+
+Activation state describes how one rule executes now; it is not a documentation
+hygiene maturity level. The target model in [Documentation Hygiene Governance
+Model](11_hygiene_governance_model.md) applies basic, controlled, or governed
+maturity independently to each capability dimension while retaining these
+activation states as explicit execution policy. The multidimensional profile is
+delivered and reports these decisions without replacing them.
 
 ## Automatic Activation
 
@@ -57,6 +68,8 @@ Per-rule policy overrides automatic inference:
 rules:
   governance.traceability:
     mode: auto
+  governance.topology:
+    mode: auto
   localization.parity:
     mode: required
   adapters.external:
@@ -69,6 +82,9 @@ rules:
   process from emitting diagnostics.
 
 Unknown rule IDs and unknown mode values are configuration errors.
+`governance.topology` remains inactive in `auto` mode until at least one explicit
+`governance.topology` threshold is configured; graph presence or scale alone
+never makes it blocking.
 
 ## Explainability
 

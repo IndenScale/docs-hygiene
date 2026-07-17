@@ -2,9 +2,47 @@
 
 ## Unreleased
 
-- Add deterministic progressive rule activation with eight stable rule-family
-  IDs, auto/required/disabled modes, four activation states, checker enforcement,
-  and versioned `explain-rules` text and JSON output.
+- Define the planned multidimensional documentation governance model in PRD-004:
+  three maturity levels per capability dimension, independent rule execution
+  states, and a unified typed edge abstraction for semantic dependencies.
+- Add SPEC-003 with deterministic profile, N/A, exception, compatibility, edge,
+  and delivery-slice semantics; centralize the nine compatibility rule families'
+  metadata in the first implementation registry.
+- Add atomic invariant registration and `docs-hygiene.profile.v1` text and JSON
+  reports with target/observed maturity, execution decisions, N/A rationale,
+  legacy mapping, suppression non-evidence, and optional below-target gating.
+- Normalize semantic references, pinned references, derivations, and projections
+  into ordered governance edge records; make derivation and staleness checks
+  consume them; and expose deterministic basic graph metrics in the profile.
+- Compute distinct-neighbor Fan-In/Fan-Out and deterministic directed cycle
+  groups; add explicit `maxFanIn`, `maxFanOut`, and `forbidCycles` enforcement.
+- Add reusable document-contract templates with stable bindings, deterministic
+  template/profile merge, registry diagnostics, profile coverage evidence, and
+  compatibility for existing inline profiles; migrate the repository policy to
+  one shared template across all five profiles.
+- Add governed template lifecycle with revision compatibility windows, exact
+  profile pins, `DH_TEMPLATE_003/004`, versioned migration reports, read-only
+  checks, and atomic compatible pin migration; raise the repository structure
+  target to governed.
+- Add semantic Wiki Link heading selectors with deterministic ATX slug
+  resolution, `DH_SELECTOR_001`, localized signature parity, normalized edge and
+  profile evidence, coexistence with whole-file pins, and repository dogfood.
+- Add the versioned `docs-hygiene.reference-occurrence.v1` IR, shared Wiki Link,
+  Markdown Link, and frontmatter collectors, explicit syntax/context policy, and
+  syntax-independent edge normalization without changing edge JSON or diagnostics.
+- Add frontmatter multi-anchor declarations, compatible file-scope JSON,
+  deterministic ATX-block SHA-256 spans, scoped-anchor profile evidence,
+  per-item diagnostics, and default-off local Git commit verification.
+- Add ordered reverse transitive-impact sets across all resolved semantic edge
+  kinds, with deduplication, cycle-safe traversal, profile evidence, repository
+  dogfood, and a maximum-impact text summary.
+- Add lifecycle status obligations and `supersededBy` authority migration for
+  governed assets and package identities, localized parity, terminal-target
+  rejection, ordered report evidence, and governed identity profile maturity.
+- Add deterministic progressive rule activation with nine stable rule-family
+  IDs, including opt-in `governance.topology`; retain auto/required/disabled
+  modes, four activation states, checker enforcement, and versioned
+  `explain-rules` text and JSON output.
 
 - Replace the overloaded governance fields `layer` and `role` with
   `refinementLevel` and `referenceRelation`; replace filename-pattern `role`

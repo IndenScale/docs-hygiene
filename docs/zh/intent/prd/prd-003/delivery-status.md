@@ -5,5 +5,6 @@ status: baselined
 
 # 交付状态
 
-集中式事实模型、八个规则族、四级激活状态、显式覆盖、checker 执行和版本化
-`explain-rules` 输出已经交付。
+集中式事实模型、原有八个规则族、四级激活状态、显式覆盖、checker 执行和版本化
+`explain-rules` 输出已经交付。PRD-004 在保留该基线的同时增加第九个
+`governance.topology` 规则族。

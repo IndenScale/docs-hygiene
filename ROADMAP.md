@@ -24,15 +24,48 @@ remain the authority for delivered behavior.
 - Source files are governed by a 500-line warning and a 1,000-line CI error;
   the core checker is split into responsibility-focused private units and the
   current repository passes without warnings or exceptions.
-- Progressive rule activation derives eight stable rule-family decisions from
+- Progressive rule activation derives nine stable rule-family decisions from
   deterministic project facts, supports per-rule auto/required/disabled policy,
   and exposes evidence through versioned `explain-rules` text and JSON output.
+- The first PRD-004 implementation slice centralizes compatibility-family
+  metadata in an ordered registry without changing current diagnostics or modes.
+- The second PRD-004 slice registers atomic invariants and emits the versioned
+  multidimensional `profile` report with optional target gating.
+- The third PRD-004 slice normalizes semantic references, pins, derivations, and
+  projections into ordered governance edges and reports basic graph metrics.
+- The fourth PRD-004 slice reports distinct-neighbor Fan-In/Fan-Out and cycle
+  groups, with opt-in thresholds under the independent topology rule family.
+- The fifth PRD-004 slice adds reusable document-contract templates,
+  deterministic merge and validation, complete binding evidence, and repository
+  migration from repeated inline policy.
+- The sixth PRD-004 slice adds template revision compatibility windows, exact
+  profile pins, read-only migration planning, and atomic compatible migration;
+  repository structure governance now reaches governed maturity.
+- The seventh PRD-004 slice resolves lowercase heading selectors against
+  canonical ATX headings, preserves localized signatures, and retains selector
+  evidence on normalized governance edges.
+- The eighth PRD-004 slice separates declaration syntax from edge semantics with
+  a versioned reference-occurrence IR, three collectors, explicit policy, and a
+  syntax-independent normalizer while preserving the public edge contract.
+- The ninth PRD-004 slice adds deterministic file and ATX-block SHA-256 anchors,
+  frontmatter multi-anchor declarations, per-item diagnostics, and explicitly
+  opt-in local Git commit verification without changing existing inline pins.
+- The tenth PRD-004 slice reports deterministic reverse transitive impact across
+  every resolved semantic edge kind, including deduplication and cycle-safe
+  propagation, without coupling analysis to budgets or notification policy.
+- The eleventh PRD-004 slice enforces lifecycle status obligations across assets
+  and package identities, validates `supersededBy` successors, rejects stale
+  terminal targets, and reports ordered authority-migration evidence.
 
 ## Planned
 
 - [PRD-001 Three-Layer Contract Governance](docs/intent/prd/prd-001/index.md)
   will extend the delivered asset graph with item-level requirement coverage,
   symbol-level semantic projection and end-to-end traces from intent to implementation.
+- [PRD-004 Multidimensional Documentation Governance](docs/intent/prd/prd-004/index.md)
+  is in progress through [SPEC-003](docs/definition/spec/spec-003/index.md). Next
+  slices add budgets, exceptions, and trends while retaining rule activation as
+  a separate execution state.
 
 ## Backlog
 
@@ -44,8 +77,13 @@ remain the authority for delivered behavior.
 
 - A Markdown link provides path navigation; a Wiki Link establishes a semantic
   identity reference but does not prove natural-language consistency.
+- Semantic references, pins, derivations, and projections may share dependency
+  governance without turning navigational Markdown Links into semantic edges.
 - Document versions are not part of the governance identity model. Git records
   history, while optional content hashes anchor review-sensitive dependencies.
+- Commit anchors are opt-in physical audit evidence: they compare canonical
+  target bytes with a local Git commit but never replace stable semantic IDs or
+  make Git history the governance authority.
 - LSP or editor integration is not required by the current delivery baseline.
 - Work items and feature tickets live in the repository as governed documents;
   external issue trackers are not part of the project baseline.

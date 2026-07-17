@@ -42,6 +42,40 @@ requiredFields:
 orderedSections: true
 ```
 
+## Reusable Template Registry
+
+`documentContracts.templates` extracts shared contract policy from individual
+profiles. A profile names one template and may append its own sections, fields,
+or placeholder patterns. Template list members are resolved before profile
+members; profile scalar values override template scalars. Duplicate resolved
+section or field IDs are configuration errors, not implicit overrides.
+
+```yaml
+documentContracts:
+  templates:
+    - id: maintained-open-contract
+      revision: 1
+      compatibleFrom: 1
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      orderedSections: true
+  profiles:
+    - id: project-readme
+      template: maintained-open-contract
+      templateRevision: 1
+      match:
+        paths: [README.md, README_ZH.md]
+```
+
+The profile report exposes template bindings and incomplete coverage. Controlled
+reuse requires a valid registry, every profile bound, and every template used.
+Inline profiles remain compatible but do not prove reuse. Governed templates
+add positive integer revision windows and exact profile pins. Use
+`docs-hygiene migrate-templates --check` to detect missing or compatible stale
+pins, and `docs-hygiene migrate-templates` to advance them atomically. An
+incompatible pin blocks every write. See
+[SPEC-003 C-010](definition/spec/spec-003/constraints/template-lifecycle.md).
+
 ## Maturity And Placeholders
 
 The maturity order is `seed`, `growing`, `maintained`, and `governed`. A profile's `enforceFrom` selects the first level where missing requirements become errors. Before that level they remain warnings.
@@ -61,6 +95,11 @@ The recommendation is diagnostic only. A project explicitly raises `declared`
 before stronger profile gates take effect. General rule-family applicability is
 derived separately through [Progressive Rule Activation](10_progressive_rule_activation.md),
 so projects do not need to select one global maturity for every governance rule.
+
+These four names remain the delivered Document Contract compatibility model.
+[PRD-004](intent/prd/prd-004/index.md) proposes a separate three-level maturity
+applied per capability dimension; it does not retroactively change this
+configuration contract.
 
 ## Multilingual Boundary
 

@@ -46,6 +46,17 @@ When `docs.forbidAsciiArt` is enabled, `DH_ASCII_001` reports consecutive ASCII 
 
 `DH_CONTRACT_004` reports required sections in the wrong order.
 
+`DH_TEMPLATE_001` reports an invalid template/profile identity, duplicate
+declaration, unknown binding, invalid expression, or duplicate resolved member.
+
+`DH_TEMPLATE_002` reports a configured template with no profile binding.
+
+`DH_TEMPLATE_003` reports template revision metadata or a compatible profile
+pin that needs migration. It blocks only at governed document-contract maturity.
+
+`DH_TEMPLATE_004` reports a profile pin outside its template's declared
+compatibility window and always blocks.
+
 `DH_MATURITY_001` recommends a higher declared profile maturity from configured project-scale signals.
 
 ## Concepts
@@ -76,6 +87,9 @@ semantic identity, invalid lifecycle status, or the removed document-level
 `DH_REFERENCE_001` reports a missing, unresolved, refinement-invalid, or
 content-hash-stale semantic Wiki Link to a Library identity.
 
+`DH_SELECTOR_001` reports a semantic Wiki Link heading selector that does not
+resolve in the canonical governed target.
+
 `DH_LIBRARY_001` reports a missing, malformed, duplicate, or undeclared member
 of a recursive Library tree, including removed leaf-level `version` or `source` metadata.
 
@@ -89,6 +103,10 @@ adjacent-refinement-level Body derivation through `formalizes` or `realizes`.
 
 `DH_DERIVATION_002` reports a missing, unresolved, wrongly typed, or incomplete
 adjacent-refinement-level Library projection through `projects`.
+
+`DH_TOPOLOGY_001` reports a governed identity whose distinct-neighbor Fan-In or
+Fan-Out exceeds an explicit threshold. `DH_TOPOLOGY_002` reports a directed
+cycle group when `forbidCycles` is enabled.
 
 ## Adapters
 

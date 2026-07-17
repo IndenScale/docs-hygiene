@@ -68,12 +68,21 @@ Docs Hygiene currently provides deterministic project-level governance checks:
 
 - required entry files such as README, CHANGELOG, and LICENSE;
 - numbered documents, allowed file types, and length budgets;
-- path-inferred document contracts with maturity-aware enforcement;
+- path-inferred document contracts with reusable templates, deterministic
+  profile binding, revision migration, and maturity-aware enforcement;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
+- a versioned reference-occurrence IR with shared collectors and explicit
+  syntax/context policy before semantic edge normalization;
 - YAML frontmatter, identity Manifests, and recursive Package structure;
-- adjacent-level governance edges across Intent, Definition, and Implementation;
+- lifecycle status obligations, terminal-target rejection, and explicit
+  `supersededBy` authority migration across assets and package identities;
+- normalized semantic, pinned, derivation, and projection governance edges with
+  heading selectors, file/block/opt-in commit anchors, deterministic
+  transitive impact, Fan-In/Fan-Out, cycle groups, and opt-in topology thresholds;
+- versioned multidimensional hygiene profiles with target, observed, N/A, and
+  invariant evidence while retaining independent rule execution states;
 - Adapter orchestration for external tools such as markdownlint.
 
 Docs Hygiene does not replace tools for Markdown formatting, external URLs,
@@ -97,10 +106,15 @@ state. Project policy retains final authority through `auto`, `required`, and
 ```bash
 docs-hygiene explain-rules
 docs-hygiene explain-rules --format json
+docs-hygiene profile
+docs-hygiene profile --format json
+docs-hygiene migrate-templates --check
 ```
 
 See [Progressive Rule Activation](docs/10_progressive_rule_activation.md) for
 the fact model, rule IDs, override precedence, and severity contract.
+The profile evaluator now separates maturity, capability dimensions, and
+execution state. See the [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md).
 
 ## Quick Start
 
@@ -120,6 +134,7 @@ Run the checks:
 
 ```bash
 ./target/release/docs-hygiene check /path/to/project --fail-on-warning
+./target/release/docs-hygiene profile /path/to/project --fail-below-target
 ```
 
 If the binary is already installed or available on `PATH`:
@@ -136,7 +151,8 @@ promotes warnings to a gate. Use JSON when another tool consumes the report:
 docs-hygiene check --format json
 ```
 
-Other commands include `init`, `lang`, `explain`, and `explain-rules`. Run
+Other commands include `init`, `lang`, `migrate-templates`, `explain`, and
+`explain-rules`. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy
@@ -185,5 +201,7 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [Document Contracts](docs/06_document_contracts.md)
 - [Governance Graph](docs/07_governance_graph.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
+- [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
+- [Hygiene Profiles](docs/12_hygiene_profile.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

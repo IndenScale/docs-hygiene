@@ -125,11 +125,11 @@ language:
 
 ## Document Contracts
 
-`documentContracts.profiles` infers a document type from path and file name. The first matching profile applies. Required sections accept localized heading aliases; additional sections are always allowed. See [Document Contracts](06_document_contracts.md) for the decision and full model.
+`documentContracts.profiles` infers a document type from path and file name; `documentContracts.templates` supplies reusable contract fragments through stable profile bindings. The first matching profile applies. See [Document Contracts](06_document_contracts.md) for merge, maturity, and migration boundaries.
 
-`documentContracts.maturity.declared` remains a severity floor for configured
-document profiles. Project-scale recommendations emit information; general rule
-applicability is derived independently through progressive activation.
+`documentContracts.maturity.declared` remains a severity floor for configured document profiles. Project-scale recommendations emit information; general rule applicability is derived independently through progressive activation.
+
+Multidimensional `hygieneProfile.dimensions` configuration, migration, evidence, output, and CI semantics are defined in [Hygiene Profiles](12_hygiene_profile.md).
 
 ## Rule Activation
 
@@ -153,7 +153,7 @@ or error states. See [Progressive Rule Activation](10_progressive_rule_activatio
 
 ## Governance Graph
 
-`governance.manifests` enables ID-based asset resolution, mandatory semantic Wiki Link references, optional content-hash anchors, vertical derivation, and recursive Package membership validation. UL and Glossary are Library trees; PRD and Spec are directory Body Packages. See [Governance Graph](07_governance_graph.md) for the full contract.
+`governance.manifests` enables the graph; `governance.topology` optionally enforces Fan and cycle thresholds; `governance.contentAnchors.verifyGitCommits` opts into local Git verification for explicit commit anchors and defaults to `false`. File and block SHA-256 anchors do not require it. See [Governance Graph](07_governance_graph.md) for the complete contract.
 
 ## Forbid ASCII Art
 
