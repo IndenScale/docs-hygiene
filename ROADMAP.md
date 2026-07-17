@@ -47,3 +47,5 @@ remain the authority for delivered behavior.
 - Document versions are not part of the governance identity model. Git records
   history, while optional content hashes anchor review-sensitive dependencies.
 - LSP or editor integration is not required by the current delivery baseline.
+- Work items and feature tickets live in the repository as governed documents;
+  external issue trackers are not part of the project baseline.
