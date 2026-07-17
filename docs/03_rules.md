@@ -65,6 +65,14 @@ compatibility window and always blocks.
 
 `DH_MATURITY_001` recommends a higher declared profile maturity from configured project-scale signals.
 
+`DH_KIND_001` reports an inconsistent Document Kind registry binding.
+
+`DH_KIND_002` reports a missing, compatible-stale, or incompatible typed
+frontmatter Schema revision.
+
+`DH_FRONTMATTER_001` reports a typed field, enum, format, unknown-field,
+conditional, or cross-field invariant violation.
+
 ## Concepts
 
 `DH_CONCEPT_001` reports a highlighted concept reference without a concept

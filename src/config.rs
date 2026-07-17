@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::activation::HygieneMaturity;
 
 mod document_contracts;
+mod document_kinds;
 mod governance;
 mod slug;
 
@@ -14,6 +15,11 @@ pub use document_contracts::{
     DocumentContractFragmentConfig, DocumentContractsConfig, DocumentMatchConfig,
     DocumentProfileConfig, DocumentTemplateConfig, MaturityConfig, MaturityLevel,
     MaturityRecommendationConfig, RequiredFieldConfig, RequiredSectionConfig,
+};
+pub use document_kinds::{
+    DocumentKindConfig, FrontmatterConditionConfig, FrontmatterFieldConfig, FrontmatterFieldSource,
+    FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
+    FrontmatterPredicateConfig, FrontmatterSchemaConfig, KindScaffoldConfig,
 };
 pub use governance::{GovernanceConfig, GovernanceContentAnchorConfig, GovernanceTopologyConfig};
 pub use slug::{SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig};
@@ -41,6 +47,8 @@ pub struct Config {
     pub ignore: IgnoreConfig,
     #[serde(default)]
     pub document_contracts: DocumentContractsConfig,
+    #[serde(default)]
+    pub document_kinds: Vec<DocumentKindConfig>,
     #[serde(default)]
     pub governance: GovernanceConfig,
     #[serde(default)]

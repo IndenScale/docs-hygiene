@@ -230,6 +230,7 @@ fn evaluate_invariant(
                     legacy_structure_target(config.document_contracts.maturity.declared)
                 }) >= HygieneMaturity::Controlled
         }
+        InvariantApplicability::DocumentKinds => !config.document_kinds.is_empty(),
         InvariantApplicability::LocalizedRepresentation => {
             activation.facts.configured_localized_representations > 0
                 || activation.facts.configured_localized_roots > 0

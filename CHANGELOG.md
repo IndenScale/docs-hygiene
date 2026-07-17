@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add a `documentKinds` registry shared by typed frontmatter validation and
+  locale-aware document scaffolding; support field types, enums, formats,
+  conditions, cross-field invariants, explicit unknown-field policy, dry runs,
+  conflict-safe writes, and atomic Schema/Template revision migration.
+
 - Add opt-in, Document-Kind-scoped slug identity schemas with filename,
   frontmatter, or stable-ID authority; deterministic normalization, reserved
   and collision checks; localized identity parity; alias migration policy; and

@@ -72,6 +72,8 @@ Docs Hygiene currently provides deterministic project-level governance checks:
   collision indexes, localized identity parity, aliases, and rename policy;
 - path-inferred document contracts with reusable templates, deterministic
   profile binding, revision migration, and maturity-aware enforcement;
+- a Kind registry shared by typed frontmatter validation and locale-aware,
+  conflict-safe document scaffolding, with atomic Schema/Template migration;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
@@ -143,6 +145,7 @@ If the binary is already installed or available on `PATH`:
 
 ```bash
 docs-hygiene scaffold .
+docs-hygiene scaffold . --kind article --identity ARTICLE-42 --slug cache-policy
 docs-hygiene check --fail-on-warning
 ```
 
@@ -153,8 +156,8 @@ promotes warnings to a gate. Use JSON when another tool consumes the report:
 docs-hygiene check --format json
 ```
 
-Other commands include `init`, `lang`, `migrate-templates`, `explain`, and
-`explain-rules`. Run
+Other commands include `init`, `lang`, `migrate-templates`, `migrate-kinds`,
+`explain`, and `explain-rules`. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy

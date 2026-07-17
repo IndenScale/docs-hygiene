@@ -71,6 +71,13 @@ revision 窗口和精确 Profile pin。使用 `docs-hygiene migrate-templates --
 兼容但过期的 pin，使用 `docs-hygiene migrate-templates` 原子推进；不兼容 pin 会阻止全部
 写入。详见 [SPEC-003 C-010](definition/spec/spec-003/constraints/template-lifecycle.md)。
 
+## 类型化 Document Kind
+
+可选的 `documentKinds` 条目把一个 docs base 和文件名 pattern 绑定到一个 Profile，使
+命名、适用路径、语义章节、Template pin、类型化 frontmatter 与生成骨架成为同一注册表
+契约。只使用 Profile 的现有项目保持兼容，`requiredFields` 继续作为整篇正则运行。详见
+[Document Kind 注册表](14_document_kinds.md)。
+
 ## 成熟度与占位符
 
 成熟度依次为 `seed`、`growing`、`maintained` 和 `governed`。Profile 的 `enforceFrom` 指定缺失要求从哪个等级开始成为错误；在此之前只产生 warning。

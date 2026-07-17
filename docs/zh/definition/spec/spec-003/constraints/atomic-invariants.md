@@ -17,6 +17,7 @@ status: proposed
 | `structure.content-policy` | 受控 | `DH_SIZE_001`、`DH_ASCII_001` | 已交付 |
 | `structure.reusable-templates` | 受控 | 注册表绑定、`DH_TEMPLATE_*` | 已交付 |
 | `structure.template-migration` | 治理 | revision 窗口、`DH_TEMPLATE_003/004`、迁移 CLI | 已交付 |
+| `structure.kind-schema` | 治理 | 类型化 frontmatter、Kind 脚手架、原子迁移 | 已交付 |
 | `identity.stable-ids` | 基础 | `DH_GOVERNANCE_001`、Package 检查 | 已交付 |
 | `identity.duplicates` | 基础 | Governance 与 Library 索引 | 已交付 |
 | `identity.canonical-source` | 受控 | 表示同位 | 已交付 |

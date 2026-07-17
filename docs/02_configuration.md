@@ -125,7 +125,7 @@ language:
 
 ## Document Contracts
 
-`documentContracts.profiles` infers a document type from path and file name; `documentContracts.templates` supplies reusable contract fragments through stable profile bindings. The first matching profile applies. See [Document Contracts](06_document_contracts.md) for merge, maturity, and migration boundaries.
+`documentContracts.profiles` infers a document type from path and file name; `documentContracts.templates` supplies reusable contract fragments through stable profile bindings. The first matching profile applies. See [Document Contracts](06_document_contracts.md) and the opt-in [Document Kind Registry](14_document_kinds.md).
 
 `documentContracts.maturity.declared` remains a severity floor for configured document profiles. Project-scale recommendations emit information; general rule applicability is derived independently through progressive activation.
 

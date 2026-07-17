@@ -134,7 +134,7 @@ language:
 
 ## 文档契约
 
-`documentContracts.profiles` 根据路径和文件名推导文档类型，`documentContracts.templates` 通过稳定绑定提供可复用契约片段；第一个匹配的 Profile 生效。合并、成熟度和迁移边界见[文档契约](06_document_contracts.md)。
+`documentContracts.profiles` 根据路径和文件名推导文档类型，`documentContracts.templates` 通过稳定绑定提供可复用契约片段；第一个匹配的 Profile 生效。合并、成熟度和迁移边界见[文档契约](06_document_contracts.md)，类型化创建与校验见 [Document Kind 注册表](14_document_kinds.md)。
 
 `documentContracts.maturity.declared` 仍是已配置文档 Profile 的严重程度下限。项目规模建议只产生信息；通用规则适用性由渐进式激活独立推导。
 

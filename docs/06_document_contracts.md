@@ -76,6 +76,15 @@ pins, and `docs-hygiene migrate-templates` to advance them atomically. An
 incompatible pin blocks every write. See
 [SPEC-003 C-010](definition/spec/spec-003/constraints/template-lifecycle.md).
 
+## Typed Document Kinds
+
+An opt-in `documentKinds` entry binds one docs base and filename pattern to one
+Profile. This makes naming, applicable paths, semantic sections, Template pins,
+typed frontmatter, and generated skeletons one registry contract. Existing
+Profile-only projects remain compatible; their `requiredFields` continue to
+operate as whole-document regular expressions. See
+[Document Kind Registry](14_document_kinds.md).
+
 ## Maturity And Placeholders
 
 The maturity order is `seed`, `growing`, `maintained`, and `governed`. A profile's `enforceFrom` selects the first level where missing requirements become errors. Before that level they remain warnings.

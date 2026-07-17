@@ -18,6 +18,7 @@ invariant has one dimension and minimum maturity.
 | `structure.content-policy` | controlled | `DH_SIZE_001`, `DH_ASCII_001` | delivered |
 | `structure.reusable-templates` | controlled | registry bindings, `DH_TEMPLATE_*` | delivered |
 | `structure.template-migration` | governed | revision windows, `DH_TEMPLATE_003/004`, migration CLI | delivered |
+| `structure.kind-schema` | governed | typed frontmatter, Kind scaffold, atomic migration | delivered |
 | `identity.stable-ids` | basic | `DH_GOVERNANCE_001`, package checks | delivered |
 | `identity.duplicates` | basic | governance and Library indexes | delivered |
 | `identity.canonical-source` | controlled | representation parity | delivered |

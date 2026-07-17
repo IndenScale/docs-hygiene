@@ -1,13 +1,19 @@
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use docs_hygiene::{
-    Config, Report, evaluate_hygiene_profile, evaluate_rule_activation,
-    migrate_document_template_bindings, print_json_activation, print_json_profile,
-    print_json_report, print_json_template_migration, print_text_activation, print_text_profile,
-    print_text_report, print_text_template_migration, run_checks,
+    Config, Report, evaluate_hygiene_profile, evaluate_rule_activation, migrate_document_kinds,
+    migrate_document_template_bindings, print_json_activation, print_json_kind_migration,
+    print_json_profile, print_json_report, print_json_template_migration, print_text_activation,
+    print_text_kind_migration, print_text_profile, print_text_report,
+    print_text_template_migration, run_checks,
 };
+
+#[path = "main/scaffold.rs"]
+mod scaffold;
+
+use scaffold::{ScaffoldArgs, scaffold};
 
 // Governance Library: [[SDK-001]]
 
@@ -28,22 +34,16 @@ enum Command {
     Profile(ProfileArgs),
     /// Pin or advance compatible document-template revisions.
     MigrateTemplates(MigrateTemplatesArgs),
+    /// Atomically migrate compatible Document Kind schemas and template pins.
+    MigrateKinds(MigrateKindsArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
         #[arg(long, default_value = "docs-hygiene.yml")]
         path: PathBuf,
     },
-    /// Create a starter docs tree and policy files.
-    Scaffold {
-        /// Directory to scaffold.
-        #[arg(default_value = ".")]
-        path: PathBuf,
-
-        /// Overwrite files that already exist.
-        #[arg(long)]
-        force: bool,
-    },
+    /// Create a starter project or one configured Document Kind file.
+    Scaffold(ScaffoldArgs),
     /// Manage language policy in docs-hygiene.yml.
     Lang {
         #[command(subcommand)]
@@ -205,6 +205,25 @@ struct MigrateTemplatesArgs {
     format: OutputFormat,
 }
 
+#[derive(Debug, Parser)]
+struct MigrateKindsArgs {
+    /// Project root containing the policy and typed documents.
+    #[arg(default_value = ".")]
+    root: PathBuf,
+
+    /// Config file path. Defaults to docs-hygiene.yml under the project root.
+    #[arg(long)]
+    config: Option<PathBuf>,
+
+    /// Report required changes without writing and fail if migration is needed.
+    #[arg(long)]
+    check: bool,
+
+    /// Output format.
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    format: OutputFormat,
+}
+
 #[derive(Clone, Debug, ValueEnum)]
 enum OutputFormat {
     Text,
@@ -218,8 +237,9 @@ fn main() -> Result<()> {
         Command::ExplainRules(args) => explain_rules(args),
         Command::Profile(args) => profile(args),
         Command::MigrateTemplates(args) => migrate_templates(args),
+        Command::MigrateKinds(args) => migrate_kinds(args),
         Command::Init { path } => init(path),
-        Command::Scaffold { path, force } => scaffold(path, force),
+        Command::Scaffold(args) => scaffold(args),
         Command::Lang { command } => lang(command),
         Command::Explain { code } => explain(&code),
     }
@@ -242,6 +262,27 @@ fn migrate_templates(args: MigrateTemplatesArgs) -> Result<()> {
     }
     if args.check && !report.changes.is_empty() {
         anyhow::bail!("document-template migration is required");
+    }
+    Ok(())
+}
+
+fn migrate_kinds(args: MigrateKindsArgs) -> Result<()> {
+    let root = args.root.canonicalize()?;
+    let config_path = args.config.unwrap_or_else(|| root.join("docs-hygiene.yml"));
+    let mut config = Config::load(&config_path)?;
+    let report = migrate_document_kinds(&root, &mut config, !args.check)?;
+    if !args.check && report.applied && !report.template_changes.is_empty() {
+        config.save(&config_path)?;
+    }
+    match args.format {
+        OutputFormat::Text => print_text_kind_migration(&report),
+        OutputFormat::Json => print_json_kind_migration(&report)?,
+    }
+    if !report.blocked.is_empty() {
+        anyhow::bail!("Document Kind migration is blocked; no changes were applied");
+    }
+    if args.check && (!report.schema_changes.is_empty() || !report.template_changes.is_empty()) {
+        anyhow::bail!("Document Kind migration is required");
     }
     Ok(())
 }
@@ -307,46 +348,6 @@ fn init(path: PathBuf) -> Result<()> {
     }
     std::fs::write(path, Config::starter_yaml())?;
     Ok(())
-}
-
-fn scaffold(path: PathBuf, force: bool) -> Result<()> {
-    std::fs::create_dir_all(path.join("docs/zh"))
-        .with_context(|| format!("failed to create {}", path.join("docs/zh").display()))?;
-    std::fs::create_dir_all(path.join("concept"))
-        .with_context(|| format!("failed to create {}", path.join("concept").display()))?;
-
-    write_scaffold_file(
-        &path.join("docs-hygiene.yml"),
-        Config::starter_yaml(),
-        force,
-    )?;
-    write_scaffold_file(&path.join(".markdownlint.yaml"), "MD013: false\n", force)?;
-    write_scaffold_file(
-        &path.join("README.md"),
-        "# Project\n\nThis project uses Docs Hygiene.\n",
-        force,
-    )?;
-    write_scaffold_file(
-        &path.join("README_ZH.md"),
-        "# Project\n\n本项目使用 Docs Hygiene。\n",
-        force,
-    )?;
-    write_scaffold_file(&path.join("CHANGELOG.md"), "# Changelog\n", force)?;
-    write_scaffold_file(&path.join("docs/01_overview.md"), "# Overview\n", force)?;
-    write_scaffold_file(&path.join("docs/zh/01_overview.md"), "# 概览\n", force)?;
-    write_scaffold_file(
-        &path.join("concept/Policy Engine.md"),
-        "# Policy Engine\n",
-        force,
-    )?;
-    Ok(())
-}
-
-fn write_scaffold_file(path: &std::path::Path, content: &str, force: bool) -> Result<()> {
-    if path.exists() && !force {
-        return Ok(());
-    }
-    std::fs::write(path, content).with_context(|| format!("failed to write {}", path.display()))
 }
 
 fn lang(command: LangCommand) -> Result<()> {

@@ -60,6 +60,8 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 - 按 Kind 显式启用的 slug Schema、权威来源、规范化冲突索引、本地化身份同位、alias
   与重命名策略；
 - 基于路径与文件名推导、可复用模板、确定性 Profile 绑定与 revision 迁移、随项目成熟度增强的文档契约；
+- 由类型化 frontmatter 校验和 locale-aware、安全冲突检测的文档脚手架共同消费的 Kind
+  注册表，以及原子 Schema/Template 迁移；
 - canonical 与 localized 语言表示的路径、身份和结构同位；
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
 - 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
@@ -123,6 +125,7 @@ cargo build --release
 
 ```bash
 docs-hygiene scaffold .
+docs-hygiene scaffold . --kind article --identity ARTICLE-42 --slug cache-policy
 docs-hygiene check --fail-on-warning
 ```
 
@@ -133,7 +136,8 @@ docs-hygiene check --fail-on-warning
 docs-hygiene check --format json
 ```
 
-其他命令包括 `init`、`lang`、`migrate-templates`、`explain` 和 `explain-rules`。运行
+其他命令包括 `init`、`lang`、`migrate-templates`、`migrate-kinds`、`explain` 和
+`explain-rules`。运行
 `docs-hygiene --help` 查看完整界面。
 
 ## 策略

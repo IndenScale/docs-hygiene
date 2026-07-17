@@ -7,7 +7,9 @@
 pub mod activation;
 pub mod checks;
 pub mod config;
+pub mod document_kinds;
 pub mod governance;
+pub mod kind_migration;
 pub mod profile;
 pub mod reference;
 pub mod report;
@@ -21,14 +23,26 @@ pub use activation::{
 };
 pub use checks::run_checks;
 pub use config::{
-    Config, DimensionApplicability, DimensionProfileConfig, GovernanceContentAnchorConfig,
-    GovernanceTopologyConfig, HygieneProfileConfig, HygieneProfileDimensionsConfig, RuleMode,
-    RulePolicyConfig,
+    Config, DimensionApplicability, DimensionProfileConfig, DocumentKindConfig,
+    FrontmatterConditionConfig, FrontmatterFieldConfig, FrontmatterFieldSource,
+    FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
+    FrontmatterPredicateConfig, FrontmatterSchemaConfig, GovernanceContentAnchorConfig,
+    GovernanceTopologyConfig, HygieneProfileConfig, HygieneProfileDimensionsConfig,
+    KindScaffoldConfig, RuleMode, RulePolicyConfig,
+};
+pub use document_kinds::{
+    KindIssue, KindIssueCategory, ScaffoldDocumentPlan, ScaffoldDocumentRequest,
+    parse_frontmatter_mapping, plan_scaffold_document, validate_document_kind_registry,
+    validate_kind_frontmatter,
 };
 pub use governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
     GovernanceGraphMetrics, GovernanceLocation, GovernanceNode, LifecycleProvenance,
     ReferenceRelation, RefinementLevel,
+};
+pub use kind_migration::{
+    KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,
+    migrate_document_kinds, print_json_kind_migration, print_text_kind_migration,
 };
 pub use profile::{
     DimensionResult, DimensionStatus, HygieneProfileReport, INVARIANTS, InvariantApplicability,

@@ -106,7 +106,8 @@ fn infer_automatic_decision(
         ),
         RuleApplicability::DocumentContracts
             if facts.configured_document_profiles > 0
-                || facts.configured_document_templates > 0 =>
+                || facts.configured_document_templates > 0
+                || facts.configured_document_kinds > 0 =>
         {
             let state = match config.document_contracts.maturity.declared {
                 MaturityLevel::Seed | MaturityLevel::Growing => RuleState::Warning,
@@ -115,9 +116,10 @@ fn infer_automatic_decision(
             (
                 state,
                 vec![format!(
-                    "document contracts configured: {} profiles, {} templates; {:?} maturity",
+                    "document contracts configured: {} profiles, {} templates, {} kinds; {:?} maturity",
                     facts.configured_document_profiles,
                     facts.configured_document_templates,
+                    facts.configured_document_kinds,
                     config.document_contracts.maturity.declared
                 )],
             )
@@ -150,7 +152,7 @@ fn infer_automatic_decision(
         }
         RuleApplicability::DocumentContracts => (
             RuleState::Inactive,
-            vec!["no profile or scale signal".into()],
+            vec!["no profile, Kind, or scale signal".into()],
         ),
         RuleApplicability::Localization
             if facts.configured_localized_representations > 0

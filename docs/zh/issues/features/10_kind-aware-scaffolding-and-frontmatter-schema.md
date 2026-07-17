@@ -1,7 +1,7 @@
 ---
 id: FEATURE-010
-status: proposed
-delivery_status: planned
+status: baselined
+delivery_status: delivered
 ---
 
 # FEATURE-010 Kind-aware Scaffold 与类型化 Frontmatter Schema
@@ -31,3 +31,20 @@ delivery_status: planned
 
 基于 [FEATURE-005](05_document-contracts-and-template-lifecycle.md)，并与
 [FEATURE-009](09_slug-identity-governance.md) 共同定义 Kind 注册表边界。
+
+## 交付证据
+
+- `src/config/document_kinds.rs` 定义 `documentKinds` 注册表，把 base、文件名 pattern、
+  Profile/Template 契约、脚手架和带 revision 的 frontmatter Schema 聚合到稳定 Kind ID；
+- `src/document_kinds/` 让生成器与检查器共享字段类型、枚举、格式、默认值、来源、未知
+  字段策略、条件必填/禁止、字段间不变量以及稳定 section ID；
+- `docs-hygiene scaffold --kind ...` 支持 identity、slug、locale、target、重复 `--field`、
+  `--dry-run` 和显式 `--force`；生成前完成路径、命名、Profile 和 Schema 校验，默认不覆盖；
+- `DH_KIND_001`、`DH_KIND_002` 与 `DH_FRONTMATTER_001` 提供注册表、revision 和字段级
+  确定性诊断，`structure.kind-schema` 已进入多维画像不变量注册表；
+- `docs-hygiene migrate-kinds` 用 `docs-hygiene.kind-migration.v1` 联合规划兼容的文档
+  Schema revision 与 Profile Template pin；任一不兼容或非法文档阻止全部写入；
+- `tests/kind_scaffold.rs` 覆盖 canonical/localized 成功生成、开放正文、五类字段、枚举、
+  格式、未知字段、条件、字段间不变量、dry-run、冲突与非法输入；
+- `tests/kind_migration.rs` 覆盖只读计划、联合迁移、迁移后通过契约和失败原子性；完整
+  配置与 CLI 契约见[Document Kind 注册表](../../14_document_kinds.md)。

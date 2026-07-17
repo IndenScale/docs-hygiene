@@ -221,6 +221,7 @@ pub(crate) fn run_checks_with_activation(
     let mut contracts = Vec::new();
     let document_templates =
         check_document_contracts(root, config, &ignore, &docs, &mut contracts)?;
+    check_document_kinds(root, config, &docs, &mut contracts)?;
     append_rule_diagnostics(
         &mut diagnostics,
         contracts,
@@ -347,6 +348,7 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
         }
         RuleApplicability::DocumentContracts => {
             !config.document_contracts.profiles.is_empty()
+                || !config.document_kinds.is_empty()
                 || !config
                     .document_contracts
                     .maturity
@@ -390,6 +392,7 @@ include!("checks/derivation.rs");
 include!("checks/topology.rs");
 include!("checks/document_templates.rs");
 include!("checks/document_contracts.rs");
+include!("checks/document_kinds.rs");
 include!("checks/repository_structure.rs");
 include!("checks/slug_identities.rs");
 include!("checks/repository_content.rs");

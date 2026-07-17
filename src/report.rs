@@ -214,6 +214,15 @@ impl Report {
             "DH_MATURITY_001" => {
                 Some("Project scale signals recommend stronger document governance.")
             }
+            "DH_KIND_001" => Some(
+                "A Document Kind registry entry does not consistently bind its base, filename pattern, profile, or scaffold contract.",
+            ),
+            "DH_KIND_002" => Some(
+                "A typed Document Kind uses a missing, stale, or incompatible frontmatter Schema revision.",
+            ),
+            "DH_FRONTMATTER_001" => Some(
+                "A typed Document Kind violates its frontmatter field, enum, format, condition, invariant, or unknown-field policy.",
+            ),
             "DH_ACTIVATION_001" => Some(
                 "Project facts activated a governance rule without an explicit feature policy; the diagnostic records the evidence and override path.",
             ),
