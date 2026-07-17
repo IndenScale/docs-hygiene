@@ -37,6 +37,7 @@ pub use config::{
     FrontmatterPredicateConfig, FrontmatterSchemaConfig, GovernanceContentAnchorConfig,
     GovernanceTopologyConfig, HygieneProfileConfig, HygieneProfileDimensionsConfig,
     KindScaffoldConfig, PortableSnapshotConfig, RuleMode, RulePolicyConfig,
+    SupernodeDegreeObservationConfig, SupernodeExceptionConfig, TopologyDirection,
 };
 pub use document_kinds::{
     KindIssue, KindIssueCategory, ScaffoldDocumentPlan, ScaffoldDocumentRequest,

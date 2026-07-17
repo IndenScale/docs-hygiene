@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add exact node/direction supernode exceptions with audited approval and expiry,
+  independent budgets, degree history and trend evidence, idle/expired cleanup,
+  standard report visibility, and `excepted` profile outcomes.
+
 - Add versioned portable commit snapshot manifests, typed anchor provenance,
   offline file/block payload verification, Ed25519 trust policy, lifecycle and
   retention checks, and an explicit atomic `import-snapshot` workflow.

@@ -133,6 +133,10 @@ adjacent-refinement-level Library projection through `projects`.
 Fan-Out exceeds an explicit threshold. `DH_TOPOLOGY_002` reports a directed
 cycle group when `forbidCycles` is enabled.
 
+`DH_TOPOLOGY_003` through `DH_TOPOLOGY_005` report invalid/expired audited
+supernode exceptions, idle cleanup candidates, and missing or invalid degree
+history. An exception over its own budget returns `DH_TOPOLOGY_001`.
+
 ## Adapters
 
 `DH_ADAPTER_001` reports an external adapter failure.

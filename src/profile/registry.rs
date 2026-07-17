@@ -26,6 +26,7 @@ pub enum InvariantApplicability {
     GovernanceGraph,
     AuthorityMigration,
     TopologyPolicy,
+    TopologyExceptions,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -62,6 +63,10 @@ impl InvariantSpec {
             }
             "topology.fan-and-cycles" => InvariantApplicability::GovernanceGraph,
             "topology.thresholds" => InvariantApplicability::TopologyPolicy,
+            "topology.budgets" => InvariantApplicability::TopologyPolicy,
+            "topology.public-exceptions" | "topology.trends" => {
+                InvariantApplicability::TopologyExceptions
+            }
             _ if self.delivery != InvariantDelivery::Delivered => {
                 InvariantApplicability::Capability
             }
@@ -72,7 +77,7 @@ impl InvariantSpec {
 
 use CapabilityDimension::{Dependency, Identity, Structure, Topology};
 use HygieneMaturity::{Basic, Controlled, Governed};
-use InvariantDelivery::{Delivered, Missing};
+use InvariantDelivery::Delivered;
 use RuleChecker::{
     Concepts, DocumentContracts, DocumentStructure, EntryDocs, GovernanceIdentity,
     GovernanceTopology, GovernanceTraceability, Localization,
@@ -337,24 +342,24 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         id: "topology.budgets",
         dimension: Topology,
         minimum_maturity: Governed,
-        delivery: Missing,
-        checkers: &[],
-        diagnostic_codes: &[],
+        delivery: Delivered,
+        checkers: &[GovernanceTopology],
+        diagnostic_codes: &["DH_TOPOLOGY_001", "DH_TOPOLOGY_003"],
     },
     InvariantSpec {
         id: "topology.public-exceptions",
         dimension: Topology,
         minimum_maturity: Governed,
-        delivery: Missing,
-        checkers: &[],
-        diagnostic_codes: &[],
+        delivery: Delivered,
+        checkers: &[GovernanceTopology],
+        diagnostic_codes: &["DH_TOPOLOGY_003", "DH_TOPOLOGY_004"],
     },
     InvariantSpec {
         id: "topology.trends",
         dimension: Topology,
         minimum_maturity: Governed,
-        delivery: Missing,
-        checkers: &[],
-        diagnostic_codes: &[],
+        delivery: Delivered,
+        checkers: &[GovernanceTopology],
+        diagnostic_codes: &["DH_TOPOLOGY_005"],
     },
 ];

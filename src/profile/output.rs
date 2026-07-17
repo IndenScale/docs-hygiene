@@ -32,7 +32,9 @@ pub fn print_text_profile(report: &HygieneProfileReport) {
         for evidence in dimension.evidence.iter().filter(|evidence| {
             matches!(
                 evidence.outcome,
-                InvariantOutcome::Failed | InvariantOutcome::Unverified
+                InvariantOutcome::Failed
+                    | InvariantOutcome::Unverified
+                    | InvariantOutcome::Excepted
             ) && dimension
                 .target
                 .is_none_or(|target| evidence.minimum_maturity <= target)
@@ -104,6 +106,7 @@ impl InvariantOutcome {
     fn label(self) -> &'static str {
         match self {
             Self::Passed => "passed",
+            Self::Excepted => "excepted",
             Self::Failed => "failed",
             Self::Unverified => "unverified",
             Self::NotApplicable => "notApplicable",

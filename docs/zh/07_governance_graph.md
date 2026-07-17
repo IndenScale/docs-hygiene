@@ -174,4 +174,5 @@ governance:
 
 配置限制后会激活独立的 `governance.topology` 规则族。仅存在关系图或仓库规模增长不会
 激活阻断性拓扑策略。`DH_TOPOLOGY_001` 报告 Fan 阈值违规，`DH_TOPOLOGY_002` 报告被
-禁止的循环组。
+禁止的循环组；精确节点、限定方向且可审计的例外遵循
+[SPEC-003 C-018](definition/spec/spec-003/constraints/supernode-exceptions.md)。

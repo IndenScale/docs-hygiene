@@ -2,19 +2,15 @@ use std::path::Path;
 
 // Governance Library: [[SDK-001]]
 
-use anyhow::Result;
-use serde::Serialize;
-
 use crate::activation::{
-    CapabilityDimension, HygieneMaturity, ProjectFacts, RuleDecision, RuleState,
-    evaluate_rule_activation,
+    CapabilityDimension, HygieneMaturity, RuleState, evaluate_rule_activation,
 };
 use crate::checks::run_checks_with_activation;
 use crate::config::{Config, DimensionApplicability, RuleMode};
-use crate::governance::GovernanceGraph;
-use crate::report::DocumentTemplateReport;
+use anyhow::Result;
 
 mod configuration;
+mod model;
 mod output;
 mod registry;
 
@@ -23,66 +19,11 @@ use configuration::{
     validate_profile_config,
 };
 
+pub use model::{
+    DimensionResult, DimensionStatus, HygieneProfileReport, InvariantEvidence, InvariantOutcome,
+};
 pub use output::{print_json_profile, print_text_profile};
 pub use registry::{INVARIANTS, InvariantApplicability, InvariantDelivery, InvariantSpec};
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum DimensionStatus {
-    MeetsTarget,
-    BelowTarget,
-    Observed,
-    Unverified,
-    NotApplicable,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum InvariantOutcome {
-    Passed,
-    Failed,
-    Unverified,
-    NotApplicable,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct InvariantEvidence {
-    pub invariant: &'static str,
-    pub minimum_maturity: HygieneMaturity,
-    pub delivery: InvariantDelivery,
-    pub outcome: InvariantOutcome,
-    pub diagnostic_codes: Vec<String>,
-    pub paths: Vec<String>,
-    pub suppression_reasons: Vec<String>,
-    pub reason: String,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DimensionResult {
-    pub dimension: CapabilityDimension,
-    pub applicable: bool,
-    pub required: bool,
-    pub target: Option<HygieneMaturity>,
-    pub observed: Option<HygieneMaturity>,
-    pub status: DimensionStatus,
-    pub rationale: Option<String>,
-    pub evidence: Vec<InvariantEvidence>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HygieneProfileReport {
-    pub schema_version: &'static str,
-    pub facts: ProjectFacts,
-    pub decisions: Vec<RuleDecision>,
-    pub document_templates: DocumentTemplateReport,
-    pub governance_graph: GovernanceGraph,
-    pub dimensions: Vec<DimensionResult>,
-    pub overall_observed: Option<HygieneMaturity>,
-    pub meets_targets: bool,
-}
 
 pub fn evaluate_hygiene_profile(root: &Path, config: &Config) -> Result<HygieneProfileReport> {
     validate_profile_config(config)?;
@@ -122,6 +63,7 @@ pub fn evaluate_hygiene_profile(root: &Path, config: &Config) -> Result<HygieneP
         decisions: activation.decisions,
         document_templates: checks.document_templates,
         governance_graph: checks.governance_graph,
+        topology_exceptions: checks.topology_exceptions,
         dimensions,
         overall_observed,
         meets_targets,
@@ -266,6 +208,9 @@ fn evaluate_invariant(
             activation.facts.configured_governance_manifests > 0
                 || checks.governance_graph.metrics.nodes > 0
         }
+        InvariantApplicability::TopologyExceptions => {
+            !config.governance.topology.exceptions.is_empty()
+        }
     };
 
     if !applies {
@@ -361,6 +306,36 @@ fn evaluate_invariant(
             .collect();
         return evidence;
     }
+    if invariant.id == "topology.thresholds" {
+        let applied = checks
+            .topology_exceptions
+            .iter()
+            .filter(|exception| exception.status == crate::report::TopologyExceptionStatus::Applied)
+            .collect::<Vec<_>>();
+        if !applied.is_empty() {
+            let mut evidence = invariant_evidence(
+                invariant,
+                InvariantOutcome::Excepted,
+                vec!["DH_TOPOLOGY_001".to_owned()],
+                applied
+                    .iter()
+                    .filter_map(|exception| {
+                        checks
+                            .governance_graph
+                            .node(&exception.node)
+                            .map(|node| node.location.path.clone())
+                    })
+                    .collect(),
+                "One or more topology violations are covered by audited supernode exceptions; excepted evidence cannot prove the threshold invariant passed."
+                    .to_owned(),
+            );
+            evidence.exception_ids = applied
+                .iter()
+                .map(|exception| exception.id.clone())
+                .collect();
+            return evidence;
+        }
+    }
     if invariant.id == "structure.reusable-templates" && !checks.document_templates.proves_reuse() {
         return invariant_evidence(
             invariant,
@@ -423,6 +398,7 @@ fn invariant_evidence(
         diagnostic_codes,
         paths,
         suppression_reasons: Vec::new(),
+        exception_ids: Vec::new(),
         reason,
     }
 }

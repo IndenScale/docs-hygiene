@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-005
-status: proposed
+status: baselined
 ---
 
 # C-005 Exceptions
@@ -12,3 +12,9 @@ or owner is invalid for a governed target; expired exceptions fail validation.
 
 Legacy suppressions remain compatible but are reported as unaudited exceptions
 and therefore cannot establish observed maturity for the suppressed invariant.
+
+The first delivered typed exception is the exact node/direction supernode
+declaration in [C-018](supernode-exceptions.md). Its matched threshold failure
+remains explicit `excepted` profile evidence. Invalid, expired, idle, or
+over-budget declarations produce their own diagnostics instead of hiding the
+underlying topology state.

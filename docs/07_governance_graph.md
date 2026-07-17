@@ -197,4 +197,4 @@ governance:
 Configured limits activate the independent `governance.topology` rule family.
 Graph presence and repository scale alone never activate blocking topology
 policy. `DH_TOPOLOGY_001` reports Fan threshold violations and
-`DH_TOPOLOGY_002` reports forbidden cycle groups.
+`DH_TOPOLOGY_002` reports forbidden cycle groups; audited, exact-node directional exceptions follow [SPEC-003 C-018](definition/spec/spec-003/constraints/supernode-exceptions.md).

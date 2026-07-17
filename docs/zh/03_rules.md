@@ -113,6 +113,9 @@ snapshot 登记、repository、commit、path、digest、签名和生命周期故
 `DH_TOPOLOGY_001` 表示某个受管身份按不同邻居计算的 Fan-In 或 Fan-Out 超过显式阈值；
 启用 `forbidCycles` 后，`DH_TOPOLOGY_002` 表示检测到有向循环组。
 
+`DH_TOPOLOGY_003` 至 `DH_TOPOLOGY_005` 报告审计超级节点例外无效/过期、闲置清理候选
+及度数历史缺失或无效；超过自身预算的例外恢复 `DH_TOPOLOGY_001`。
+
 ## Adapter
 
 `DH_ADAPTER_001` 表示外部 adapter 执行失败。

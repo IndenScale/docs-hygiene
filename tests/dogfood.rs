@@ -44,7 +44,7 @@ fn repository_profile_meets_configured_targets() {
     );
     assert_eq!(
         report.dimensions[3].observed,
-        Some(HygieneMaturity::Controlled)
+        Some(HygieneMaturity::Governed)
     );
     assert!(report.governance_graph.metrics.nodes > 0);
     assert!(report.governance_graph.metrics.edges > 0);

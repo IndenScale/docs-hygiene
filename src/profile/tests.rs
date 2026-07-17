@@ -149,7 +149,7 @@ hygieneProfile:
     let controlled = evaluate_hygiene_profile(temp.path(), &with_policy).unwrap();
     assert_eq!(
         controlled.dimensions[3].observed,
-        Some(HygieneMaturity::Controlled)
+        Some(HygieneMaturity::Governed)
     );
     assert_eq!(
         controlled.dimensions[3].status,
@@ -186,6 +186,43 @@ suppressions:
         suppressed.dimensions[3].observed,
         Some(HygieneMaturity::Basic)
     );
+
+    let audited_policy: Config = serde_yaml::from_str(
+        r#"
+governance:
+  manifests: [ul.yml, prd/manifest.yml]
+  topology:
+    maxFanIn: 0
+    exceptions:
+      - id: shared-library
+        node: UL-1
+        direction: fanIn
+        budget: 2
+        reason: intentional public Library
+        owner: docs-platform
+        approvedBy: architecture-council
+        expires: 2099-12-31
+        history: [{ observedAt: 2026-01-01, degree: 1 }]
+hygieneProfile:
+  dimensions:
+    topology: { target: controlled, required: true }
+"#,
+    )
+    .unwrap();
+    let audited = evaluate_hygiene_profile(temp.path(), &audited_policy).unwrap();
+    let threshold = audited.dimensions[3]
+        .evidence
+        .iter()
+        .find(|evidence| evidence.invariant == "topology.thresholds")
+        .unwrap();
+    assert_eq!(threshold.outcome, InvariantOutcome::Excepted);
+    assert_eq!(threshold.exception_ids, vec!["shared-library"]);
+    assert_eq!(
+        audited.topology_exceptions[0].status,
+        crate::report::TopologyExceptionStatus::Applied
+    );
+    assert_eq!(audited.dimensions[3].observed, Some(HygieneMaturity::Basic));
+    assert!(!audited.meets_targets);
 }
 
 #[test]

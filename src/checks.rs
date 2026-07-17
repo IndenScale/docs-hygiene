@@ -18,6 +18,7 @@ use crate::config::{
     CriticalPinScope, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
     FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
     SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
+    SupernodeDegreeObservationConfig, SupernodeExceptionConfig, TopologyDirection,
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
@@ -35,7 +36,10 @@ use crate::reference::{
     SYNTAX_MARKDOWN_LINK, SYNTAX_WIKI_LINK, reference_disposition,
 };
 use crate::report::TemplateRevisionReport;
-use crate::report::{DocumentTemplateReport, Report, Severity, SuppressedDiagnostic};
+use crate::report::{
+    DocumentTemplateReport, Report, Severity, SuppressedDiagnostic, TopologyExceptionEvidence,
+    TopologyExceptionStatus,
+};
 
 #[derive(Debug)]
 pub struct Diagnostic {
@@ -247,13 +251,14 @@ pub(crate) fn run_checks_with_activation(
     let topology = activation.decision_for(RuleChecker::GovernanceTopology);
     let mut semantic_content_anchors_checked = 0;
     let mut governance_graph = GovernanceGraph::default();
+    let mut topology_exceptions = Vec::new();
     if identity.state != RuleState::Inactive
         || traceability.state != RuleState::Inactive
         || topology.state != RuleState::Inactive
     {
         let mut governance = Vec::new();
         governance_graph = check_governance(root, config, &mut governance);
-        check_topology_policy(config, &governance_graph, &mut governance);
+        topology_exceptions = check_topology_policy(config, &governance_graph, &mut governance);
         semantic_content_anchors_checked = governance_graph
             .metrics
             .relation_counts
@@ -280,6 +285,7 @@ pub(crate) fn run_checks_with_activation(
         .with_suppressed(suppressed)
         .with_semantic_content_anchors_checked(semantic_content_anchors_checked)
         .with_governance_graph(governance_graph)
+        .with_topology_exceptions(topology_exceptions)
         .with_document_templates(document_templates))
 }
 

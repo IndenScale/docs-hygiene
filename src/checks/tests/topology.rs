@@ -46,7 +46,8 @@
         .unwrap();
         let mut diagnostics = Vec::new();
 
-        check_topology_policy(&config, &graph, &mut diagnostics);
+        let exceptions = check_topology_policy(&config, &graph, &mut diagnostics);
+        assert!(exceptions.is_empty());
 
         assert_eq!(
             diagnostics
@@ -70,6 +71,169 @@
             diagnostic.message.contains("Fan-Out 2")
                 && diagnostic.message.contains("maxFanOut 1")
         }));
+    }
+
+    #[test]
+    fn audited_supernode_exception_is_visible_and_only_relaxes_one_node_direction() {
+        let graph = GovernanceGraph::new(
+            vec![
+                topology_node("A"),
+                topology_node("B"),
+                topology_node("C"),
+                topology_node("X"),
+            ],
+            vec![
+                topology_edge("A", "X"),
+                topology_edge("B", "X"),
+                topology_edge("C", "X"),
+                topology_edge("A", "B"),
+                topology_edge("A", "C"),
+            ],
+        );
+        let config: Config = serde_yaml::from_str(
+            r#"
+governance:
+  topology:
+    maxFanIn: 1
+    maxFanOut: 1
+    exceptions:
+      - id: public-x
+        node: X
+        direction: fanIn
+        budget: 4
+        reason: shared public contract
+        owner: platform-docs
+        approvedBy: architecture-council
+        expires: 2099-12-31
+        history:
+          - observedAt: 2026-01-01
+            degree: 2
+"#,
+        )
+        .unwrap();
+        let mut diagnostics = Vec::new();
+
+        let exceptions = check_topology_policy(&config, &graph, &mut diagnostics);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.code == "DH_TOPOLOGY_001")
+                .count(),
+            1,
+            "{diagnostics:?}"
+        );
+        assert!(diagnostics[0].message.contains("'A' has Fan-Out 3"));
+        let exception = &exceptions[0];
+        assert_eq!(exception.status, TopologyExceptionStatus::Applied);
+        assert_eq!(exception.current_degree, Some(3));
+        assert_eq!(exception.remaining, Some(1));
+        assert_eq!(exception.trend_delta, Some(1));
+        assert_eq!(exception.transitive_impact, vec!["A", "B", "C"]);
+    }
+
+    #[test]
+    fn expired_missing_history_and_idle_supernode_exceptions_are_deterministic() {
+        let graph = GovernanceGraph::new(
+            vec![topology_node("A"), topology_node("B"), topology_node("X")],
+            vec![topology_edge("A", "X"), topology_edge("B", "X")],
+        );
+        let expired: Config = serde_yaml::from_str(
+            r#"
+governance:
+  topology:
+    maxFanIn: 1
+    exceptions:
+      - id: expired-x
+        node: X
+        direction: fanIn
+        budget: 3
+        reason: old approval
+        owner: docs
+        approvedBy: council
+        expires: 2000-01-01
+        history: [{ observedAt: 1999-01-01, degree: 2 }]
+"#,
+        )
+        .unwrap();
+        let mut diagnostics = Vec::new();
+        let evidence = check_topology_policy(&expired, &graph, &mut diagnostics);
+        assert_eq!(evidence[0].status, TopologyExceptionStatus::Expired);
+        assert!(diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_003"));
+        assert!(diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_001"));
+
+        let missing_history: Config = serde_yaml::from_str(
+            r#"
+governance:
+  topology:
+    maxFanIn: 1
+    exceptions:
+      - id: no-history-x
+        node: X
+        direction: fanIn
+        budget: 3
+        reason: needs evidence
+        owner: docs
+        approvedBy: council
+        expires: 2099-12-31
+"#,
+        )
+        .unwrap();
+        diagnostics.clear();
+        let evidence = check_topology_policy(&missing_history, &graph, &mut diagnostics);
+        assert_eq!(evidence[0].status, TopologyExceptionStatus::Invalid);
+        assert!(diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_005"));
+        assert!(diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_001"));
+
+        let idle_graph = GovernanceGraph::new(
+            vec![topology_node("A"), topology_node("X")],
+            vec![topology_edge("A", "X")],
+        );
+        diagnostics.clear();
+        let evidence = check_topology_policy(&missing_history, &idle_graph, &mut diagnostics);
+        assert_eq!(evidence[0].status, TopologyExceptionStatus::Idle);
+        assert!(diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_004"));
+        assert!(!diagnostics.iter().any(|item| item.code == "DH_TOPOLOGY_001"));
+
+        let invalid_metadata: Config = serde_yaml::from_str(
+            r#"
+governance:
+  topology:
+    maxFanIn: 1
+    exceptions:
+      - id: missing-metadata
+        node: X
+        direction: fanIn
+        budget: 3
+        reason: ""
+        owner: ""
+        approvedBy: ""
+        expires: ""
+      - id: missing-target
+        node: MISSING
+        direction: fanIn
+        budget: 3
+        reason: no such node
+        owner: docs
+        approvedBy: council
+        expires: 2099-12-31
+"#,
+        )
+        .unwrap();
+        diagnostics.clear();
+        let evidence = check_topology_policy(&invalid_metadata, &graph, &mut diagnostics);
+        assert!(
+            evidence
+                .iter()
+                .all(|item| item.status == TopologyExceptionStatus::Invalid)
+        );
+        assert_eq!(
+            diagnostics
+                .iter()
+                .filter(|item| item.code == "DH_TOPOLOGY_003")
+                .count(),
+            2
+        );
     }
 
     #[test]

@@ -39,9 +39,9 @@ invariant has one dimension and minimum maturity.
 | `topology.metrics` | basic | normalized node, edge, resolution and isolation counts | delivered |
 | `topology.fan-and-cycles` | controlled | distinct-neighbor degree and deterministic SCCs | delivered |
 | `topology.thresholds` | controlled | `DH_TOPOLOGY_001`, `DH_TOPOLOGY_002` | delivered |
-| `topology.budgets` | governed | none | missing |
-| `topology.public-exceptions` | governed | none | missing |
-| `topology.trends` | governed | none | missing |
+| `topology.budgets` | governed | global/exception budgets, remaining capacity, `DH_TOPOLOGY_001/003` | delivered |
+| `topology.public-exceptions` | governed | exact node/direction audit declarations, `excepted` evidence | delivered |
+| `topology.trends` | governed | ordered degree history and trend delta, `DH_TOPOLOGY_005` | delivered |
 
 `DH_MATURITY_001`, `DH_ACTIVATION_001`, adapter failures, and suppression metadata
 are execution or recommendation evidence and do not directly prove maturity.

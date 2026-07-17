@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-005
-status: proposed
+status: baselined
 ---
 
 # C-005 例外
@@ -10,3 +10,7 @@ status: proposed
 例外校验失败。
 
 旧 suppressions 保持兼容，但报告为未审计例外，因此不能证明被抑制不变量的检测成熟度。
+
+首个已交付类型化例外是 [C-018](supernode-exceptions.md) 的精确 node/direction supernode
+声明；其匹配阈值失败仍作为显式 `excepted` 画像证据。无效、过期、闲置或超过预算的声明
+产生自身诊断，不会隐藏底层拓扑状态。

@@ -18,3 +18,8 @@ topology policy.
 Topology reaches controlled maturity only when deterministic Fan and cycle
 analysis passes and an active explicit topology policy has no visible or
 suppressed violation. Suppression remains non-evidence.
+
+Audited supernode exceptions follow [C-018](supernode-exceptions.md). They can
+make one exact Fan violation non-blocking, but its threshold evidence is
+`excepted` rather than Passed. Governed budget, exception, and trend mechanisms
+therefore do not override the controlled threshold proof obligation.

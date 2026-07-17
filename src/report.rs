@@ -6,6 +6,10 @@ use serde::Serialize;
 use crate::checks::{Diagnostic, DiagnosticData, DiagnosticRange, RelatedInformation};
 use crate::governance::GovernanceGraph;
 
+mod topology;
+
+pub use topology::{TopologyExceptionEvidence, TopologyExceptionStatus};
+
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
 #[allow(dead_code)]
@@ -22,6 +26,7 @@ pub struct Report {
     pub suppressed_diagnostics: Vec<SuppressedDiagnostic>,
     pub semantic_content_anchors_checked: usize,
     pub governance_graph: GovernanceGraph,
+    pub topology_exceptions: Vec<TopologyExceptionEvidence>,
     pub document_templates: DocumentTemplateReport,
     pub summary: Summary,
     pub root: PathBuf,
@@ -141,6 +146,7 @@ impl Report {
             suppressed_diagnostics: Vec::new(),
             semantic_content_anchors_checked: 0,
             governance_graph: GovernanceGraph::default(),
+            topology_exceptions: Vec::new(),
             document_templates: DocumentTemplateReport::default(),
             root: root.to_path_buf(),
         }
@@ -161,6 +167,14 @@ impl Report {
 
     pub(crate) fn with_governance_graph(mut self, graph: GovernanceGraph) -> Self {
         self.governance_graph = graph;
+        self
+    }
+
+    pub(crate) fn with_topology_exceptions(
+        mut self,
+        exceptions: Vec<TopologyExceptionEvidence>,
+    ) -> Self {
+        self.topology_exceptions = exceptions;
         self
     }
 
@@ -299,6 +313,13 @@ impl Report {
             "DH_TOPOLOGY_002" => {
                 Some("The normalized governance graph contains a forbidden directed cycle.")
             }
+            "DH_TOPOLOGY_003" => Some(
+                "A supernode exception has invalid identity, target, direction, budget, audit metadata, or expiry.",
+            ),
+            "DH_TOPOLOGY_004" => Some("A supernode exception is idle and should be removed."),
+            "DH_TOPOLOGY_005" => Some(
+                "A supernode exception has missing, invalid, unordered, or future degree history.",
+            ),
             "DH_ADAPTER_001" => Some("An external documentation adapter reported a failure."),
             "DH_SUPPRESSION_001" => Some("A diagnostic was suppressed by configuration."),
             _ => None,
@@ -307,6 +328,21 @@ impl Report {
 }
 
 pub fn print_text_report(report: &Report) {
+    for exception in &report.topology_exceptions {
+        println!(
+            "Topology exception {} [{}]: node {}, {:?}, degree {:?}, global {:?}, exception {}, remaining {:?}, trend {:?}, impact [{}].",
+            exception.id,
+            exception.status.label(),
+            exception.node,
+            exception.direction,
+            exception.current_degree,
+            exception.global_budget,
+            exception.exception_budget,
+            exception.remaining,
+            exception.trend_delta,
+            exception.transitive_impact.join(", "),
+        );
+    }
     if report.diagnostics.is_empty() {
         println!(
             "docs-hygiene passed: {} files checked.",
@@ -347,6 +383,7 @@ struct JsonReport<'a> {
     schema_version: &'static str,
     summary: &'a Summary,
     diagnostics: Vec<JsonDiagnostic<'a>>,
+    topology_exceptions: &'a [TopologyExceptionEvidence],
 }
 
 #[derive(Debug, Serialize)]
@@ -383,6 +420,7 @@ impl<'a> From<&'a Report> for JsonReport<'a> {
                 .iter()
                 .map(|diagnostic| JsonDiagnostic::new(report, diagnostic))
                 .collect(),
+            topology_exceptions: &report.topology_exceptions,
         }
     }
 }

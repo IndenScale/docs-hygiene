@@ -66,6 +66,8 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 - 跨规范化边关系的关键依赖匹配与 Pin 要求，以及只读计划和显式审计更新；
 - 带离线 file/block payload 校验、类型化 provenance、Ed25519 信任、生命周期策略和显式
   本地导入的可移植 commit snapshot；
+- 带独立预算、expiry、度数趋势、清理诊断和非 Passed `excepted` 证据的精确
+  node/direction 超级节点例外；
 - canonical 与 localized 语言表示的路径、身份和结构同位；
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
 - 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
@@ -187,6 +189,7 @@ adapters:
 - [Library Claim 治理](docs/zh/15_library_claims.md)
 - [关键依赖 Pin](docs/zh/16_critical_dependency_pins.md)
 - [可移植 Commit 快照](docs/zh/17_portable_snapshots.md)
+- [可审计超级节点例外](docs/zh/18_supernode_exceptions.md)
 - [渐进式规则激活](docs/zh/10_progressive_rule_activation.md)
 - [文档卫生治理模型](docs/zh/11_hygiene_governance_model.md)
 - [文档卫生画像](docs/zh/12_hygiene_profile.md)

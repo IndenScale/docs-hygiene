@@ -80,6 +80,8 @@ Docs Hygiene currently provides deterministic project-level governance checks:
   relations, with read-only update plans and explicit audited application;
 - portable commit snapshot manifests with offline file/block payload checks,
   typed provenance, Ed25519 trust, lifecycle policy, and explicit local import;
+- exact node/direction supernode exceptions with audited budgets, expiry,
+  degree trends, cleanup diagnostics, and non-passing `excepted` evidence;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
@@ -216,6 +218,7 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [Library Claim Governance](docs/15_library_claims.md)
 - [Critical Dependency Pins](docs/16_critical_dependency_pins.md)
 - [Portable Commit Snapshots](docs/17_portable_snapshots.md)
+- [Audited Supernode Exceptions](docs/18_supernode_exceptions.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
 - [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
 - [Hygiene Profiles](docs/12_hygiene_profile.md)

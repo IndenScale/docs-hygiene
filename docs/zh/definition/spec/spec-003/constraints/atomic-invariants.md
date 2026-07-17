@@ -38,9 +38,9 @@ status: proposed
 | `topology.metrics` | 基础 | 规范化节点、边、解析及孤立节点计数 | 已交付 |
 | `topology.fan-and-cycles` | 受控 | 不同邻居度数与确定性强连通分量 | 已交付 |
 | `topology.thresholds` | 受控 | `DH_TOPOLOGY_001`、`DH_TOPOLOGY_002` | 已交付 |
-| `topology.budgets` | 治理 | 无 | 缺失 |
-| `topology.public-exceptions` | 治理 | 无 | 缺失 |
-| `topology.trends` | 治理 | 无 | 缺失 |
+| `topology.budgets` | 治理 | 全局/例外预算、剩余额度、`DH_TOPOLOGY_001/003` | 已交付 |
+| `topology.public-exceptions` | 治理 | 精确 node/direction 审计声明、`excepted` 证据 | 已交付 |
+| `topology.trends` | 治理 | 有序度数历史、趋势差、`DH_TOPOLOGY_005` | 已交付 |
 
 `DH_MATURITY_001`、`DH_ACTIVATION_001`、Adapter 失败和 suppression 元数据属于执行或
 建议证据，不直接证明成熟度。只有端到端 fixture 改变交付事实时才更新本账本。

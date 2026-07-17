@@ -161,6 +161,8 @@ pub struct GovernanceTopologyConfig {
     pub max_fan_out: Option<usize>,
     #[serde(default)]
     pub forbid_cycles: bool,
+    #[serde(default)]
+    pub exceptions: Vec<SupernodeExceptionConfig>,
 }
 
 impl GovernanceTopologyConfig {
@@ -168,7 +170,46 @@ impl GovernanceTopologyConfig {
         usize::from(self.max_fan_in.is_some())
             + usize::from(self.max_fan_out.is_some())
             + usize::from(self.forbid_cycles)
+            + self.exceptions.len()
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SupernodeExceptionConfig {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub node: String,
+    #[serde(default)]
+    pub direction: Option<TopologyDirection>,
+    #[serde(default)]
+    pub budget: usize,
+    #[serde(default)]
+    pub reason: String,
+    #[serde(default)]
+    pub owner: String,
+    #[serde(default)]
+    pub approved_by: String,
+    #[serde(default)]
+    pub expires: String,
+    #[serde(default)]
+    pub history: Vec<SupernodeDegreeObservationConfig>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SupernodeDegreeObservationConfig {
+    #[serde(default)]
+    pub observed_at: String,
+    pub degree: usize,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TopologyDirection {
+    FanIn,
+    FanOut,
 }
 
 fn default_similarity_threshold() -> f64 {
