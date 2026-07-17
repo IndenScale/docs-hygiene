@@ -22,6 +22,11 @@ use crate::config::{
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
     GovernanceLocation, GovernanceNode, LifecycleProvenance, ReferenceRelation, RefinementLevel,
+    SnapshotProvenance,
+};
+use crate::portable_snapshot::{
+    PORTABLE_SNAPSHOT_SCHEMA_VERSION, PortableSnapshotEntry, PortableSnapshotManifest,
+    PortableSnapshotStatus,
 };
 use crate::reference::{
     CONTEXT_GOVERNED_ANCHOR, CONTEXT_GOVERNED_CONTENT, CONTEXT_IDENTITY_DECLARATION,
@@ -372,6 +377,7 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
         RuleApplicability::GovernanceTraceability => {
             !config.governance.manifests.is_empty()
                 || !config.governance.critical_dependencies.is_empty()
+                || !config.governance.portable_snapshots.manifests.is_empty()
         }
         RuleApplicability::GovernanceTopology => {
             config.governance.topology.configured_policy_count() > 0
@@ -386,6 +392,8 @@ include!("checks/governance_models.rs");
 include!("checks/lifecycle.rs");
 include!("checks/library_claims.rs");
 include!("checks/library_claim_scan.rs");
+include!("checks/portable_snapshot_signatures.rs");
+include!("checks/portable_snapshots.rs");
 include!("checks/critical_dependency_verification.rs");
 include!("checks/critical_dependencies.rs");
 include!("checks/package_structure.rs");
@@ -426,4 +434,5 @@ mod tests {
     include!("checks/tests/topology.rs");
     include!("checks/tests/library_claims.rs");
     include!("checks/tests/critical_dependencies.rs");
+    include!("checks/tests/portable_snapshots.rs");
 }

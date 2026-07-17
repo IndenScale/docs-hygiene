@@ -15,9 +15,12 @@ use docs_hygiene::{
 mod pins;
 #[path = "main/scaffold.rs"]
 mod scaffold;
+#[path = "main/snapshots.rs"]
+mod snapshots;
 
 use pins::{PinUpdateArgs, update_pins};
 use scaffold::{ScaffoldArgs, scaffold};
+use snapshots::{SnapshotImportArgs, import_snapshot};
 
 // Governance Library: [[SDK-001]]
 
@@ -44,6 +47,8 @@ enum Command {
     ScanLibraryClaims(ScanLibraryClaimsArgs),
     /// Plan or explicitly apply audited critical-dependency pin updates.
     UpdatePins(PinUpdateArgs),
+    /// Read a declared commit from an explicit local checkout and import offline snapshot payloads.
+    ImportSnapshot(SnapshotImportArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -263,6 +268,7 @@ fn main() -> Result<()> {
         Command::MigrateKinds(args) => migrate_kinds(args),
         Command::ScanLibraryClaims(args) => scan_library_claims(args),
         Command::UpdatePins(args) => update_pins(args),
+        Command::ImportSnapshot(args) => import_snapshot(args),
         Command::Init { path } => init(path),
         Command::Scaffold(args) => scaffold(args),
         Command::Lang { command } => lang(command),

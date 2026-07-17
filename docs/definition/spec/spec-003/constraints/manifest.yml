@@ -10,6 +10,7 @@ members:
   - reference-occurrence-ir.md
   - scoped-content-anchors.md
   - critical-pin-policy.md
+  - portable-commit-snapshot.md
   - transitive-impact.md
   - identity-lifecycle.md
   - topology-policy.md

@@ -344,6 +344,19 @@ fn plan_dependency_update(
                         ))
             })
     });
+    if graph.edges.iter().any(|pin| {
+        pin.source == dependency.source
+            && pin.target == dependency.target
+            && pin.relation == GovernanceEdgeKind::PinnedReference
+            && pin
+                .content_anchor
+                .as_ref()
+                .is_some_and(|anchor| anchor.snapshot.is_some())
+    }) {
+        bail!(
+            "portable snapshot Pins require an explicit snapshot manifest/payload update before their digest can change"
+        );
+    }
     let (algorithm, scope, selector, old_digest, source_path, source_line) =
         if let Some(pin) = eligible {
             let anchor = pin.content_anchor.as_ref().expect("eligible pin anchor");

@@ -62,6 +62,7 @@ pub struct ProjectFacts {
     pub configured_localized_roots: usize,
     pub configured_governance_manifests: usize,
     pub configured_critical_dependencies: usize,
+    pub configured_portable_snapshots: usize,
     pub configured_topology_policies: usize,
     pub configured_refinement_levels: Vec<String>,
     pub detected_refinement_levels: Vec<String>,
@@ -153,6 +154,7 @@ fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
         configured_localized_roots: configured_localized_roots.len(),
         configured_governance_manifests: config.governance.manifests.len(),
         configured_critical_dependencies: config.governance.critical_dependencies.len(),
+        configured_portable_snapshots: config.governance.portable_snapshots.manifests.len(),
         configured_topology_policies: config.governance.topology.configured_policy_count(),
         enabled_adapters: usize::from(config.adapters.markdownlint.enabled),
         ..ProjectFacts::default()

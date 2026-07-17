@@ -153,7 +153,7 @@ or error states. See [Progressive Rule Activation](10_progressive_rule_activatio
 
 ## Governance Graph
 
-`governance.manifests` enables the graph; `governance.topology` optionally enforces Fan and cycle thresholds; `governance.contentAnchors.verifyGitCommits` opts into local Git verification for explicit commit anchors and defaults to `false`. File and block SHA-256 anchors do not require it. `governance.coreClaims` adds explicit Library SSOT policy, while `governance.criticalDependencies` selects edges that must be pinned. See [Governance Graph](07_governance_graph.md), [Library Claim Governance](15_library_claims.md), and [Critical Dependency Pins](16_critical_dependency_pins.md).
+`governance.manifests` enables the graph; `governance.topology` optionally enforces Fan and cycle thresholds; `governance.contentAnchors.verifyGitCommits` opts into local Git verification for explicit commit anchors and defaults to `false`. File and block SHA-256 anchors do not require it. `governance.coreClaims` adds explicit Library SSOT policy, `governance.criticalDependencies` selects edges that must be pinned, and `governance.portableSnapshots` registers offline commit evidence and optional Ed25519 trust. See [Governance Graph](07_governance_graph.md), [Library Claim Governance](15_library_claims.md), [Critical Dependency Pins](16_critical_dependency_pins.md), and [Portable Commit Snapshots](17_portable_snapshots.md).
 
 ## Forbid ASCII Art
 

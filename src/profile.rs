@@ -235,6 +235,9 @@ fn evaluate_invariant(
         InvariantApplicability::CriticalDependencies => {
             !config.governance.critical_dependencies.is_empty()
         }
+        InvariantApplicability::PortableSnapshots => {
+            !config.governance.portable_snapshots.manifests.is_empty()
+        }
         InvariantApplicability::LocalizedRepresentation => {
             activation.facts.configured_localized_representations > 0
                 || activation.facts.configured_localized_roots > 0

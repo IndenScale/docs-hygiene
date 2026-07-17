@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add versioned portable commit snapshot manifests, typed anchor provenance,
+  offline file/block payload verification, Ed25519 trust policy, lifecycle and
+  retention checks, and an explicit atomic `import-snapshot` workflow.
+
 - Add critical dependency policies across normalized edge relations, stable Pin
   diagnostics, maximum-age audit metadata, reverse-impact evidence, and an
   explicit atomic `update-pins` plan/apply workflow with JSONL audit records.

@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -16,6 +17,8 @@ pub struct GovernanceConfig {
     #[serde(default)]
     pub content_anchors: GovernanceContentAnchorConfig,
     #[serde(default)]
+    pub portable_snapshots: PortableSnapshotConfig,
+    #[serde(default)]
     pub core_claims: Vec<CoreClaimConfig>,
     #[serde(default)]
     pub critical_dependencies: Vec<CriticalDependencyPolicyConfig>,
@@ -30,11 +33,23 @@ impl Default for GovernanceConfig {
             require_complete_vertical_derivation: false,
             topology: GovernanceTopologyConfig::default(),
             content_anchors: GovernanceContentAnchorConfig::default(),
+            portable_snapshots: PortableSnapshotConfig::default(),
             core_claims: Vec::new(),
             critical_dependencies: Vec::new(),
             pin_audit_log: default_pin_audit_log(),
         }
     }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PortableSnapshotConfig {
+    #[serde(default)]
+    pub manifests: Vec<PathBuf>,
+    #[serde(default)]
+    pub trusted_keys: BTreeMap<String, String>,
+    #[serde(default)]
+    pub require_signatures: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

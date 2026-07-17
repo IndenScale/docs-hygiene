@@ -119,7 +119,9 @@ fn check_governance(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> GovernanceGraph {
     if config.governance.manifests.is_empty() {
-        return GovernanceGraph::default();
+        let graph = GovernanceGraph::default();
+        check_portable_snapshots(root, config, &graph, diagnostics);
+        return graph;
     }
 
     let mut assets = Vec::new();
@@ -247,6 +249,7 @@ fn check_governance(
     let identities = collect_governed_identity_records(root, &assets);
     graph.authority_migrations = check_identity_lifecycle(&identities, &graph, diagnostics);
     check_critical_dependencies(root, config, &graph, diagnostics);
+    check_portable_snapshots(root, config, &graph, diagnostics);
     graph
 }
 

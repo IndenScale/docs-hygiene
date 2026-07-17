@@ -78,7 +78,8 @@ non-evidence, target gating, reusable template binding and lifecycle migration,
 normalized governance edges, heading selector resolution, Fan-In/Fan-Out and
 cycle analysis, explicit topology thresholds, and versioned syntax-neutral
 reference collection, scoped multi-anchor verification, transitive impact,
-identity lifecycle, and authority migration are delivered. Budgets, trends, and
+identity lifecycle, authority migration, critical Pin policy, and portable
+offline commit snapshots are delivered. Budgets, trends, and
 audited exception execution remain planned.
 The authoritative coverage ledger is
 [SPEC-003 C-007](definition/spec/spec-003/constraints/atomic-invariants.md).

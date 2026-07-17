@@ -33,6 +33,7 @@ status: proposed
 | `dependency.selector` | 治理 | 边 selector、`DH_SELECTOR_001`、本地化签名同位 | 已交付 |
 | `dependency.scoped-anchor` | 治理 | file/block/commit scope、逐项诊断、opt-in Git 校验 | 已交付 |
 | `dependency.critical-pins` | 治理 | 边匹配器、`DH_PIN_*`、审计更新工作流 | 已交付 |
+| `dependency.portable-snapshot` | 治理 | 离线 payload、类型化 provenance、签名、`DH_SNAPSHOT_*` | 已交付 |
 | `dependency.transitive-impact` | 治理 | 所有已解析语义边上的确定性反向可达集合 | 已交付 |
 | `topology.metrics` | 基础 | 规范化节点、边、解析及孤立节点计数 | 已交付 |
 | `topology.fan-and-cycles` | 受控 | 不同邻居度数与确定性强连通分量 | 已交付 |

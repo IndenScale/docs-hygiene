@@ -78,6 +78,8 @@ Docs Hygiene currently provides deterministic project-level governance checks:
   block-pinned controlled excerpts, and advisory similarity scanning;
 - critical dependency matchers and Pin requirements across normalized edge
   relations, with read-only update plans and explicit audited application;
+- portable commit snapshot manifests with offline file/block payload checks,
+  typed provenance, Ed25519 trust, lifecycle policy, and explicit local import;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
@@ -162,7 +164,8 @@ docs-hygiene check --format json
 
 Other commands include `init`, `lang`, `migrate-templates`, `migrate-kinds`,
 `scan-library-claims`, `explain`, and `explain-rules`. `update-pins` plans or
-explicitly applies critical Pin refreshes. Run
+explicitly applies critical Pin refreshes; `import-snapshot` explicitly
+materializes portable payloads from a local Git checkout. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy
@@ -212,6 +215,7 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [Governance Graph](docs/07_governance_graph.md)
 - [Library Claim Governance](docs/15_library_claims.md)
 - [Critical Dependency Pins](docs/16_critical_dependency_pins.md)
+- [Portable Commit Snapshots](docs/17_portable_snapshots.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
 - [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
 - [Hygiene Profiles](docs/12_hygiene_profile.md)

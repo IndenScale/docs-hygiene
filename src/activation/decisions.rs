@@ -228,12 +228,15 @@ fn infer_automatic_decision(
             RuleState::Inactive,
             vec!["no governance identity signal".into()],
         ),
-        RuleApplicability::GovernanceTraceability if facts.configured_critical_dependencies > 0 => {
+        RuleApplicability::GovernanceTraceability
+            if facts.configured_critical_dependencies > 0
+                || facts.configured_portable_snapshots > 0 =>
+        {
             (
                 RuleState::Error,
                 vec![format!(
-                    "{} critical dependency policies configured",
-                    facts.configured_critical_dependencies
+                    "{} critical dependency policies and {} portable snapshots configured",
+                    facts.configured_critical_dependencies, facts.configured_portable_snapshots
                 )],
             )
         }

@@ -268,6 +268,25 @@ impl Report {
             "DH_PIN_006" => Some(
                 "A critical dependency policy or anchor declaration is invalid or unverifiable.",
             ),
+            "DH_SNAPSHOT_001" => Some(
+                "A portable snapshot manifest or registration is missing, malformed, or duplicated.",
+            ),
+            "DH_SNAPSHOT_002" => {
+                Some("A portable snapshot repository identity is invalid or inconsistent.")
+            }
+            "DH_SNAPSHOT_003" => Some("A portable snapshot commit OID is invalid or inconsistent."),
+            "DH_SNAPSHOT_004" => Some(
+                "A portable snapshot source or payload path is unsafe, missing, or inconsistent.",
+            ),
+            "DH_SNAPSHOT_005" => Some(
+                "A portable snapshot digest, scope, locator, or local payload is inconsistent.",
+            ),
+            "DH_SNAPSHOT_006" => {
+                Some("A portable snapshot signature is required, untrusted, or invalid.")
+            }
+            "DH_SNAPSHOT_007" => {
+                Some("A portable snapshot lifecycle, replacement, or retention policy is invalid.")
+            }
             "DH_DERIVATION_001" => {
                 Some("A Body has a missing or invalid adjacent-refinement-level derivation.")
             }

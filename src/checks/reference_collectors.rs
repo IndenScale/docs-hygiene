@@ -96,6 +96,7 @@ fn collect_wiki_link_occurrences(
                         updated_at: None,
                         updated_by: None,
                         reason: None,
+                        snapshot: None,
                     }),
                 },
             ));
@@ -241,6 +242,7 @@ fn collect_frontmatter_occurrences(
                     updated_at: declaration.updated_at,
                     updated_by: declaration.updated_by,
                     reason: declaration.reason,
+                    snapshot: declaration.snapshot,
                 }),
             },
         ));
@@ -263,6 +265,8 @@ struct FrontmatterAnchorDeclaration {
     updated_by: Option<String>,
     #[serde(default)]
     reason: Option<String>,
+    #[serde(default)]
+    snapshot: Option<SnapshotProvenance>,
 }
 
 impl FrontmatterAnchorDeclaration {
@@ -272,6 +276,17 @@ impl FrontmatterAnchorDeclaration {
             Regex::new(r"^(?:[A-Fa-f0-9]{40}|[A-Fa-f0-9]{64})$").expect("static Git OID regex");
         let selector = Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
             .expect("static selector regex");
+        if let Some(snapshot) = &self.snapshot
+            && (!valid_claim_identity(&snapshot.manifest)
+                || !valid_repository_identity(&snapshot.repository)
+                || !valid_commit_oid(&snapshot.commit)
+                || !safe_snapshot_path(&snapshot.path))
+        {
+            return Err(
+                "Snapshot provenance requires a stable manifest id, credential-free repository identity, full commit OID, and safe relative path."
+                    .to_owned(),
+            );
+        }
         match self.scope {
             ContentAnchorScope::File => {
                 if self.algorithm != "sha256" || !sha256.is_match(&self.digest) {
@@ -310,6 +325,9 @@ impl FrontmatterAnchorDeclaration {
                 }
                 if self.locator.is_some() {
                     return Err("Commit anchor must not declare a locator.".to_owned());
+                }
+                if self.snapshot.is_some() {
+                    return Err("Commit anchor must not declare snapshot provenance.".to_owned());
                 }
             }
         }

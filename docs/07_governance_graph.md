@@ -159,7 +159,7 @@ Commit scope uses `algorithm: git` and a full commit OID. It is disabled by
 default and requires `governance.contentAnchors.verifyGitCommits: true`; the
 checker then compares the current target with the same path's blob at that
 commit. Existing inline selector-plus-SHA-256 links remain whole-file anchors.
-See [SPEC-003 C-013](definition/spec/spec-003/constraints/scoped-content-anchors.md).
+See [SPEC-003 C-013](definition/spec/spec-003/constraints/scoped-content-anchors.md). Exported or cross-repository SHA-256 file/block anchors may instead carry typed `snapshot` provenance backed by registered local payloads; see [Portable Commit Snapshots](17_portable_snapshots.md) and [SPEC-003 C-017](definition/spec/spec-003/constraints/portable-commit-snapshot.md).
 
 ## Transitive Impact
 

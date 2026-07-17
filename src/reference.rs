@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{ContentAnchorScope, GovernanceLocation};
+use crate::{ContentAnchorScope, GovernanceLocation, SnapshotProvenance};
 
 pub const REFERENCE_OCCURRENCE_SCHEMA_VERSION: &str = "docs-hygiene.reference-occurrence.v1";
 pub const SYNTAX_WIKI_LINK: &str = "wikiLink";
@@ -35,6 +35,8 @@ pub struct ReferenceAnchorPayload {
     pub updated_by: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snapshot: Option<SnapshotProvenance>,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]

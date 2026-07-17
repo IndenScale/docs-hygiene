@@ -1,7 +1,13 @@
 type ReferenceSignature = (
     String,
     Option<String>,
-    Option<(String, String, ContentAnchorScope, Option<String>)>,
+    Option<(
+        String,
+        String,
+        ContentAnchorScope,
+        Option<String>,
+        Option<SnapshotProvenance>,
+    )>,
 );
 
 fn semantic_reference_signatures(
@@ -28,6 +34,7 @@ fn semantic_reference_signatures(
                             anchor.digest.clone(),
                             anchor.scope,
                             anchor.locator.clone(),
+                            anchor.snapshot.clone(),
                         )
                     }),
             )
@@ -70,6 +77,7 @@ fn normalize_reference_edges_with_policies(
                         updated_at: anchor.updated_at.clone(),
                         updated_by: anchor.updated_by.clone(),
                         reason: anchor.reason.clone(),
+                        snapshot: anchor.snapshot.clone(),
                     })
                 }
                 Some(_) => return None,

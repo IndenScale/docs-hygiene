@@ -34,6 +34,7 @@ invariant has one dimension and minimum maturity.
 | `dependency.selector` | governed | edge selector, `DH_SELECTOR_001`, localized signature parity | delivered |
 | `dependency.scoped-anchor` | governed | file/block/commit scopes, per-item diagnostics, opt-in Git verification | delivered |
 | `dependency.critical-pins` | governed | edge matchers, `DH_PIN_*`, audited update workflow | delivered |
+| `dependency.portable-snapshot` | governed | offline payloads, typed provenance, signatures, `DH_SNAPSHOT_*` | delivered |
 | `dependency.transitive-impact` | governed | deterministic reverse reachability across all resolved semantic edges | delivered |
 | `topology.metrics` | basic | normalized node, edge, resolution and isolation counts | delivered |
 | `topology.fan-and-cycles` | controlled | distinct-neighbor degree and deterministic SCCs | delivered |

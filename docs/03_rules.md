@@ -119,6 +119,10 @@ duplicate, expired migration, or missing/stale controlled-excerpt block pin.
 insufficient scope, disallowed algorithms, changed content, expired audit age,
 and invalid policy or declaration state for critical dependencies.
 
+`DH_SNAPSHOT_001` through `DH_SNAPSHOT_007` distinguish portable snapshot
+registration, repository, commit, path, digest, signature, and lifecycle
+failures without invoking a remote repository.
+
 `DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
 adjacent-refinement-level Body derivation through `formalizes` or `realizes`.
 

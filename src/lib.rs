@@ -11,9 +11,11 @@ pub mod document_kinds;
 pub mod governance;
 pub mod kind_migration;
 pub mod pin_update;
+pub mod portable_snapshot;
 pub mod profile;
 pub mod reference;
 pub mod report;
+pub mod snapshot_import;
 pub mod template_migration;
 
 pub use activation::{
@@ -34,7 +36,7 @@ pub use config::{
     FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
     FrontmatterPredicateConfig, FrontmatterSchemaConfig, GovernanceContentAnchorConfig,
     GovernanceTopologyConfig, HygieneProfileConfig, HygieneProfileDimensionsConfig,
-    KindScaffoldConfig, RuleMode, RulePolicyConfig,
+    KindScaffoldConfig, PortableSnapshotConfig, RuleMode, RulePolicyConfig,
 };
 pub use document_kinds::{
     KindIssue, KindIssueCategory, ScaffoldDocumentPlan, ScaffoldDocumentRequest,
@@ -44,7 +46,7 @@ pub use document_kinds::{
 pub use governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
     GovernanceGraphMetrics, GovernanceLocation, GovernanceNode, LifecycleProvenance,
-    ReferenceRelation, RefinementLevel,
+    ReferenceRelation, RefinementLevel, SnapshotProvenance,
 };
 pub use kind_migration::{
     KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,
@@ -53,6 +55,10 @@ pub use kind_migration::{
 pub use pin_update::{
     PinUpdateBlock, PinUpdateChange, PinUpdateReport, PinUpdateRequest, print_json_pin_update,
     print_text_pin_update, update_critical_pins,
+};
+pub use portable_snapshot::{
+    PORTABLE_SNAPSHOT_SCHEMA_VERSION, PortableSnapshotEntry, PortableSnapshotManifest,
+    PortableSnapshotSignature, PortableSnapshotStatus,
 };
 pub use profile::{
     DimensionResult, DimensionStatus, HygieneProfileReport, INVARIANTS, InvariantApplicability,
@@ -69,6 +75,11 @@ pub use reference::{
 pub use report::{
     DocumentTemplateReport, Report, SuppressedDiagnostic, TemplateRevisionReport,
     print_json_report, print_text_report,
+};
+pub use snapshot_import::{
+    SNAPSHOT_IMPORT_SCHEMA_VERSION, SnapshotImportBlock, SnapshotImportChange,
+    SnapshotImportReport, import_portable_snapshot, print_json_snapshot_import,
+    print_text_snapshot_import,
 };
 pub use template_migration::{
     TemplateMigrationBlock, TemplateMigrationChange, TemplateMigrationReport,

@@ -1,7 +1,7 @@
 ---
 id: FEATURE-013
-status: proposed
-delivery_status: planned
+status: baselined
+delivery_status: delivered
 ---
 
 # FEATURE-013 可移植 Commit 外发快照
@@ -30,3 +30,23 @@ delivery_status: planned
 
 基于 [FEATURE-003](03_multi-granularity-pin.md) 的 commit scope；定位为少见、显式启用的
 强审计能力，不改变 Git 不是治理身份权威的现有边界。
+
+## 交付证据
+
+- `governance.portableSnapshots` 登记版本化 `docs-hygiene.snapshot.v1` manifest、受信
+  Ed25519 公钥和签名强制策略；repository 只接受无凭据稳定身份，不接受 URL；
+- manifest 绑定 snapshot 制品身份、完整 commit OID、原仓库 path、本地 payload、
+  file/block scope、locator 与 digest；frontmatter anchor 通过类型化 `snapshot`
+  provenance 引用这些证据，规范化边和 localized signature 均保留 provenance；
+- `DH_SNAPSHOT_001`–`007` 分别报告登记/schema、repository、commit、path/payload、
+  digest/shape、签名和生命周期故障；file 与 block 都用既有精确字节语义离线校验；
+- `active/replaced/revoked`、`replacedBy` 和 `retainUntil` 明确撤销、替换与保留规则；只有
+  active snapshot 能证明 anchor，外部历史不成为治理身份权威；
+- `docs-hygiene import-snapshot` 默认输出只读 `docs-hygiene.snapshot-import.v1`，仅从用户
+  显式提供的本地 Git checkout 读取精确 commit，验证完整计划后用 `--apply` 原子写入
+  payload；不会 clone/fetch、修改签名 manifest 或保存 checkout 位置；
+- `src/checks/tests/portable_snapshots.rs` 覆盖签名、file/block、四类 provenance 漂移和
+  撤销；`tests/snapshot_import.rs` 证明导入后删除原仓库仍可离线通过；画像新增
+  `dependency.portable-snapshot`。
+- 完整契约见[可移植 Commit 快照](../../17_portable_snapshots.md)与
+  [SPEC-003 C-017](../../definition/spec/spec-003/constraints/portable-commit-snapshot.md)。
