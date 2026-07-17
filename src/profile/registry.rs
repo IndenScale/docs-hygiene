@@ -15,6 +15,7 @@ pub enum InvariantApplicability {
     ContentPolicy,
     DocumentTemplates,
     LocalizedRepresentation,
+    SlugSchema,
     ContentAnchor,
     ScopedContentAnchor,
     Selector,
@@ -41,6 +42,7 @@ impl InvariantSpec {
                 InvariantApplicability::DocumentTemplates
             }
             "identity.canonical-source" => InvariantApplicability::LocalizedRepresentation,
+            "identity.slug-schema" => InvariantApplicability::SlugSchema,
             "identity.authority-migration" => InvariantApplicability::AuthorityMigration,
             "dependency.content-anchor" | "dependency.target-staleness" => {
                 InvariantApplicability::ContentAnchor
@@ -153,6 +155,14 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         delivery: Delivered,
         checkers: &[Localization],
         diagnostic_codes: &["DH_REPRESENTATION_001", "DH_REPRESENTATION_002"],
+    },
+    InvariantSpec {
+        id: "identity.slug-schema",
+        dimension: Identity,
+        minimum_maturity: Controlled,
+        delivery: Delivered,
+        checkers: &[DocumentStructure],
+        diagnostic_codes: &["DH_SLUG_001"],
     },
     InvariantSpec {
         id: "identity.semantic-reference",

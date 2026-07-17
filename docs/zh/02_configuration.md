@@ -45,7 +45,9 @@ docs:
 
 在这个配置中，`INDEX.md` 是合法文件，但不参与连续编号。
 
-旧的 `docs.root` 和 `docs.filenamePattern` 仍然可作为单 base 简写。
+旧的 `docs.root` 和 `docs.filenamePattern` 仍可作为单 base 简写；按 Kind 显式启用的
+slug 来源、规范化、冲突、本地化、alias 和重命名契约见
+[Slug 身份治理](13_slug_identity.md)。
 
 ## 多 Base
 

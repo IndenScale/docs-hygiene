@@ -8,6 +8,7 @@ use crate::activation::HygieneMaturity;
 
 mod document_contracts;
 mod governance;
+mod slug;
 
 pub use document_contracts::{
     DocumentContractFragmentConfig, DocumentContractsConfig, DocumentMatchConfig,
@@ -15,6 +16,7 @@ pub use document_contracts::{
     MaturityRecommendationConfig, RequiredFieldConfig, RequiredSectionConfig,
 };
 pub use governance::{GovernanceConfig, GovernanceContentAnchorConfig, GovernanceTopologyConfig};
+pub use slug::{SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -121,6 +123,8 @@ pub struct DocsConfig {
     pub forbid_ascii_art: bool,
     #[serde(default)]
     pub bases: Vec<DocsBaseConfig>,
+    #[serde(default)]
+    pub slug_schemas: Vec<SlugSchemaConfig>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -230,6 +234,7 @@ impl Default for DocsConfig {
             max_lines: None,
             forbid_ascii_art: false,
             bases: Vec::new(),
+            slug_schemas: Vec::new(),
         }
     }
 }

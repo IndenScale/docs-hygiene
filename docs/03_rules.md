@@ -16,6 +16,12 @@ not match `docs.filenamePattern`.
 
 `DH_SEQ_002` reports a duplicate number in a numbered docs group.
 
+## Slug Identity
+
+`DH_SLUG_001` reports an invalid or reserved slug, a normalized or case-folding
+collision, an alias conflict, canonical/localized slug drift for one stable
+identity, a missing authoritative source, or an incomplete rename policy.
+
 ## Size
 
 `DH_SIZE_001` reports a docs file that exceeds `docs.maxLines`.

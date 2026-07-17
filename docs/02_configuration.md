@@ -48,11 +48,11 @@ docs:
           numbered: false
 ```
 
-`INDEX.md` is legal in this configuration but does not participate in
-continuous numbering.
+`INDEX.md` is legal in this configuration but does not participate in continuous numbering.
 
-The older `docs.root` and `docs.filenamePattern` fields are still accepted as a
-single-base shorthand.
+The older `docs.root` and `docs.filenamePattern` fields remain accepted as a
+single-base shorthand; opt-in, kind-scoped slug identity configuration is
+defined in [Slug Identity Governance](13_slug_identity.md).
 
 ## Multiple Bases
 

@@ -134,6 +134,7 @@ pub const RULE_SPECS: [RuleSpec; 9] = [
             "DH_SIZE_001",
             "DH_ASCII_001",
             "DH_LINK_001",
+            "DH_SLUG_001",
         ],
         rationale: "Predictable structure keeps navigation and document growth reviewable.",
         remediation: "Configure rules.docs.structure.mode as auto, required, or disabled.",

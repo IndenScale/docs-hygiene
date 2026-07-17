@@ -68,6 +68,8 @@ Docs Hygiene currently provides deterministic project-level governance checks:
 
 - required entry files such as README, CHANGELOG, and LICENSE;
 - numbered documents, allowed file types, and length budgets;
+- opt-in, kind-scoped slug schemas with authoritative sources, normalized
+  collision indexes, localized identity parity, aliases, and rename policy;
 - path-inferred document contracts with reusable templates, deterministic
   profile binding, revision migration, and maturity-aware enforcement;
 - path, identity, and structure parity across canonical and localized representations;

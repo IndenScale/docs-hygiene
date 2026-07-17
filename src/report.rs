@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 
-use crate::checks::{Diagnostic, DiagnosticRange, RelatedInformation};
+use crate::checks::{Diagnostic, DiagnosticData, DiagnosticRange, RelatedInformation};
 use crate::governance::GovernanceGraph;
 
 #[derive(Clone, Copy, Debug, Serialize)]
@@ -222,6 +222,9 @@ impl Report {
             "DH_LINK_001" => Some(
                 "A project-root-local Markdown Link or image target does not resolve to an existing path; external URL reachability is outside this rule.",
             ),
+            "DH_SLUG_001" => Some(
+                "A configured Document Kind has an invalid, reserved, conflicting, representation-drifted, or migration-incomplete slug identity.",
+            ),
             "DH_GOVERNANCE_001" => {
                 Some("A governance manifest is missing, malformed, duplicated, or invalid.")
             }
@@ -310,6 +313,8 @@ struct JsonDiagnostic<'a> {
     uri: String,
     range: &'a DiagnosticRange,
     related_information: Vec<JsonRelatedInformation<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    data: Option<&'a DiagnosticData>,
 }
 
 #[derive(Debug, Serialize)]
@@ -350,6 +355,7 @@ impl<'a> JsonDiagnostic<'a> {
                 .iter()
                 .map(|related| JsonRelatedInformation::new(report, related))
                 .collect(),
+            data: diagnostic.data.as_ref(),
         }
     }
 }

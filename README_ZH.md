@@ -57,6 +57,8 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 
 - README、CHANGELOG、LICENSE 等入口文件完整性；
 - 编号文档、允许的文件类型和长度预算；
+- 按 Kind 显式启用的 slug Schema、权威来源、规范化冲突索引、本地化身份同位、alias
+  与重命名策略；
 - 基于路径与文件名推导、可复用模板、确定性 Profile 绑定与 revision 迁移、随项目成熟度增强的文档契约；
 - canonical 与 localized 语言表示的路径、身份和结构同位；
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；

@@ -21,6 +21,7 @@ invariant has one dimension and minimum maturity.
 | `identity.stable-ids` | basic | `DH_GOVERNANCE_001`, package checks | delivered |
 | `identity.duplicates` | basic | governance and Library indexes | delivered |
 | `identity.canonical-source` | controlled | representation parity | delivered |
+| `identity.slug-schema` | controlled | kind-scoped index, `DH_SLUG_001` | delivered |
 | `identity.semantic-reference` | controlled | `DH_CONCEPT_*`, `DH_REFERENCE_001` | delivered |
 | `identity.lifecycle` | governed | status obligations and terminal-target rejection | delivered |
 | `identity.authority-migration` | governed | `supersededBy`, successor validation, ordered migration evidence | delivered |

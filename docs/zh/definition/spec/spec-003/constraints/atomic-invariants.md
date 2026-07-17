@@ -20,6 +20,7 @@ status: proposed
 | `identity.stable-ids` | 基础 | `DH_GOVERNANCE_001`、Package 检查 | 已交付 |
 | `identity.duplicates` | 基础 | Governance 与 Library 索引 | 已交付 |
 | `identity.canonical-source` | 受控 | 表示同位 | 已交付 |
+| `identity.slug-schema` | 受控 | Kind 级索引、`DH_SLUG_001` | 已交付 |
 | `identity.semantic-reference` | 受控 | `DH_CONCEPT_*`、`DH_REFERENCE_001` | 已交付 |
 | `identity.lifecycle` | 治理 | 状态义务与终止目标拒绝 | 已交付 |
 | `identity.authority-migration` | 治理 | `supersededBy`、后继校验、有序迁移证据 | 已交付 |

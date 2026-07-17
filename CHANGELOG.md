@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add opt-in, Document-Kind-scoped slug identity schemas with filename,
+  frontmatter, or stable-ID authority; deterministic normalization, reserved
+  and collision checks; localized identity parity; alias migration policy; and
+  structured `DH_SLUG_001` JSON remediation data.
+
 - Define the planned multidimensional documentation governance model in PRD-004:
   three maturity levels per capability dimension, independent rule execution
   states, and a unified typed edge abstraction for semantic dependencies.

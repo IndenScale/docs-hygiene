@@ -234,6 +234,7 @@ fn evaluate_invariant(
             activation.facts.configured_localized_representations > 0
                 || activation.facts.configured_localized_roots > 0
         }
+        InvariantApplicability::SlugSchema => !config.docs.slug_schemas.is_empty(),
         InvariantApplicability::AuthorityMigration => {
             !checks.governance_graph.authority_migrations.is_empty()
         }

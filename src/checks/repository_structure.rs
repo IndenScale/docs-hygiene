@@ -135,7 +135,7 @@ fn collect_docs(
             if !docs_root.exists() {
                 continue;
             }
-            for entry in WalkDir::new(&docs_root) {
+            for entry in WalkDir::new(&docs_root).sort_by_file_name() {
                 let entry = entry?;
                 if !entry.file_type().is_file() {
                     continue;
@@ -181,6 +181,8 @@ fn collect_docs(
                     number,
                     stem,
                     numbered: pattern.numbered,
+                    document_kind: pattern.document_kind.clone(),
+                    pattern_id: pattern.id.clone(),
                 });
             }
         }

@@ -16,6 +16,7 @@ use crate::activation::{
 use crate::config::{
     Config, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
     FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
+    SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
@@ -39,6 +40,17 @@ pub struct Diagnostic {
     pub range: DiagnosticRange,
     pub message: String,
     pub related_information: Vec<RelatedInformation>,
+    pub data: Option<DiagnosticData>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosticData {
+    pub original_value: String,
+    pub normalized_value: String,
+    pub document_kind: String,
+    pub conflict_path: Option<String>,
+    pub remediation: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -75,6 +87,7 @@ impl Diagnostic {
             range: DiagnosticRange::origin(),
             message: message.into(),
             related_information: Vec::new(),
+            data: None,
         }
     }
 
@@ -90,6 +103,11 @@ impl Diagnostic {
 
     fn with_related(mut self, related: RelatedInformation) -> Self {
         self.related_information.push(related);
+        self
+    }
+
+    fn with_data(mut self, data: DiagnosticData) -> Self {
+        self.data = Some(data);
         self
     }
 }
@@ -141,6 +159,8 @@ struct DocFile {
     number: Option<u32>,
     stem: String,
     numbered: bool,
+    document_kind: String,
+    pattern_id: String,
 }
 
 struct NormalizedBase {
@@ -182,6 +202,7 @@ pub(crate) fn run_checks_with_activation(
     check_max_lines(root, config, &docs, &mut structure)?;
     check_ascii_art(root, config, &docs, &mut structure)?;
     check_markdown_links(root, config, &docs, &mut structure)?;
+    check_slug_identities(root, config, &docs, &mut structure)?;
     append_rule_diagnostics(
         &mut diagnostics,
         structure,
@@ -370,6 +391,7 @@ include!("checks/topology.rs");
 include!("checks/document_templates.rs");
 include!("checks/document_contracts.rs");
 include!("checks/repository_structure.rs");
+include!("checks/slug_identities.rs");
 include!("checks/repository_content.rs");
 include!("checks/support.rs");
 
@@ -382,6 +404,7 @@ mod tests {
     use super::*;
 
     include!("checks/tests/documents.rs");
+    include!("checks/tests/slug_identities.rs");
     include!("checks/tests/policies.rs");
     include!("checks/tests/template_lifecycle.rs");
     include!("checks/tests/governance_packages.rs");
