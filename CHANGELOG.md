@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add explicit `governance.coreClaims` Library authorities, confirmed duplicate
+  policies, deadline migrations, block-pinned controlled excerpts, lifecycle
+  remediation, and a non-blocking `scan-library-claims` candidate report.
+
 - Add a `documentKinds` registry shared by typed frontmatter validation and
   locale-aware document scaffolding; support field types, enums, formats,
   conditions, cross-field invariants, explicit unknown-field policy, dry runs,

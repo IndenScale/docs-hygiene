@@ -62,6 +62,7 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 - 基于路径与文件名推导、可复用模板、确定性 Profile 绑定与 revision 迁移、随项目成熟度增强的文档契约；
 - 由类型化 frontmatter 校验和 locale-aware、安全冲突检测的文档脚手架共同消费的 Kind
   注册表，以及原子 Schema/Template 迁移；
+- 显式核心 Library claim 权威、已确认重复策略、block pin 受控摘录和建议性相似扫描；
 - canonical 与 localized 语言表示的路径、身份和结构同位；
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
 - 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
@@ -136,8 +137,8 @@ docs-hygiene check --fail-on-warning
 docs-hygiene check --format json
 ```
 
-其他命令包括 `init`、`lang`、`migrate-templates`、`migrate-kinds`、`explain` 和
-`explain-rules`。运行
+其他命令包括 `init`、`lang`、`migrate-templates`、`migrate-kinds`、
+`scan-library-claims`、`explain` 和 `explain-rules`。运行
 `docs-hygiene --help` 查看完整界面。
 
 ## 策略
@@ -179,6 +180,7 @@ adapters:
 - [CI 与 JSON 输出](docs/zh/05_ci.md)
 - [文档契约](docs/zh/06_document_contracts.md)
 - [治理关系图](docs/zh/07_governance_graph.md)
+- [Library Claim 治理](docs/zh/15_library_claims.md)
 - [渐进式规则激活](docs/zh/10_progressive_rule_activation.md)
 - [文档卫生治理模型](docs/zh/11_hygiene_governance_model.md)
 - [文档卫生画像](docs/zh/12_hygiene_profile.md)

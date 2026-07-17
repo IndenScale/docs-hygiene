@@ -21,7 +21,11 @@ pub use document_kinds::{
     FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
     FrontmatterPredicateConfig, FrontmatterSchemaConfig, KindScaffoldConfig,
 };
-pub use governance::{GovernanceConfig, GovernanceContentAnchorConfig, GovernanceTopologyConfig};
+pub use governance::{
+    CoreClaimAuthorityConfig, CoreClaimConfig, CoreClaimOccurrenceConfig,
+    CoreClaimOccurrencePolicy, GovernanceConfig, GovernanceContentAnchorConfig,
+    GovernanceTopologyConfig,
+};
 pub use slug::{SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig};
 
 #[derive(Debug, Default, Deserialize, Serialize)]

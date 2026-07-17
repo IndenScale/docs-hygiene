@@ -3,6 +3,7 @@ struct SemanticTarget {
     refinement_level: RefinementLevel,
     reference_relation: ReferenceRelation,
     status: String,
+    superseded_by: Option<String>,
     path: String,
 }
 
@@ -18,6 +19,7 @@ fn check_governed_references(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> ReferenceAnalysis {
     let targets = build_library_target_index(root, assets, diagnostics);
+    check_core_library_claims(root, config, assets, &targets, diagnostics);
     let mut edges = Vec::new();
     for asset in assets
         .iter()
@@ -102,6 +104,7 @@ fn build_library_target_index(
                 refinement_level: asset.refinement_level,
                 reference_relation: asset.reference_relation,
                 status: asset.status.clone(),
+                superseded_by: asset.superseded_by.clone(),
                 path: asset.path.clone(),
             },
             diagnostics,
@@ -165,6 +168,7 @@ fn collect_declared_library_targets(
                         refinement_level,
                         reference_relation: ReferenceRelation::Library,
                         status: identity.status,
+                        superseded_by: identity.superseded_by,
                         path: package_rel.join(&node_rel).display().to_string(),
                     },
                     diagnostics,
@@ -188,6 +192,7 @@ fn collect_declared_library_targets(
                     refinement_level,
                     reference_relation: ReferenceRelation::Library,
                     status: domain.status,
+                    superseded_by: domain.superseded_by,
                     path: package_rel.join(&manifest_rel).display().to_string(),
                 },
                 diagnostics,

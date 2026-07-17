@@ -231,6 +231,7 @@ fn evaluate_invariant(
                 }) >= HygieneMaturity::Controlled
         }
         InvariantApplicability::DocumentKinds => !config.document_kinds.is_empty(),
+        InvariantApplicability::CoreClaims => !config.governance.core_claims.is_empty(),
         InvariantApplicability::LocalizedRepresentation => {
             activation.facts.configured_localized_representations > 0
                 || activation.facts.configured_localized_roots > 0

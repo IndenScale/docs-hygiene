@@ -249,6 +249,9 @@ impl Report {
             "DH_BODY_001" => Some(
                 "A Body Package has a missing, malformed, duplicate, unsafe, undeclared, or localized-mismatched member.",
             ),
+            "DH_CLAIM_001" => Some(
+                "An explicitly governed core claim has an invalid authority, forbidden duplicate, expired migration, or unpinned/stale controlled excerpt.",
+            ),
             "DH_DERIVATION_001" => {
                 Some("A Body has a missing or invalid adjacent-refinement-level derivation.")
             }

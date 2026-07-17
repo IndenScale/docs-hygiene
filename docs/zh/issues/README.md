@@ -10,7 +10,7 @@
 | --- | --- | --- | --- | --- |
 | 1 | 文件命名 Schema 与 slug | 已落实 | [FEATURE-004](features/04_naming-and-kind-inference.md)、[FEATURE-009](features/09_slug-identity-governance.md) | — |
 | 2 | Kind 驱动脚手架、frontmatter 与结构不变式 | 已落实 | [FEATURE-005](features/05_document-contracts-and-template-lifecycle.md)、[FEATURE-010](features/10_kind-aware-scaffolding-and-frontmatter-schema.md) | — |
-| 3 | Library 作为核心概念 SSOT | 基本落实 | [FEATURE-006](features/06_library-ssot-and-package-trees.md) | [FEATURE-011](features/11_library-ssot-extraction-and-duplication.md) |
+| 3 | Library 作为核心概念 SSOT | 已落实 | [FEATURE-006](features/06_library-ssot-and-package-trees.md)、[FEATURE-011](features/11_library-ssot-extraction-and-duplication.md) | — |
 | 4 | 关键依赖指纹与细粒度内容哈希 | 部分落实 | [FEATURE-003](features/03_multi-granularity-pin.md) | [FEATURE-012](features/12_critical-dependency-pin-policy.md) |
 | 5 | block/file/commit 细粒度引用 | 基本落实 | [FEATURE-001](features/01_fine-grained-references.md)、[FEATURE-003](features/03_multi-granularity-pin.md) | [FEATURE-013](features/13_portable-commit-snapshots.md) |
 | 6 | Typed Reference 引用对象 | 基本落实 | [FEATURE-002](features/02_reference-syntax-semantics-decoupling.md) | — |
@@ -19,8 +19,8 @@
 
 ## 结论
 
-- 已落实：命名与 slug 身份闭环、Kind 驱动脚手架与类型化 frontmatter。
-- 基本落实：Library SSOT、细粒度引用、Typed Reference。
+- 已落实：命名与 slug 身份闭环、Kind 驱动脚手架与类型化 frontmatter、Library SSOT。
+- 基本落实：细粒度引用、Typed Reference。
 - 部分落实：依赖 Pin 策略、图预算。
 - 初步落实：只有身份生命周期与权威迁移，尚未形成文档责任和知识冗余闭环。
 - 当前最关键的缺口不是更多解析器，而是把已有机制提升为强制策略：哪些依赖必须 Pin、
@@ -29,5 +29,5 @@
 ## 证据口径
 
 落实判断只接受当前 `main` 工作树中的实现、配置和自动化测试。PRD、SPEC、ROADMAP 中的
-计划文字不单独构成交付证据。2026-07-17 复核时，`cargo test` 的 98 个测试全部通过，
-其中包括 72 个单元测试、23 个 CLI/迁移测试、2 个仓库 dogfood 测试和 1 个模板迁移测试。
+计划文字不单独构成交付证据。2026-07-17 复核时，`cargo test` 的 103 个测试全部通过，
+其中包括 76 个单元测试、24 个 CLI/迁移测试、2 个仓库 dogfood 测试和 1 个模板迁移测试。

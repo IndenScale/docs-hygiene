@@ -112,6 +112,9 @@ PRD or Spec Body Package, or a malformed, duplicated, unsafe, or missing declare
 Implementation Body member. Removed leaf-level `version` or `source` metadata is
 also invalid.
 
+`DH_CLAIM_001` reports an invalid core Library authority, confirmed forbidden
+duplicate, expired migration, or missing/stale controlled-excerpt block pin.
+
 `DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
 adjacent-refinement-level Body derivation through `formalizes` or `realizes`.
 

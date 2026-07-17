@@ -203,6 +203,7 @@ pub const RULE_SPECS: [RuleSpec; 9] = [
             "DH_SELECTOR_001",
             "DH_LIBRARY_001",
             "DH_BODY_001",
+            "DH_CLAIM_001",
         ],
         rationale: "Stable identities and references make project knowledge resolvable.",
         remediation: "Configure rules.governance.identity.mode as auto, required, or disabled.",

@@ -14,9 +14,9 @@ use crate::activation::{
     evaluate_rule_activation, rule_spec, rule_spec_for_diagnostic,
 };
 use crate::config::{
-    Config, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
-    FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
-    SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
+    Config, CoreClaimOccurrencePolicy, DocumentMatchConfig, DocumentProfileConfig,
+    DocumentTemplateConfig, FilenamePatternConfig, MaturityLevel, RequiredFieldConfig,
+    RequiredSectionConfig, SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
@@ -381,6 +381,8 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
 // units are included into this module so the split does not widen internal APIs.
 include!("checks/governance_models.rs");
 include!("checks/lifecycle.rs");
+include!("checks/library_claims.rs");
+include!("checks/library_claim_scan.rs");
 include!("checks/package_structure.rs");
 include!("checks/package_localization.rs");
 include!("checks/reference_collectors.rs");
@@ -417,4 +419,5 @@ mod tests {
     include!("checks/tests/reference_ir.rs");
     include!("checks/tests/selectors.rs");
     include!("checks/tests/topology.rs");
+    include!("checks/tests/library_claims.rs");
 }

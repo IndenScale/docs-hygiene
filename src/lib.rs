@@ -22,8 +22,13 @@ pub use activation::{
     rule_spec_for_checker, rule_spec_for_diagnostic,
 };
 pub use checks::run_checks;
+pub use checks::{
+    LibraryClaimCandidate, LibraryClaimScanReport, print_json_library_claim_scan,
+    print_text_library_claim_scan, scan_library_claim_candidates,
+};
 pub use config::{
-    Config, DimensionApplicability, DimensionProfileConfig, DocumentKindConfig,
+    Config, CoreClaimAuthorityConfig, CoreClaimConfig, CoreClaimOccurrenceConfig,
+    CoreClaimOccurrencePolicy, DimensionApplicability, DimensionProfileConfig, DocumentKindConfig,
     FrontmatterConditionConfig, FrontmatterFieldConfig, FrontmatterFieldSource,
     FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
     FrontmatterPredicateConfig, FrontmatterSchemaConfig, GovernanceContentAnchorConfig,

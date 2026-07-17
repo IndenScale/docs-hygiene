@@ -5,9 +5,10 @@ use clap::{Parser, Subcommand, ValueEnum};
 use docs_hygiene::{
     Config, Report, evaluate_hygiene_profile, evaluate_rule_activation, migrate_document_kinds,
     migrate_document_template_bindings, print_json_activation, print_json_kind_migration,
-    print_json_profile, print_json_report, print_json_template_migration, print_text_activation,
-    print_text_kind_migration, print_text_profile, print_text_report,
-    print_text_template_migration, run_checks,
+    print_json_library_claim_scan, print_json_profile, print_json_report,
+    print_json_template_migration, print_text_activation, print_text_kind_migration,
+    print_text_library_claim_scan, print_text_profile, print_text_report,
+    print_text_template_migration, run_checks, scan_library_claim_candidates,
 };
 
 #[path = "main/scaffold.rs"]
@@ -36,6 +37,8 @@ enum Command {
     MigrateTemplates(MigrateTemplatesArgs),
     /// Atomically migrate compatible Document Kind schemas and template pins.
     MigrateKinds(MigrateKindsArgs),
+    /// Suggest possible Body duplicates of explicitly configured Library claims.
+    ScanLibraryClaims(ScanLibraryClaimsArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -224,6 +227,21 @@ struct MigrateKindsArgs {
     format: OutputFormat,
 }
 
+#[derive(Debug, Parser)]
+struct ScanLibraryClaimsArgs {
+    /// Project root containing the policy and governed Library.
+    #[arg(default_value = ".")]
+    root: PathBuf,
+
+    /// Config file path. Defaults to docs-hygiene.yml under the project root.
+    #[arg(long)]
+    config: Option<PathBuf>,
+
+    /// Output format.
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    format: OutputFormat,
+}
+
 #[derive(Clone, Debug, ValueEnum)]
 enum OutputFormat {
     Text,
@@ -238,6 +256,7 @@ fn main() -> Result<()> {
         Command::Profile(args) => profile(args),
         Command::MigrateTemplates(args) => migrate_templates(args),
         Command::MigrateKinds(args) => migrate_kinds(args),
+        Command::ScanLibraryClaims(args) => scan_library_claims(args),
         Command::Init { path } => init(path),
         Command::Scaffold(args) => scaffold(args),
         Command::Lang { command } => lang(command),
@@ -283,6 +302,18 @@ fn migrate_kinds(args: MigrateKindsArgs) -> Result<()> {
     }
     if args.check && (!report.schema_changes.is_empty() || !report.template_changes.is_empty()) {
         anyhow::bail!("Document Kind migration is required");
+    }
+    Ok(())
+}
+
+fn scan_library_claims(args: ScanLibraryClaimsArgs) -> Result<()> {
+    let root = args.root.canonicalize()?;
+    let config_path = args.config.unwrap_or_else(|| root.join("docs-hygiene.yml"));
+    let config = Config::load(&config_path)?;
+    let report = scan_library_claim_candidates(&root, &config)?;
+    match args.format {
+        OutputFormat::Text => print_text_library_claim_scan(&report),
+        OutputFormat::Json => print_json_library_claim_scan(&report)?,
     }
     Ok(())
 }

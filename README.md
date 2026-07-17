@@ -74,6 +74,8 @@ Docs Hygiene currently provides deterministic project-level governance checks:
   profile binding, revision migration, and maturity-aware enforcement;
 - a Kind registry shared by typed frontmatter validation and locale-aware,
   conflict-safe document scaffolding, with atomic Schema/Template migration;
+- explicit core Library claim authorities, confirmed-duplicate policy,
+  block-pinned controlled excerpts, and advisory similarity scanning;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
@@ -157,7 +159,7 @@ docs-hygiene check --format json
 ```
 
 Other commands include `init`, `lang`, `migrate-templates`, `migrate-kinds`,
-`explain`, and `explain-rules`. Run
+`scan-library-claims`, `explain`, and `explain-rules`. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy
@@ -205,6 +207,7 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [CI and JSON output](docs/05_ci.md)
 - [Document Contracts](docs/06_document_contracts.md)
 - [Governance Graph](docs/07_governance_graph.md)
+- [Library Claim Governance](docs/15_library_claims.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
 - [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
 - [Hygiene Profiles](docs/12_hygiene_profile.md)

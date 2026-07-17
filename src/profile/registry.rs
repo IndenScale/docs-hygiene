@@ -15,6 +15,7 @@ pub enum InvariantApplicability {
     ContentPolicy,
     DocumentTemplates,
     DocumentKinds,
+    CoreClaims,
     LocalizedRepresentation,
     SlugSchema,
     ContentAnchor,
@@ -43,6 +44,7 @@ impl InvariantSpec {
                 InvariantApplicability::DocumentTemplates
             }
             "structure.kind-schema" => InvariantApplicability::DocumentKinds,
+            "identity.library-claims" => InvariantApplicability::CoreClaims,
             "identity.canonical-source" => InvariantApplicability::LocalizedRepresentation,
             "identity.slug-schema" => InvariantApplicability::SlugSchema,
             "identity.authority-migration" => InvariantApplicability::AuthorityMigration,
@@ -157,6 +159,14 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         delivery: Delivered,
         checkers: &[GovernanceIdentity],
         diagnostic_codes: &["DH_GOVERNANCE_001", "DH_LIBRARY_001", "DH_BODY_001"],
+    },
+    InvariantSpec {
+        id: "identity.library-claims",
+        dimension: Identity,
+        minimum_maturity: Governed,
+        delivery: Delivered,
+        checkers: &[GovernanceIdentity],
+        diagnostic_codes: &["DH_CLAIM_001", "DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "identity.canonical-source",
