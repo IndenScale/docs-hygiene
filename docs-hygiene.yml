@@ -26,7 +26,6 @@ docs:
         - docs/intent/**
         - docs/definition/**
         - docs/position/**
-        - docs/issues/**
         - docs/zh/intent/**
         - docs/zh/definition/**
         - docs/zh/position/**

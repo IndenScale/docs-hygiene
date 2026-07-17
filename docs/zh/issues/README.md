@@ -1,33 +1,40 @@
-# Docs Hygiene 治理 Feature 索引
+# Docs Hygiene Issue 归档
 
-本目录记录 Docs Hygiene 的产品 Feature。`delivery_status: delivered` 表示根据当前代码、
-配置和测试逆向补录的已交付能力；`delivery_status: planned` 表示尚未交付，不能由设计文档
-或局部机制推断为可执行保证。
+本目录是项目唯一的产品 Issue 存档。Issue 分为两种：Epic 定义一条端到端能力链，
+Feature 定义可独立验收的原子能力。Git 保存实现历史，但产品依赖、交付状态和验收证据
+必须保留在 Issue 中。
 
-## 治理理念落实矩阵
+## 状态口径
 
-| # | 治理理念 | 当前判断 | 已交付票据 | 待交付票据 |
-| --- | --- | --- | --- | --- |
-| 1 | 文件命名 Schema 与 slug | 已落实 | [FEATURE-004](features/04_naming-and-kind-inference.md)、[FEATURE-009](features/09_slug-identity-governance.md) | — |
-| 2 | Kind 驱动脚手架、frontmatter 与结构不变式 | 已落实 | [FEATURE-005](features/05_document-contracts-and-template-lifecycle.md)、[FEATURE-010](features/10_kind-aware-scaffolding-and-frontmatter-schema.md) | — |
-| 3 | Library 作为核心概念 SSOT | 已落实 | [FEATURE-006](features/06_library-ssot-and-package-trees.md)、[FEATURE-011](features/11_library-ssot-extraction-and-duplication.md) | — |
-| 4 | 关键依赖指纹与细粒度内容哈希 | 已落实 | [FEATURE-003](features/03_multi-granularity-pin.md)、[FEATURE-012](features/12_critical-dependency-pin-policy.md) | — |
-| 5 | block/file/commit 细粒度引用 | 已落实 | [FEATURE-001](features/01_fine-grained-references.md)、[FEATURE-003](features/03_multi-granularity-pin.md)、[FEATURE-013](features/13_portable-commit-snapshots.md) | — |
-| 6 | Typed Reference 引用对象 | 基本落实 | [FEATURE-002](features/02_reference-syntax-semantics-decoupling.md) | — |
-| 7 | Graph Analysis 与 Fan-Out 预算 | 已落实 | [FEATURE-007](features/07_topology-analysis-and-budgets.md)、[FEATURE-014](features/14_supernode-governance-exceptions.md) | — |
-| 8 | Owner、日落、Reset 与双人理解 | 已落实 | [FEATURE-008](features/08_identity-lifecycle-and-authority-migration.md)、[FEATURE-015](features/15_document-ownership-and-sunset.md) | — |
+- `delivered`：当前代码、配置和自动化测试已经证明全部验收条件；
+- `partial`：已有实现，但缺少 Issue 声明的一等模型或完整验收；
+- `planned`：能力边界已经确定，当前实现尚不能证明交付。
 
-## 结论
+## Epic 主序
 
-- 已落实：命名与 slug 身份闭环、Kind/Frontmatter、Library SSOT、关键依赖 Pin、可移植
-  commit 快照与离线校验。
-- 基本落实：Typed Reference。
-- Owner、日落 Reset 与双人知识冗余已经形成离线、确定性、可审计闭环。
-- FEATURE-001 至 FEATURE-015 均已有实现、自动化测试和文档证据；Typed Reference 在当前
-  产品分级中仍判断为“基本落实”，表示后续可继续扩展类型丰富度，而非存在未交付 Feature。
+| Epic | 能力链 | 状态 |
+| --- | --- | --- |
+| [EPIC-001](epics/01_document-foundation.md) | 命名 → 内容 → 基础引用 | 已交付 |
+| [EPIC-002](epics/02_anchor-granularity.md) | File → Block → Repo 内容锚 | 部分交付 |
+| [EPIC-003](epics/03_maturity-chain.md) | 不变量 → 成熟度 → 执行与迁移 | 已交付 |
+| [EPIC-004](epics/04_localization-chain.md) | canonical → 结构同位 → 语义同位 | 已交付 |
+| [EPIC-005](epics/05_reference-dependency-chain.md) | 同层引用 → 纵向依赖 → 影响传播 | 已交付 |
+| [EPIC-006](epics/06_typed-reference-resolution.md) | occurrence → 期待类型 → 解析类型 → 校验 | 部分交付 |
+| [EPIC-007](epics/07_graph-community-governance.md) | 图 → 社区 → Fan-Out 与预算 | 部分交付 |
 
-## 证据口径
+主序表达产品的理解和采用顺序。具体实现依赖以每个 Feature 的 `depends_on` 为准；不存在
+为了压缩票据而跨 Epic 合并验收边界的“大 Feature”。
 
-落实判断只接受当前 `main` 工作树中的实现、配置和自动化测试。PRD、SPEC、ROADMAP 中的
-计划文字不单独构成交付证据。2026-07-17 复核时，`cargo test` 的 124 个测试全部通过，
-其中包括 91 个单元测试、30 个 CLI/迁移/快照/Reset 测试、2 个仓库 dogfood 测试和 1 个模板迁移测试。
+## Feature 总览
+
+| Epic | Feature 范围 | Delivered / Partial / Planned |
+| --- | --- | --- |
+| EPIC-001 | FEATURE-001–003 | 3 / 0 / 0 |
+| EPIC-002 | FEATURE-004–008 | 4 / 0 / 1 |
+| EPIC-003 | FEATURE-009–011 | 3 / 0 / 0 |
+| EPIC-004 | FEATURE-012–014 | 3 / 0 / 0 |
+| EPIC-005 | FEATURE-015–019 | 5 / 0 / 0 |
+| EPIC-006 | FEATURE-020–022 | 1 / 2 / 0 |
+| EPIC-007 | FEATURE-023–026 | 3 / 0 / 1 |
+
+完整 Feature 清单及其依赖和证据由各 Epic 页面维护，避免在多个索引复制第二份状态。

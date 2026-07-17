@@ -1,6 +1,6 @@
 ---
 id: GLOSSARY-HYGIENE-MATURITY
-status: proposed
+status: baselined
 ---
 
 # Hygiene Maturity

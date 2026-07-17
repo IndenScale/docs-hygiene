@@ -5,9 +5,7 @@ use anyhow::{Result, bail};
 use globset::{Glob, GlobSetBuilder};
 use serde::Serialize;
 
-use crate::config::{
-    Config, CriticalDependencyPolicyConfig, CriticalDependencyRelation, CriticalPinScope,
-};
+use crate::config::{Config, CriticalDependencyPolicyConfig, CriticalDependencyRelation};
 use crate::{
     ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph, GovernanceNode,
     run_checks,
@@ -240,7 +238,7 @@ fn selected_policies<'a>(
 fn normalized_dependencies(graph: &GovernanceGraph) -> Vec<Dependency> {
     let mut dependencies = BTreeMap::<(String, String, CriticalDependencyRelation), usize>::new();
     for (index, edge) in graph.edges.iter().enumerate() {
-        let relation = edge_relation(edge.relation);
+        let relation = CriticalDependencyRelation::from_edge_kind(edge.relation);
         let key = (edge.source.clone(), edge.target.clone(), relation);
         let replace = dependencies.get(&key).is_none_or(|current| {
             graph.edges[*current].relation != GovernanceEdgeKind::PinnedReference
@@ -259,17 +257,6 @@ fn normalized_dependencies(graph: &GovernanceGraph) -> Vec<Dependency> {
             edge_index,
         })
         .collect()
-}
-
-fn edge_relation(relation: GovernanceEdgeKind) -> CriticalDependencyRelation {
-    match relation {
-        GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
-            CriticalDependencyRelation::References
-        }
-        GovernanceEdgeKind::Formalizes => CriticalDependencyRelation::Formalizes,
-        GovernanceEdgeKind::Realizes => CriticalDependencyRelation::Realizes,
-        GovernanceEdgeKind::Projects => CriticalDependencyRelation::Projects,
-    }
 }
 
 fn policy_matches(
@@ -336,12 +323,8 @@ fn plan_dependency_update(
                     .algorithms
                     .iter()
                     .any(|allowed| allowed == anchor.algorithm)
-                    && pin_scope(anchor.scope) >= policy.require.minimum_scope
-                    && !(policy.require.forbid_whole_file
-                        && matches!(
-                            anchor.scope,
-                            ContentAnchorScope::File | ContentAnchorScope::Commit
-                        ))
+                    && anchor.scope.meets_minimum(policy.require.minimum_scope)
+                    && !(policy.require.forbid_whole_file && anchor.scope.covers_whole_file())
             })
     });
     if graph.edges.iter().any(|pin| {
@@ -441,7 +424,8 @@ fn plan_dependency_update(
 fn choose_pin_shape(
     policy: &CriticalDependencyPolicyConfig,
 ) -> Result<(String, ContentAnchorScope)> {
-    if policy.require.minimum_scope == CriticalPinScope::Block || policy.require.forbid_whole_file {
+    if policy.require.minimum_scope == ContentAnchorScope::Block || policy.require.forbid_whole_file
+    {
         if policy
             .require
             .algorithms
@@ -452,12 +436,12 @@ fn choose_pin_shape(
         }
         bail!("block scope requires allowed algorithm 'sha256'");
     }
-    if policy.require.minimum_scope == CriticalPinScope::Commit
+    if policy.require.minimum_scope == ContentAnchorScope::Commit
         && policy.require.algorithms.iter().any(|value| value == "git")
     {
         return Ok(("git".to_owned(), ContentAnchorScope::Commit));
     }
-    if policy.require.minimum_scope == CriticalPinScope::Commit
+    if policy.require.minimum_scope == ContentAnchorScope::Commit
         && policy
             .require
             .algorithms
@@ -478,12 +462,4 @@ fn choose_pin_shape(
         return Ok(("git".to_owned(), ContentAnchorScope::Commit));
     }
     bail!("policy has no supported algorithm")
-}
-
-fn pin_scope(scope: ContentAnchorScope) -> CriticalPinScope {
-    match scope {
-        ContentAnchorScope::File => CriticalPinScope::File,
-        ContentAnchorScope::Commit => CriticalPinScope::Commit,
-        ContentAnchorScope::Block => CriticalPinScope::Block,
-    }
 }

@@ -1,10 +1,10 @@
 # Documentation Hygiene Governance Model
 
-This document defines the target model proposed by
-[PRD-004](intent/prd/prd-004/index.md). It organizes existing and planned
-features without claiming that the full profile model is already delivered.
-Current executable behavior remains defined by configuration, rules, tests,
-and [Progressive Rule Activation](10_progressive_rule_activation.md).
+This document defines the model baselined by
+[PRD-004](intent/prd/prd-004/index.md). It organizes delivered capabilities
+without forcing one linear maturity score to represent every concern. Current
+executable behavior is defined by configuration, rules, tests, and
+[Progressive Rule Activation](10_progressive_rule_activation.md).
 
 ## Model
 
@@ -69,7 +69,7 @@ profile serializes the ordered records, reverse transitive-impact sets, and
 graph metrics. Heading selectors, impact, and Fan/cycle policy now consume the
 same model; budgets and trends remain later layers.
 
-File, ATX-block, and opt-in commit anchors now share the same edge model.
+ATX-block, file, and opt-in commit anchors now share the same edge model.
 Block-local hashes, multi-anchor declarations, and deterministic transitive
 propagation are delivered, so the repository dependency dimension now reaches
 governed maturity.

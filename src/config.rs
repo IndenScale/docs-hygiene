@@ -24,7 +24,7 @@ pub use document_kinds::{
 pub use governance::{
     CoreClaimAuthorityConfig, CoreClaimConfig, CoreClaimOccurrenceConfig,
     CoreClaimOccurrencePolicy, CriticalDependencyMatcherConfig, CriticalDependencyPolicyConfig,
-    CriticalDependencyRelation, CriticalPinRequirementConfig, CriticalPinScope, GovernanceConfig,
+    CriticalDependencyRelation, CriticalPinRequirementConfig, GovernanceConfig,
     GovernanceContentAnchorConfig, GovernanceOwnershipConfig, GovernancePrincipalConfig,
     GovernancePrincipalKind, GovernancePrincipalStatus, GovernanceTopologyConfig,
     PortableSnapshotConfig, SupernodeDegreeObservationConfig, SupernodeExceptionConfig,

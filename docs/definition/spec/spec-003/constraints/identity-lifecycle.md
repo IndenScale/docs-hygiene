@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-015
-status: proposed
+status: baselined
 ---
 
 # C-015 Identity Lifecycle and Authority Migration

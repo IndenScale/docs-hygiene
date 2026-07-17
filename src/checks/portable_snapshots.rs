@@ -395,10 +395,6 @@ fn valid_repository_identity(value: &str) -> bool {
             .all(|character| character.is_ascii_alphanumeric() || ".:_/-".contains(character))
 }
 
-fn valid_commit_oid(value: &str) -> bool {
-    matches!(value.len(), 40 | 64) && value.bytes().all(|byte| byte.is_ascii_hexdigit())
-}
-
 fn valid_sha256(value: &str) -> bool {
     value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
@@ -407,13 +403,4 @@ fn valid_heading_slug(value: &str) -> bool {
     Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
         .expect("static snapshot locator regex")
         .is_match(value)
-}
-
-fn safe_snapshot_path(value: &str) -> bool {
-    !value.is_empty()
-        && !value.starts_with('/')
-        && !value.contains('\\')
-        && value
-            .split('/')
-            .all(|segment| !matches!(segment, "" | "." | ".."))
 }

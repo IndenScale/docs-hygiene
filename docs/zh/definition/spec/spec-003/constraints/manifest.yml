@@ -1,6 +1,6 @@
 id: SPEC-003-DOMAIN-CONSTRAINTS
 kind: domain
-status: proposed
+status: baselined
 members:
   - profile-evaluation.md
   - rule-registry.md
@@ -20,4 +20,3 @@ members:
   - template-lifecycle.md
   - compatibility.md
   - exceptions.md
-  - delivery-slices.md

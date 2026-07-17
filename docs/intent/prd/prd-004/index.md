@@ -1,6 +1,6 @@
 ---
 id: PRD-004-INDEX
-status: proposed
+status: baselined
 ---
 
 # PRD-004 Multidimensional Documentation Governance

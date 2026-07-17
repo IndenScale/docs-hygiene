@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-004
-status: proposed
+status: baselined
 ---
 
 # Independent Execution State

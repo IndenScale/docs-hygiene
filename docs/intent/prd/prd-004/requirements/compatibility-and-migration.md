@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-006
-status: proposed
+status: baselined
 ---
 
 # Compatibility and Migration

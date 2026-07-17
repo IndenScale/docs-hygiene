@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-010
-status: proposed
+status: baselined
 ---
 
 # C-010 Document Template Lifecycle

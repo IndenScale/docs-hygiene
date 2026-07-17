@@ -1,6 +1,6 @@
 ---
 id: DH-TRACEABILITY-CONTRACT
-status: proposed
+status: baselined
 ---
 
 # 可追溯性契约

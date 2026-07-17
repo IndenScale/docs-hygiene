@@ -1,6 +1,6 @@
 ---
 id: DH-CAPABILITY-DIMENSION
-status: proposed
+status: baselined
 ---
 
 # Documentation Hygiene Capability Dimension

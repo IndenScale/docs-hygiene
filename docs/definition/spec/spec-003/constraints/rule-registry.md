@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-002
-status: proposed
+status: baselined
 ---
 
 # C-002 Rule Registry

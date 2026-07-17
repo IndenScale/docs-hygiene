@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-012
-status: proposed
+status: baselined
 ---
 
 # C-012 Reference Occurrence IR

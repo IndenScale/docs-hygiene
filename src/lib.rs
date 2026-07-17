@@ -7,17 +7,21 @@
 pub mod activation;
 pub mod checks;
 pub mod config;
+mod date;
 pub mod document_kinds;
 pub mod governance;
 pub mod kind_migration;
+mod markdown;
 pub mod ownership;
 pub mod pin_update;
 pub mod portable_snapshot;
 pub mod profile;
+mod project_io;
 pub mod reference;
 pub mod report;
 pub mod snapshot_import;
 pub mod template_migration;
+mod yaml;
 
 pub use activation::{
     ActivationReport, CapabilityDimension, ExceptionBehavior, HygieneMaturity, ProjectFacts,

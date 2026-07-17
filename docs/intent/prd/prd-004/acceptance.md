@@ -1,6 +1,6 @@
 ---
 id: PRD-004-ACCEPTANCE
-status: proposed
+status: baselined
 ---
 
 # Acceptance

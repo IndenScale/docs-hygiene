@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-003
-status: proposed
+status: baselined
 ---
 
 # Capability Profile

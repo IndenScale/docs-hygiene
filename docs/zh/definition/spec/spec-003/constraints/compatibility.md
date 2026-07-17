@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-004
-status: proposed
+status: baselined
 ---
 
 # C-004 兼容性

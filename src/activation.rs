@@ -117,7 +117,7 @@ pub fn evaluate_rule_activation(root: &Path, config: &Config) -> Result<Activati
 }
 
 fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
-    let ignore = build_ignore(&config.ignore.paths)?;
+    let ignore = build_activation_ignore(&config.ignore.paths)?;
     let configured_localized_roots = config
         .docs
         .bases
@@ -191,7 +191,7 @@ fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
     Ok(facts)
 }
 
-fn build_ignore(patterns: &[String]) -> Result<GlobSet> {
+fn build_activation_ignore(patterns: &[String]) -> Result<GlobSet> {
     let mut builder = GlobSetBuilder::new();
     for pattern in patterns {
         builder.add(Glob::new(pattern)?);

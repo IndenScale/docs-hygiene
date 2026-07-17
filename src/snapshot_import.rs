@@ -1,11 +1,14 @@
 use std::collections::BTreeMap;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::{Context, Result, bail};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
+use crate::markdown::heading_block as markdown_heading_block;
+use crate::portable_snapshot::{safe_snapshot_path, valid_commit_oid};
+use crate::project_io::{is_safe_relative, write_batch_atomically};
 use crate::{
     ContentAnchorScope, PORTABLE_SNAPSHOT_SCHEMA_VERSION, PortableSnapshotManifest,
     PortableSnapshotStatus,
@@ -55,7 +58,7 @@ pub fn import_portable_snapshot(
         blocked: Vec::new(),
         applied: false,
     };
-    if !safe_relative(manifest_rel) {
+    if !is_safe_relative(manifest_rel) {
         report.blocked.push(SnapshotImportBlock {
             target: None,
             path: manifest_rel.display().to_string(),
@@ -145,7 +148,7 @@ pub fn import_portable_snapshot(
             continue;
         }
         let payload = manifest_dir.join(Path::new(&entry.payload));
-        if !safe_relative(&payload) || pending.insert(payload.clone(), blob.clone()).is_some() {
+        if !is_safe_relative(&payload) || pending.insert(payload.clone(), blob.clone()).is_some() {
             report.blocked.push(SnapshotImportBlock {
                 target: Some(entry.target.clone()),
                 path: payload.display().to_string(),
@@ -180,7 +183,7 @@ pub fn import_portable_snapshot(
             .into_iter()
             .filter(|(path, _)| changed.contains(path))
             .collect::<BTreeMap<_, _>>();
-        write_payloads_atomically(root, &writes)?;
+        write_batch_atomically(root, &writes)?;
         report.applied = true;
     }
     Ok(report)
@@ -215,123 +218,6 @@ fn git_blob(source: &Path, commit: &str, path: &str) -> Result<Vec<u8>> {
         );
     }
     Ok(output.stdout)
-}
-
-fn write_payloads_atomically(root: &Path, writes: &BTreeMap<PathBuf, Vec<u8>>) -> Result<()> {
-    let process = std::process::id();
-    let mut prepared = Vec::new();
-    for (index, (rel, content)) in writes.iter().enumerate() {
-        let destination = root.join(rel);
-        let parent = destination
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("{} has no parent", rel.display()))?;
-        std::fs::create_dir_all(parent)?;
-        let temporary = parent.join(format!(".docs-hygiene-snapshot-{process}-{index}.tmp"));
-        std::fs::write(&temporary, content)?;
-        let original = match std::fs::read(&destination) {
-            Ok(bytes) => Some(bytes),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-            Err(error) => return Err(error.into()),
-        };
-        prepared.push((destination, temporary, original));
-    }
-    for (committed, (destination, temporary, _)) in prepared.iter().enumerate() {
-        if let Err(error) = std::fs::rename(temporary, destination) {
-            for (destination, _, original) in prepared.iter().take(committed).rev() {
-                match original {
-                    Some(bytes) => {
-                        let _ = std::fs::write(destination, bytes);
-                    }
-                    None => {
-                        let _ = std::fs::remove_file(destination);
-                    }
-                }
-            }
-            for (_, temporary, _) in prepared.iter().skip(committed) {
-                let _ = std::fs::remove_file(temporary);
-            }
-            return Err(error).context("snapshot payload import failed and was rolled back");
-        }
-    }
-    Ok(())
-}
-
-fn safe_relative(path: &Path) -> bool {
-    !path.as_os_str().is_empty()
-        && !path.is_absolute()
-        && path
-            .components()
-            .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
-}
-
-fn valid_commit_oid(value: &str) -> bool {
-    matches!(value.len(), 40 | 64) && value.bytes().all(|byte| byte.is_ascii_hexdigit())
-}
-
-fn safe_snapshot_path(value: &str) -> bool {
-    !value.is_empty()
-        && !value.starts_with('/')
-        && !value.contains('\\')
-        && value
-            .split('/')
-            .all(|segment| !matches!(segment, "" | "." | ".."))
-}
-
-fn markdown_heading_block<'a>(text: &'a str, locator: &str) -> Option<&'a [u8]> {
-    let mut headings = Vec::new();
-    let mut offset = 0;
-    let mut in_code = false;
-    for segment in text.split_inclusive('\n') {
-        let line = segment.trim_end_matches(['\n', '\r']);
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") {
-            in_code = !in_code;
-            offset += segment.len();
-            continue;
-        }
-        if !in_code {
-            let level = trimmed.chars().take_while(|value| *value == '#').count();
-            if (1..=6).contains(&level) && trimmed[level..].starts_with(char::is_whitespace) {
-                let slug = heading_slug(trimmed[level..].trim().trim_end_matches('#').trim());
-                if let Some(slug) = slug {
-                    headings.push((slug, level, offset));
-                }
-            }
-        }
-        offset += segment.len();
-    }
-    let matches = headings
-        .iter()
-        .enumerate()
-        .filter(|(_, (slug, _, _))| slug == locator)
-        .collect::<Vec<_>>();
-    let [(index, (_, level, start))] = matches.as_slice() else {
-        return None;
-    };
-    let end = headings
-        .iter()
-        .skip(index + 1)
-        .find(|(_, next_level, _)| next_level <= level)
-        .map(|(_, _, start)| *start)
-        .unwrap_or(text.len());
-    Some(&text.as_bytes()[*start..end])
-}
-
-fn heading_slug(heading: &str) -> Option<String> {
-    let mut slug = String::new();
-    let mut separator = false;
-    for value in heading.chars() {
-        if value.is_ascii_alphanumeric() {
-            if separator && !slug.is_empty() {
-                slug.push('-');
-            }
-            slug.push(value.to_ascii_lowercase());
-            separator = false;
-        } else if !slug.is_empty() {
-            separator = true;
-        }
-    }
-    (!slug.is_empty()).then_some(slug)
 }
 
 pub fn print_text_snapshot_import(report: &SnapshotImportReport) {

@@ -32,10 +32,14 @@ Relations are `references`, `formalizes`, `realizes`, and `projects`, independen
 of whether the normalized edge currently has a Pin. Paths are project-relative
 globs; identity lists use stable governed IDs.
 
-`algorithms` accepts `sha256` and `git`. `minimumScope` orders scopes as
-`file < commit < block`: commit is stronger than a working-tree file snapshot,
-while block is the most spatially selective. `forbidWholeFile` rejects both
-file and commit scope and therefore requires a SHA-256 block anchor.
+`algorithms` accepts `sha256` and `git`. By content range, scopes are listed
+smallest to largest as `block | file | commit`. Policy strength is separate from
+that display order: `minimumScope: file` accepts all three scopes;
+`minimumScope: commit` accepts block or commit; and `minimumScope: block`
+accepts only block. This treats commit provenance as stronger than a working-tree
+file snapshot and block isolation as the strictest requirement.
+`forbidWholeFile` rejects both file and commit scope and therefore requires a
+SHA-256 block anchor.
 `maxAgeDays`, when present, additionally requires valid `updatedAt`, non-empty
 `updatedBy`, and non-empty `reason` audit metadata.
 

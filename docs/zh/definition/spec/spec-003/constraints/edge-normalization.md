@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-003
-status: proposed
+status: baselined
 ---
 
 # C-003 边规范化

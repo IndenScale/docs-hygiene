@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-INPUTS
-status: proposed
+status: baselined
 ---
 
 # 输入

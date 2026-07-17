@@ -1,7 +1,7 @@
 id: IMPL-002
 refinementLevel: implementation
 referenceRelation: body
-status: review
+status: current
 
 realizes: SPEC-003
 

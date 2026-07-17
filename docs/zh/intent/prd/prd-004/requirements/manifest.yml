@@ -1,6 +1,6 @@
 id: PRD-004-DOMAIN-REQUIREMENTS
 kind: domain
-status: proposed
+status: baselined
 members:
   - unified-governance-edge.md
   - three-level-maturity.md

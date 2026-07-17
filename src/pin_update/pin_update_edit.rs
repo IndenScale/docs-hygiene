@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
 use serde_yaml::{Mapping, Value};
 
 use crate::config::Config;
+use crate::project_io::{ensure_safe_relative, write_batch_atomically};
+use crate::yaml::{mapping_string as yaml_string, set_mapping_value as set_yaml};
 use crate::{ContentAnchorScope, PinUpdateChange};
 
 pub(super) fn apply_pin_changes(
@@ -38,52 +40,6 @@ pub(super) fn apply_pin_changes(
         bail!("pin audit log must not overlap a governed source document");
     }
     write_batch_atomically(root, &pending)
-}
-
-fn write_batch_atomically(root: &Path, pending: &BTreeMap<PathBuf, String>) -> Result<()> {
-    let process = std::process::id();
-    let mut prepared = Vec::new();
-    for (index, (rel, content)) in pending.iter().enumerate() {
-        let destination = root.join(rel);
-        let parent = destination
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("{} has no parent", rel.display()))?;
-        std::fs::create_dir_all(parent)?;
-        let temporary = parent.join(format!(".docs-hygiene-pin-{process}-{index}.tmp"));
-        std::fs::write(&temporary, content)
-            .with_context(|| format!("failed to prepare {}", rel.display()))?;
-        let original = match std::fs::read(&destination) {
-            Ok(bytes) => Some(bytes),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-            Err(error) => {
-                let _ = std::fs::remove_file(&temporary);
-                for (_, _, temporary, _) in &prepared {
-                    let _ = std::fs::remove_file(temporary);
-                }
-                return Err(error).with_context(|| format!("failed to snapshot {}", rel.display()));
-            }
-        };
-        prepared.push((rel.clone(), destination, temporary, original));
-    }
-    for (committed, (_, destination, temporary, _)) in prepared.iter().enumerate() {
-        if let Err(error) = std::fs::rename(temporary, destination) {
-            for (_, destination, _, original) in prepared.iter().take(committed).rev() {
-                match original {
-                    Some(bytes) => {
-                        let _ = std::fs::write(destination, bytes);
-                    }
-                    None => {
-                        let _ = std::fs::remove_file(destination);
-                    }
-                }
-            }
-            for (_, _, temporary, _) in prepared.iter().skip(committed) {
-                let _ = std::fs::remove_file(temporary);
-            }
-            return Err(error).context("critical Pin update commit failed and was rolled back");
-        }
-    }
-    Ok(())
 }
 
 fn update_document_anchor(content: &str, change: &PinUpdateChange) -> Result<String> {
@@ -162,30 +118,5 @@ fn write_anchor(anchor: &mut Mapping, change: &PinUpdateChange) -> Result<()> {
         Value::String(change.updated_by.clone()),
     );
     set_yaml(anchor, "reason", Value::String(change.reason.clone()));
-    Ok(())
-}
-
-fn yaml_string<'a>(mapping: &'a Mapping, key: &str) -> Option<&'a str> {
-    mapping
-        .get(Value::String(key.to_owned()))
-        .and_then(Value::as_str)
-}
-
-fn set_yaml(mapping: &mut Mapping, key: &str, value: Value) {
-    mapping.insert(Value::String(key.to_owned()), value);
-}
-
-fn ensure_safe_relative(path: &Path) -> Result<()> {
-    if path.as_os_str().is_empty()
-        || path.is_absolute()
-        || path.components().any(|component| {
-            matches!(
-                component,
-                Component::ParentDir | Component::RootDir | Component::Prefix(_)
-            )
-        })
-    {
-        bail!("unsafe project-relative path '{}'", path.display());
-    }
     Ok(())
 }

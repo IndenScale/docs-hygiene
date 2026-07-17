@@ -1,6 +1,6 @@
 ---
 id: PRD-004-PROBLEM
-status: proposed
+status: baselined
 ---
 
 # 问题

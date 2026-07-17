@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-011
-status: proposed
+status: baselined
 ---
 
 # C-011 Heading Selector Resolution

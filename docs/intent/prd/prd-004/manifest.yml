@@ -1,7 +1,7 @@
 id: PRD-004
 type: product-requirement
-status: proposed
-delivery_status: in-progress
+status: baselined
+delivery_status: delivered
 refinementLevel: intent
 referenceRelation: body
 members:

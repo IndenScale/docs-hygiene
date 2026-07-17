@@ -210,7 +210,7 @@ fn numbered_parts(file_name: &str) -> (Option<u32>, String) {
     )
 }
 
-fn build_ignore(root: &Path, config: &Config) -> Result<GlobSet> {
+fn build_repository_ignore(root: &Path, config: &Config) -> Result<GlobSet> {
     let mut builder = GlobSetBuilder::new();
     builder.add(Glob::new("target/**")?);
     builder.add(Glob::new(".git/**")?);

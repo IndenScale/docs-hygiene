@@ -1,37 +1,89 @@
 id: IMPL-003
 refinementLevel: implementation
 referenceRelation: body
-status: review
+status: current
 
 realizes: SPEC-003
 
 members:
   code:
+    - src/date.rs
+    - src/markdown.rs
+    - src/project_io.rs
+    - src/yaml.rs
     - src/governance.rs
     - src/governance/impact.rs
+    - src/governance/topology.rs
     - src/reference.rs
+    - src/checks/anchors.rs
+    - src/checks/critical_dependencies.rs
+    - src/checks/critical_dependency_verification.rs
+    - src/checks/derivation.rs
+    - src/checks/document_contracts.rs
+    - src/checks/document_kinds.rs
+    - src/checks/document_templates.rs
     - src/checks/governance_models.rs
+    - src/checks/library_claim_scan.rs
+    - src/checks/library_claims.rs
     - src/checks/lifecycle.rs
+    - src/checks/ownership.rs
+    - src/checks/portable_snapshot_signatures.rs
+    - src/checks/portable_snapshots.rs
     - src/checks/reference_collectors.rs
     - src/checks/reference_normalization.rs
-    - src/checks/anchors.rs
-    - src/checks/wiki_references.rs
+    - src/checks/repository_structure.rs
     - src/checks/selectors.rs
-    - src/checks/derivation.rs
+    - src/checks/slug_identities.rs
     - src/checks/topology.rs
-    - src/report.rs
-    - src/profile.rs
-    - src/governance/topology.rs
+    - src/checks/wiki_references.rs
+    - src/config/document_kinds.rs
     - src/config/governance.rs
+    - src/config/slug.rs
+    - src/document_kinds.rs
+    - src/document_kinds/registry.rs
+    - src/document_kinds/scaffold.rs
+    - src/document_kinds/schema.rs
+    - src/kind_migration.rs
+    - src/main/pins.rs
+    - src/main/reviews.rs
+    - src/main/scaffold.rs
+    - src/main/snapshots.rs
+    - src/ownership.rs
+    - src/ownership/output.rs
+    - src/pin_update.rs
+    - src/pin_update/pin_update_digest.rs
+    - src/pin_update/pin_update_edit.rs
+    - src/pin_update/pin_update_output.rs
+    - src/portable_snapshot.rs
+    - src/profile.rs
+    - src/report.rs
+    - src/report/output.rs
+    - src/report/ownership.rs
+    - src/report/topology.rs
+    - src/snapshot_import.rs
   tests:
-    - src/checks/tests/governance_packages.rs
-    - src/checks/tests/governance_graph.rs
     - src/checks/tests/anchors.rs
+    - src/checks/tests/critical_dependencies.rs
+    - src/checks/tests/documents.rs
+    - src/checks/tests/governance_graph.rs
+    - src/checks/tests/governance_packages.rs
+    - src/checks/tests/library_claims.rs
     - src/checks/tests/lifecycle.rs
+    - src/checks/tests/ownership.rs
+    - src/checks/tests/portable_snapshots.rs
     - src/checks/tests/reference_ir.rs
     - src/checks/tests/selectors.rs
+    - src/checks/tests/slug_identities.rs
     - src/checks/tests/topology.rs
     - tests/cli.rs
     - tests/dogfood.rs
+    - tests/kind_migration.rs
+    - tests/kind_scaffold.rs
+    - tests/library_claim_scan.rs
+    - tests/pin_update.rs
+    - tests/review_reset.rs
+    - tests/slug_identity_cli.rs
+    - tests/snapshot_import.rs
+    - tests/topology_cli.rs
   configuration:
     - docs-hygiene.yml

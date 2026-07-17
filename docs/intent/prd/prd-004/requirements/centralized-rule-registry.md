@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-005
-status: proposed
+status: baselined
 ---
 
 # Centralized Rule Registry

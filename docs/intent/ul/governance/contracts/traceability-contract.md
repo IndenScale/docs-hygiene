@@ -1,6 +1,6 @@
 ---
 id: DH-TRACEABILITY-CONTRACT
-status: proposed
+status: baselined
 ---
 
 # Traceability Contract

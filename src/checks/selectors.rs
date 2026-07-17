@@ -67,39 +67,3 @@ fn push_selector_diagnostic(
     }
     diagnostics.push(diagnostic);
 }
-
-fn markdown_heading_slug_counts(text: &str) -> BTreeMap<String, usize> {
-    let mut slugs = BTreeMap::new();
-    for slug in strip_code_blocks(text).lines().filter_map(|line| {
-            let trimmed = line.trim_start();
-            let hashes = trimmed.chars().take_while(|value| *value == '#').count();
-            if !(1..=6).contains(&hashes) || !trimmed[hashes..].starts_with(char::is_whitespace) {
-                return None;
-            }
-            let heading = trimmed[hashes..]
-                .trim()
-                .trim_end_matches('#')
-                .trim();
-            heading_slug(heading)
-        }) {
-        *slugs.entry(slug).or_default() += 1;
-    }
-    slugs
-}
-
-fn heading_slug(heading: &str) -> Option<String> {
-    let mut slug = String::new();
-    let mut separator = false;
-    for value in heading.chars() {
-        if value.is_ascii_alphanumeric() {
-            if separator && !slug.is_empty() {
-                slug.push('-');
-            }
-            slug.push(value.to_ascii_lowercase());
-            separator = false;
-        } else if !slug.is_empty() {
-            separator = true;
-        }
-    }
-    (!slug.is_empty()).then_some(slug)
-}

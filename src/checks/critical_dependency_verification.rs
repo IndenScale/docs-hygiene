@@ -4,14 +4,6 @@ enum PinState {
     Invalid(String),
 }
 
-fn critical_scope(scope: ContentAnchorScope) -> CriticalPinScope {
-    match scope {
-        ContentAnchorScope::File => CriticalPinScope::File,
-        ContentAnchorScope::Commit => CriticalPinScope::Commit,
-        ContentAnchorScope::Block => CriticalPinScope::Block,
-    }
-}
-
 fn critical_pin_state(
     root: &Path,
     config: &Config,
@@ -101,18 +93,6 @@ fn pin_is_fresh(pin: &GovernanceEdge, max_age_days: u64) -> bool {
     let Some(today) = today_utc() else {
         return false;
     };
-    let age = civil_days(today).saturating_sub(civil_days(updated));
+    let age = ownership_days_from_civil(today).saturating_sub(ownership_days_from_civil(updated));
     age >= 0 && u64::try_from(age).is_ok_and(|age| age <= max_age_days)
-}
-
-fn civil_days((year, month, day): (i32, u32, u32)) -> i64 {
-    let year = i64::from(year) - i64::from(month <= 2);
-    let era = if year >= 0 { year } else { year - 399 } / 400;
-    let year_of_era = year - era * 400;
-    let month = i64::from(month);
-    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5
-        + i64::from(day)
-        - 1;
-    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
-    era * 146_097 + day_of_era - 719_468
 }

@@ -94,7 +94,7 @@ Docs Hygiene currently provides deterministic project-level governance checks:
 - lifecycle status obligations, terminal-target rejection, and explicit
   `supersededBy` authority migration across assets and package identities;
 - normalized semantic, pinned, derivation, and projection governance edges with
-  heading selectors, file/block/opt-in commit anchors, deterministic
+  heading selectors, block/file/opt-in commit anchors, deterministic
   transitive impact, Fan-In/Fan-Out, cycle groups, and opt-in topology thresholds;
 - versioned multidimensional hygiene profiles with target, observed, N/A, and
   invariant evidence while retaining independent rule execution states;

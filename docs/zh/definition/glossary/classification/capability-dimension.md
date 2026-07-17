@@ -1,6 +1,6 @@
 ---
 id: GLOSSARY-CAPABILITY-DIMENSION
-status: proposed
+status: baselined
 ---
 
 # 能力维度

@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-001
-status: proposed
+status: baselined
 ---
 
 # 统一治理边

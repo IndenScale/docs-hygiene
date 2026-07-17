@@ -1,7 +1,7 @@
 # 文档卫生治理模型
 
-本文定义 [PRD-004](intent/prd/prd-004/index.md) 提出的目标模型，用于整理现有及计划
-Feature，但不声称完整画像模型已经交付。当前可执行行为仍以配置、规则、测试和
+本文定义 [PRD-004](intent/prd/prd-004/index.md) 已基线化的模型，用于组织当前已交付
+能力，而不是用一个线性成熟度代表所有治理问题。当前可执行行为以配置、规则、测试和
 [渐进式规则激活](10_progressive_rule_activation.md)为准。
 
 ## 模型
@@ -60,7 +60,7 @@ Wiki Link、`formalizes`、`realizes` 和 `projects` 输入现已规范化到该
 公开语法和诊断契约。画像会序列化有序边记录、反向传递影响集合及关系图指标；标题
 selector、影响与 Fan/循环策略已经消费同一模型，预算和趋势仍属于后续层次。
 
-file、ATX block 与 opt-in commit 锚现已共享同一边模型。块级局部 hash、多锚声明和
+ATX block、file 与 opt-in commit 锚现已共享同一边模型。块级局部 hash、多锚声明和
 确定性传递影响已经交付，因此本仓库依赖维度现已达到治理级。
 
 生命周期状态义务和显式 `supersededBy` 映射现已覆盖资产、Package 领域及叶子。终止

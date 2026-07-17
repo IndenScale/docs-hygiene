@@ -1,93 +1,81 @@
 # Roadmap
 
-This roadmap distinguishes current capability from planned work and backlog
-product requirements. Code, configuration, tests, and generated diagnostics
-remain the authority for delivered behavior.
+This file describes only the current product baseline and remaining product
+direction. Git and the changelog retain delivery history; the repository's
+governed Epic/Feature Issue archive retains final capability and acceptance evidence.
 
 ## Current Baseline
 
-- Governed documents use standard Markdown links for project-root navigation and
-  semantic Wiki Links for Library identities.
-- Horizontal references are derived from Body content; vertical derivation and
-  projection remain explicit Manifest relationships.
-- Document contracts, concept foreign keys, project structure, and the
-  existing CLI diagnostics are the currently delivered policy surface.
-- Project-root-local Markdown Link and image targets are checked for existence;
-  external URL reachability remains outside the deterministic local baseline.
-- Native governance checks validate same-refinement-level Wiki Links, optional
-  SHA-256 content anchors, and vertical adjacent-refinement-level Body derivation
-  and Library projection.
-- UL and Glossary are mandatory recursive Library trees; each domain manifest
-  declares direct children and each term has its own Markdown leaf.
-- PRD and Spec are recursive directory Body Packages whose manifests enumerate
-  atomic roles, stories, requirements, constraints, acceptance, and verification.
-- Source files are governed by a 500-line warning and a 1,000-line CI error;
-  the core checker is split into responsibility-focused private units and the
-  current repository passes without warnings or exceptions.
-- Progressive rule activation derives nine stable rule-family decisions from
-  deterministic project facts, supports per-rule auto/required/disabled policy,
-  and exposes evidence through versioned `explain-rules` text and JSON output.
-- The first PRD-004 implementation slice centralizes compatibility-family
-  metadata in an ordered registry without changing current diagnostics or modes.
-- The second PRD-004 slice registers atomic invariants and emits the versioned
-  multidimensional `profile` report with optional target gating.
-- The third PRD-004 slice normalizes semantic references, pins, derivations, and
-  projections into ordered governance edges and reports basic graph metrics.
-- The fourth PRD-004 slice reports distinct-neighbor Fan-In/Fan-Out and cycle
-  groups, with opt-in thresholds under the independent topology rule family.
-- The fifth PRD-004 slice adds reusable document-contract templates,
-  deterministic merge and validation, complete binding evidence, and repository
-  migration from repeated inline policy.
-- The sixth PRD-004 slice adds template revision compatibility windows, exact
-  profile pins, read-only migration planning, and atomic compatible migration;
-  repository structure governance now reaches governed maturity.
-- The seventh PRD-004 slice resolves lowercase heading selectors against
-  canonical ATX headings, preserves localized signatures, and retains selector
-  evidence on normalized governance edges.
-- The eighth PRD-004 slice separates declaration syntax from edge semantics with
-  a versioned reference-occurrence IR, three collectors, explicit policy, and a
-  syntax-independent normalizer while preserving the public edge contract.
-- The ninth PRD-004 slice adds deterministic file and ATX-block SHA-256 anchors,
-  frontmatter multi-anchor declarations, per-item diagnostics, and explicitly
-  opt-in local Git commit verification without changing existing inline pins.
-- The tenth PRD-004 slice reports deterministic reverse transitive impact across
-  every resolved semantic edge kind, including deduplication and cycle-safe
-  propagation, without coupling analysis to budgets or notification policy.
-- The eleventh PRD-004 slice enforces lifecycle status obligations across assets
-  and package identities, validates `supersededBy` successors, rejects stale
-  terminal targets, and reports ordered authority-migration evidence.
-- Subsequent delivered slices add kind-scoped slug identity, typed Document Kind
-  schemas and scaffolding, explicit Library claim governance, critical Pin policy,
-  portable offline commit snapshots, audited supernode exceptions, and degree trends.
-- The current final slice adds offline principal identities, established-identity
-  Owner/review/two-person obligations, deterministic coverage and bus-factor
-  evidence, and atomic audited review resets, completing the current
-  [PRD-004](docs/intent/prd/prd-004/index.md) / [SPEC-003 C-019](docs/definition/spec/spec-003/constraints/ownership-review.md)
-  baseline.
+### Project documentation governance
+
+- A configured project directory is the governance boundary; a Git repository
+  is only its physical container.
+- Intent, Definition, and Implementation assets form adjacent refinement levels.
+  Body assets derive downward; Library assets project shared identities downward.
+- Canonical and localized representations share stable identities, structure,
+  semantic reference signatures, and lifecycle authority.
+
+### Policy and identity
+
+- Nine stable rule families separate applicability, automatic activation,
+  configured mode, severity, and checker ownership.
+- Structure, identity, dependency, and topology have independent capability
+  targets and invariant evidence.
+- Document contracts, templates, Document Kinds, frontmatter schemas, slug
+  identities, lifecycle states, and vertical derivation consume centralized
+  registries or policy tables.
+- Template, Kind, and authority migrations use explicit dry-run plans and atomic
+  apply workflows.
+
+### References and dependency governance
+
+- Wiki Links, Markdown Links, and frontmatter anchors enter one versioned
+  reference-occurrence IR; explicit syntax/context policy decides semantic use.
+- Semantic references, pins, derivations, and projections normalize to one
+  governance-edge graph with selector, lifecycle, and provenance evidence.
+- File and block anchors share one scope model. The current opt-in Git mechanism
+  compares a governed target with its blob at a commit; critical dependency
+  policies select edges and require algorithms, minimum scope, audit age, and
+  explicit Pin updates.
+- Portable snapshots provide signed, offline file/block evidence without making
+  Git history the semantic authority.
+
+### Library, topology, and ownership governance
+
+- Recursive UL, Glossary, and SDK Libraries provide stable shared identities;
+  explicit claim authority and controlled excerpts prevent duplicate SSOTs.
+- Deterministic Fan-In/Fan-Out, cycle groups, reverse impact, budgets, trends,
+  and node/direction-specific audited exceptions expose dependency risk.
+- Offline principals, Owner declarations, review sunset, explicit reset audit,
+  coverage, bus factor, and two-person understanding evidence govern established
+  identities.
 
 ## Planned
 
+- Replace commit-as-scope with a true repository granularity: `scope: repo`
+  uses a full Git commit OID to verify all tracked repository state. Commit is
+  the Repo-wise implementation mechanism, not a content granularity.
 - [PRD-001 Three-Layer Contract Governance](docs/intent/prd/prd-001/index.md)
-  will extend the delivered asset graph with item-level requirement coverage,
-  symbol-level semantic projection and end-to-end traces from intent to implementation.
+  extends the delivered asset graph with item-level requirement coverage,
+  symbol-level semantic projection, and complete intent-to-implementation traces.
 
 ## Backlog
 
 - [PRD-002 Governed Semantic Links and Editor Navigation](docs/intent/prd/prd-002/index.md)
-  retains preview and IDE navigation as backlog work. Semantic Wiki Link validation
-  is part of the current CLI contract.
+  retains preview and IDE navigation as backlog work. Semantic Wiki Link
+  validation is already part of the current CLI contract.
 
 ## Decision Boundaries
 
-- A Markdown link provides path navigation; a Wiki Link establishes a semantic
-  identity reference but does not prove natural-language consistency.
-- Semantic references, pins, derivations, and projections may share dependency
-  governance without turning navigational Markdown Links into semantic edges.
-- Document versions are not part of the governance identity model. Git records
-  history, while optional content hashes anchor review-sensitive dependencies.
-- Commit anchors are opt-in physical audit evidence: they compare canonical
-  target bytes with a local Git commit but never replace stable semantic IDs or
-  make Git history the governance authority.
-- LSP or editor integration is not required by the current delivery baseline.
-- Work items and feature tickets live in the repository as governed documents;
-  external issue trackers are not part of the project baseline.
+- A Markdown Link provides path navigation. A Wiki Link establishes a semantic
+  identity reference, but neither proves natural-language consistency.
+- Semantic references, pins, derivations, and projections share dependency
+  governance without turning every navigation link into a semantic edge.
+- Stable IDs are governance identities. Git records history; optional hashes,
+  commits, and portable snapshots are review evidence, not identity versions.
+- Similarity scanning proposes Library claim candidates but cannot create
+  blocking semantic conclusions without an explicit policy decision.
+- LSP and editor integration are not required by the current delivery baseline.
+- The governed [Epic/Feature Issue archive](docs/zh/issues/README.md) in this code
+  repository is the only authoritative Issue archive. External Issue trackers
+  are not a project authority and must not create a second work-item history.

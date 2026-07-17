@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-INDEX
-status: proposed
+status: baselined
 ---
 
 # SPEC-003 Multidimensional Hygiene Profile Contract

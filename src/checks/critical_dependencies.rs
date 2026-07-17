@@ -79,7 +79,7 @@ fn validate_critical_policy<'a>(
             ),
         ));
     }
-    if (policy.require.minimum_scope == CriticalPinScope::Block
+    if (policy.require.minimum_scope == ContentAnchorScope::Block
         || policy.require.forbid_whole_file)
         && !policy
             .require
@@ -122,14 +122,7 @@ fn governed_dependencies(
 ) -> BTreeMap<DependencyKey<'_>, &GovernanceEdge> {
     let mut dependencies = BTreeMap::new();
     for edge in &graph.edges {
-        let relation = match edge.relation {
-            GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
-                CriticalDependencyRelation::References
-            }
-            GovernanceEdgeKind::Formalizes => CriticalDependencyRelation::Formalizes,
-            GovernanceEdgeKind::Realizes => CriticalDependencyRelation::Realizes,
-            GovernanceEdgeKind::Projects => CriticalDependencyRelation::Projects,
-        };
+        let relation = CriticalDependencyRelation::from_edge_kind(edge.relation);
         let key = DependencyKey {
             source: &edge.source,
             target: &edge.target,
@@ -269,10 +262,9 @@ fn check_critical_pin(
         .iter()
         .filter(|pin| {
             pin.content_anchor.as_ref().is_some_and(|anchor| {
-                let scope = critical_scope(anchor.scope);
-                scope >= policy.require.minimum_scope
+                anchor.scope.meets_minimum(policy.require.minimum_scope)
                     && !(policy.require.forbid_whole_file
-                        && matches!(anchor.scope, ContentAnchorScope::File | ContentAnchorScope::Commit))
+                        && anchor.scope.covers_whole_file())
             })
         })
         .copied()

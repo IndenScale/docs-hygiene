@@ -1,6 +1,6 @@
 ---
 id: PRD-004-ROLES
-status: proposed
+status: baselined
 ---
 
 # 角色

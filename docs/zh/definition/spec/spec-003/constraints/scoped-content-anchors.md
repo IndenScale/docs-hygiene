@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-013
-status: proposed
+status: baselined
 ---
 
 # C-013 多粒度内容锚

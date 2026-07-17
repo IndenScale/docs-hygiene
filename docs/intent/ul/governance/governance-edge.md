@@ -1,6 +1,6 @@
 ---
 id: DH-GOVERNANCE-EDGE
-status: proposed
+status: baselined
 ---
 
 # Governance Edge

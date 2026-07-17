@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-002
-status: proposed
+status: baselined
 ---
 
 # Three-Level Maturity

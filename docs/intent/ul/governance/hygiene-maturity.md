@@ -1,6 +1,6 @@
 ---
 id: DH-HYGIENE-MATURITY
-status: proposed
+status: baselined
 ---
 
 # Documentation Hygiene Maturity

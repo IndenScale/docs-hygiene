@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-008
-status: proposed
+status: baselined
 ---
 
 # C-008 Topology Policy

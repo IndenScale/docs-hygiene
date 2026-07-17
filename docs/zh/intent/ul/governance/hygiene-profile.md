@@ -1,6 +1,6 @@
 ---
 id: DH-HYGIENE-PROFILE
-status: proposed
+status: baselined
 ---
 
 # 文档卫生画像

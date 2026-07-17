@@ -100,17 +100,7 @@ struct CanonicalPackageNode {
 }
 
 fn is_governance_lifecycle_status(status: &str) -> bool {
-    matches!(
-        status,
-        "draft"
-            | "review"
-            | "proposed"
-            | "baselined"
-            | "current"
-            | "superseded"
-            | "archived"
-            | "abandoned"
-    )
+    LifecycleStatus::parse(status).is_some()
 }
 
 fn check_governance(

@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-007
-status: proposed
+status: baselined
 ---
 
 # C-007 Atomic Invariant Ledger
@@ -35,7 +35,7 @@ invariant has one dimension and minimum maturity.
 | `dependency.content-anchor` | controlled | whole-target SHA-256 | delivered |
 | `dependency.target-staleness` | controlled | hash mismatch diagnostics | delivered |
 | `dependency.selector` | governed | edge selector, `DH_SELECTOR_001`, localized signature parity | delivered |
-| `dependency.scoped-anchor` | governed | file/block/commit scopes, per-item diagnostics, opt-in Git verification | delivered |
+| `dependency.scoped-anchor` | governed | block/file/commit scopes, per-item diagnostics, opt-in Git verification | delivered |
 | `dependency.critical-pins` | governed | edge matchers, `DH_PIN_*`, audited update workflow | delivered |
 | `dependency.portable-snapshot` | governed | offline payloads, typed provenance, signatures, `DH_SNAPSHOT_*` | delivered |
 | `dependency.transitive-impact` | governed | deterministic reverse reachability across all resolved semantic edges | delivered |

@@ -37,6 +37,31 @@ pub enum SlugNormalization {
     LowercaseKebab,
 }
 
+impl SlugNormalization {
+    pub(crate) fn normalize(self, value: &str) -> String {
+        match self {
+            Self::None => value.to_owned(),
+            Self::Lowercase => value.to_lowercase(),
+            Self::LowercaseKebab => {
+                let mut output = String::new();
+                let mut separator = false;
+                for character in value.chars().flat_map(char::to_lowercase) {
+                    if character.is_alphanumeric() {
+                        if separator && !output.is_empty() {
+                            output.push('-');
+                        }
+                        separator = false;
+                        output.push(character);
+                    } else {
+                        separator = true;
+                    }
+                }
+                output
+            }
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SlugRenamePolicy {

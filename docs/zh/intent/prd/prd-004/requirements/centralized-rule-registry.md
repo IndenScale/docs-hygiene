@@ -1,6 +1,6 @@
 ---
 id: PRD-004-FR-005
-status: proposed
+status: baselined
 ---
 
 # 集中式规则注册表

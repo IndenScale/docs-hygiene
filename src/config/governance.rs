@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::governance::ReferenceRelation;
+use crate::governance::{ContentAnchorScope, GovernanceEdgeKind, ReferenceRelation};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -151,25 +151,29 @@ pub enum CriticalDependencyRelation {
     Projects,
 }
 
+impl CriticalDependencyRelation {
+    pub(crate) fn from_edge_kind(relation: GovernanceEdgeKind) -> Self {
+        match relation {
+            GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
+                Self::References
+            }
+            GovernanceEdgeKind::Formalizes => Self::Formalizes,
+            GovernanceEdgeKind::Realizes => Self::Realizes,
+            GovernanceEdgeKind::Projects => Self::Projects,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CriticalPinRequirementConfig {
     #[serde(default = "default_pin_algorithms")]
     pub algorithms: Vec<String>,
     #[serde(default)]
-    pub minimum_scope: CriticalPinScope,
+    pub minimum_scope: ContentAnchorScope,
     #[serde(default)]
     pub forbid_whole_file: bool,
     pub max_age_days: Option<u64>,
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum CriticalPinScope {
-    #[default]
-    File,
-    Commit,
-    Block,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

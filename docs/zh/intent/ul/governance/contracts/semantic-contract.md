@@ -1,6 +1,6 @@
 ---
 id: DH-SEMANTIC-CONTRACT
-status: proposed
+status: baselined
 ---
 
 # 语义契约

@@ -15,20 +15,28 @@ use crate::activation::{
 };
 use crate::config::{
     Config, CoreClaimOccurrencePolicy, CriticalDependencyPolicyConfig, CriticalDependencyRelation,
-    CriticalPinScope, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
-    FilenamePatternConfig, GovernancePrincipalConfig, GovernancePrincipalKind,
-    GovernancePrincipalStatus, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
-    SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
-    SupernodeDegreeObservationConfig, SupernodeExceptionConfig, TopologyDirection,
+    DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig, FilenamePatternConfig,
+    GovernancePrincipalConfig, GovernancePrincipalKind, GovernancePrincipalStatus, MaturityLevel,
+    RequiredFieldConfig, RequiredSectionConfig, SlugRenamePolicy, SlugSchemaConfig,
+    SlugSourceConfig, SupernodeDegreeObservationConfig, SupernodeExceptionConfig,
+    TopologyDirection,
+};
+use crate::date::{
+    days_from_civil as ownership_days_from_civil, parse_date as parse_iso_date,
+    utc_today as today_utc,
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
-    GovernanceLocation, GovernanceNode, LifecycleProvenance, ReferenceRelation, RefinementLevel,
-    SnapshotProvenance,
+    GovernanceLocation, GovernanceNode, LifecycleProvenance, LifecycleStatus, ReferenceRelation,
+    RefinementLevel, SnapshotProvenance,
+};
+use crate::markdown::{
+    heading_block as markdown_heading_block, heading_slug,
+    heading_slug_counts as markdown_heading_slug_counts,
 };
 use crate::portable_snapshot::{
     PORTABLE_SNAPSHOT_SCHEMA_VERSION, PortableSnapshotEntry, PortableSnapshotManifest,
-    PortableSnapshotStatus,
+    PortableSnapshotStatus, safe_snapshot_path, valid_commit_oid,
 };
 use crate::reference::{
     CONTEXT_GOVERNED_ANCHOR, CONTEXT_GOVERNED_CONTENT, CONTEXT_IDENTITY_DECLARATION,
@@ -42,6 +50,7 @@ use crate::report::{
     ReviewState, Severity, SuppressedDiagnostic, TopologyExceptionEvidence,
     TopologyExceptionStatus,
 };
+use crate::yaml::mapping_string as yaml_mapping_string;
 
 #[derive(Debug)]
 pub struct Diagnostic {
@@ -195,7 +204,7 @@ pub(crate) fn run_checks_with_activation(
     config: &Config,
     activation: &ActivationReport,
 ) -> Result<Report> {
-    let ignore = build_ignore(root, config)?;
+    let ignore = build_repository_ignore(root, config)?;
     let mut diagnostics = Vec::new();
 
     add_activation_guidance(config, activation, &mut diagnostics);

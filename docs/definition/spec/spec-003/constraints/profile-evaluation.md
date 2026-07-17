@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-001
-status: proposed
+status: baselined
 ---
 
 # C-001 Profile Evaluation

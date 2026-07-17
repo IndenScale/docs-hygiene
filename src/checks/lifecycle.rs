@@ -132,11 +132,11 @@ fn check_identity_lifecycle(
         .collect::<BTreeMap<_, _>>();
 
     for record in records {
-        if !is_governance_lifecycle_status(&record.status) {
+        let Some(status) = LifecycleStatus::parse(&record.status) else {
             continue;
-        }
-        match (record.status.as_str(), record.superseded_by.as_deref()) {
-            ("superseded", None) => push_lifecycle_diagnostic(
+        };
+        match (status.requires_successor(), record.superseded_by.as_deref()) {
+            (true, None) => push_lifecycle_diagnostic(
                 record,
                 diagnostics,
                 format!(
@@ -144,10 +144,10 @@ fn check_identity_lifecycle(
                     record.id
                 ),
             ),
-            ("superseded", Some(successor)) => {
+            (true, Some(successor)) => {
                 validate_authority_successor(record, successor, &index, diagnostics)
             }
-            (_, Some(successor)) => push_lifecycle_diagnostic(
+            (false, Some(successor)) => push_lifecycle_diagnostic(
                 record,
                 diagnostics,
                 format!(
@@ -155,7 +155,7 @@ fn check_identity_lifecycle(
                     record.id, successor
                 ),
             ),
-            _ => {}
+            (false, None) => {}
         }
     }
 
@@ -163,7 +163,7 @@ fn check_identity_lifecycle(
         let Some(target) = index.get(edge.target.as_str()) else {
             continue;
         };
-        if !matches!(target.status.as_str(), "superseded" | "archived" | "abandoned") {
+        if !LifecycleStatus::parse(&target.status).is_some_and(LifecycleStatus::is_terminal) {
             continue;
         }
         let replacement = target
@@ -229,7 +229,7 @@ fn validate_authority_successor(
             ),
         );
     }
-    if !matches!(successor.status.as_str(), "baselined" | "current") {
+    if !LifecycleStatus::parse(&successor.status).is_some_and(LifecycleStatus::is_established) {
         push_lifecycle_diagnostic(
             record,
             diagnostics,

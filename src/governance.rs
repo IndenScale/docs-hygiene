@@ -35,6 +35,46 @@ pub enum ReferenceRelation {
     Library,
 }
 
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum LifecycleStatus {
+    Draft,
+    Review,
+    Proposed,
+    Baselined,
+    Current,
+    Superseded,
+    Archived,
+    Abandoned,
+}
+
+impl LifecycleStatus {
+    pub(crate) fn parse(value: &str) -> Option<Self> {
+        match value {
+            "draft" => Some(Self::Draft),
+            "review" => Some(Self::Review),
+            "proposed" => Some(Self::Proposed),
+            "baselined" => Some(Self::Baselined),
+            "current" => Some(Self::Current),
+            "superseded" => Some(Self::Superseded),
+            "archived" => Some(Self::Archived),
+            "abandoned" => Some(Self::Abandoned),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_established(self) -> bool {
+        matches!(self, Self::Baselined | Self::Current)
+    }
+
+    pub(crate) fn is_terminal(self) -> bool {
+        matches!(self, Self::Superseded | Self::Archived | Self::Abandoned)
+    }
+
+    pub(crate) fn requires_successor(self) -> bool {
+        self == Self::Superseded
+    }
+}
+
 impl ReferenceRelation {
     pub(crate) fn label(self) -> &'static str {
         match self {
@@ -93,15 +133,36 @@ pub struct SnapshotProvenance {
 #[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ContentAnchorScope {
+    Block,
     #[default]
     File,
-    Block,
     Commit,
 }
 
 impl ContentAnchorScope {
     pub(crate) fn is_file(&self) -> bool {
         *self == Self::File
+    }
+
+    /// Returns whether this scope satisfies a configured minimum pin scope.
+    ///
+    /// Scope strength is a governance policy, not declaration order: a commit
+    /// identifies a whole-file revision, while a block isolates the narrowest
+    /// reviewed content boundary.
+    pub(crate) fn meets_minimum(self, minimum: Self) -> bool {
+        self.strength() >= minimum.strength()
+    }
+
+    pub(crate) fn covers_whole_file(self) -> bool {
+        matches!(self, Self::File | Self::Commit)
+    }
+
+    fn strength(self) -> u8 {
+        match self {
+            Self::File => 0,
+            Self::Commit => 1,
+            Self::Block => 2,
+        }
     }
 }
 
@@ -329,5 +390,31 @@ mod tests {
             graph.metrics.cycle_groups,
             vec![vec!["A".to_owned(), "B".to_owned()], vec!["C".to_owned()]]
         );
+    }
+
+    #[test]
+    fn lifecycle_policy_centralizes_valid_established_and_terminal_states() {
+        let valid = [
+            "draft",
+            "review",
+            "proposed",
+            "baselined",
+            "current",
+            "superseded",
+            "archived",
+            "abandoned",
+        ];
+        assert!(
+            valid
+                .into_iter()
+                .all(|value| LifecycleStatus::parse(value).is_some())
+        );
+        assert!(LifecycleStatus::parse("unknown").is_none());
+        assert!(LifecycleStatus::Baselined.is_established());
+        assert!(LifecycleStatus::Current.is_established());
+        assert!(LifecycleStatus::Superseded.is_terminal());
+        assert!(LifecycleStatus::Archived.is_terminal());
+        assert!(LifecycleStatus::Abandoned.is_terminal());
+        assert!(LifecycleStatus::Superseded.requires_successor());
     }
 }

@@ -109,7 +109,7 @@ fn slug_record<'a>(
     frontmatter: &serde_yaml::Mapping,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Option<SlugRecord<'a>> {
-    let identity = yaml_string(frontmatter, &schema.identity_field);
+    let identity = yaml_mapping_string(frontmatter, &schema.identity_field).map(str::to_owned);
     if identity.is_none() && schema.rename_policy != SlugRenamePolicy::AllowPathBreak {
         diagnostics.push(slug_diagnostic(
             &doc.rel.display().to_string(),
@@ -130,7 +130,7 @@ fn slug_record<'a>(
 
     let original = match &schema.source {
         SlugSourceConfig::Frontmatter { field } | SlugSourceConfig::StableId { field } => {
-            yaml_string(frontmatter, field)
+            yaml_mapping_string(frontmatter, field).map(str::to_owned)
         }
         SlugSourceConfig::Filename { capture } => filename_slug(doc, bases, capture),
     };
@@ -153,13 +153,13 @@ fn slug_record<'a>(
         ));
         return None;
     };
-    let normalized = normalize_slug(&original, schema.normalization);
+    let normalized = schema.normalization.normalize(&original);
     validate_slug_value(doc, schema, &original, &normalized, false, diagnostics);
 
     let aliases = yaml_strings(frontmatter, &schema.aliases_field)
         .into_iter()
         .map(|alias| {
-            let normalized = normalize_slug(&alias, schema.normalization);
+            let normalized = schema.normalization.normalize(&alias);
             validate_slug_value(doc, schema, &alias, &normalized, true, diagnostics);
             (alias, normalized)
         })
@@ -221,7 +221,7 @@ fn validate_slug_value(
     let reserved = schema
         .reserved
         .iter()
-        .any(|value| normalize_slug(value, schema.normalization) == normalized);
+        .any(|value| schema.normalization.normalize(value) == normalized);
     if !invalid_pattern && !invalid_length && !reserved {
         return;
     }
@@ -383,13 +383,6 @@ fn slug_diagnostic(
     })
 }
 
-fn yaml_string(mapping: &serde_yaml::Mapping, field: &str) -> Option<String> {
-    mapping
-        .get(serde_yaml::Value::String(field.to_owned()))
-        .and_then(serde_yaml::Value::as_str)
-        .map(str::to_owned)
-}
-
 fn yaml_strings(mapping: &serde_yaml::Mapping, field: &str) -> Vec<String> {
     mapping
         .get(serde_yaml::Value::String(field.to_owned()))
@@ -406,28 +399,5 @@ fn slug_source_label(source: &SlugSourceConfig) -> String {
         SlugSourceConfig::Filename { capture } => format!("filename capture '{capture}'"),
         SlugSourceConfig::Frontmatter { field } => format!("frontmatter field '{field}'"),
         SlugSourceConfig::StableId { field } => format!("stable ID field '{field}'"),
-    }
-}
-
-fn normalize_slug(value: &str, normalization: SlugNormalization) -> String {
-    match normalization {
-        SlugNormalization::None => value.to_owned(),
-        SlugNormalization::Lowercase => value.to_lowercase(),
-        SlugNormalization::LowercaseKebab => {
-            let mut output = String::new();
-            let mut separator = false;
-            for character in value.chars().flat_map(char::to_lowercase) {
-                if character.is_alphanumeric() {
-                    if separator && !output.is_empty() {
-                        output.push('-');
-                    }
-                    separator = false;
-                    output.push(character);
-                } else {
-                    separator = true;
-                }
-            }
-            output
-        }
     }
 }

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Baseline PRD-004 and SPEC-003 against the delivered implementation; rewrite the
+  roadmap as current capability rather than delivery chronology; reorganize the
+  Issue archive into seven dependency-ordered Epics and atomic Features; and
+  centralize lifecycle, vertical derivation, Pin scope, dependency-relation, and
+  slug normalization policy consumed by checks and mutation workflows.
+
 - Add opt-in offline principal governance, established-identity Owner, review
   sunset and two-person knowledge checks, deterministic coverage/bus-factor
   evidence, and an atomic dry-run/apply `reset-review` workflow with JSONL audit.
@@ -32,11 +38,11 @@
   and collision checks; localized identity parity; alias migration policy; and
   structured `DH_SLUG_001` JSON remediation data.
 
-- Define the planned multidimensional documentation governance model in PRD-004:
+- Define and deliver the multidimensional documentation governance model in PRD-004:
   three maturity levels per capability dimension, independent rule execution
   states, and a unified typed edge abstraction for semantic dependencies.
-- Add SPEC-003 with deterministic profile, N/A, exception, compatibility, edge,
-  and delivery-slice semantics; centralize the nine compatibility rule families'
+- Add SPEC-003 with deterministic profile, N/A, exception, compatibility, and edge
+  semantics; centralize the nine compatibility rule families'
   metadata in the first implementation registry.
 - Add atomic invariant registration and `docs-hygiene.profile.v1` text and JSON
   reports with target/observed maturity, execution decisions, N/A rationale,

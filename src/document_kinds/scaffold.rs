@@ -9,8 +9,7 @@ use serde_yaml::{Mapping, Value};
 use crate::Config;
 use crate::config::{
     DocumentKindConfig, DocumentProfileConfig, DocumentTemplateConfig, FrontmatterFieldSource,
-    FrontmatterFieldType, RequiredSectionConfig, SlugNormalization, SlugRenamePolicy,
-    SlugSourceConfig,
+    FrontmatterFieldType, RequiredSectionConfig, SlugRenamePolicy, SlugSourceConfig,
 };
 
 use super::registry::validate_document_kind_registry;
@@ -315,7 +314,7 @@ fn validate_slug_policy(
             .and_then(Value::as_str),
     }
     .ok_or_else(|| anyhow!("generated document cannot resolve its authoritative slug"))?;
-    let normalized = normalize_slug(original, schema.normalization);
+    let normalized = schema.normalization.normalize(original);
     let length = normalized.chars().count();
     if !Regex::new(&schema.pattern)?.is_match(&normalized)
         || schema.min_length.is_some_and(|min| length < min)
@@ -323,7 +322,7 @@ fn validate_slug_policy(
         || schema
             .reserved
             .iter()
-            .any(|value| normalize_slug(value, schema.normalization) == normalized)
+            .any(|value| schema.normalization.normalize(value) == normalized)
     {
         bail!(
             "generated slug '{original}' normalizes to '{normalized}' and violates the Document Kind slug Schema"
@@ -352,29 +351,6 @@ fn validate_slug_policy(
         );
     }
     Ok(())
-}
-
-fn normalize_slug(value: &str, normalization: SlugNormalization) -> String {
-    match normalization {
-        SlugNormalization::None => value.to_owned(),
-        SlugNormalization::Lowercase => value.to_lowercase(),
-        SlugNormalization::LowercaseKebab => {
-            let mut output = String::new();
-            let mut separator = false;
-            for character in value.chars().flat_map(char::to_lowercase) {
-                if character.is_alphanumeric() {
-                    if separator && !output.is_empty() {
-                        output.push('-');
-                    }
-                    separator = false;
-                    output.push(character);
-                } else {
-                    separator = true;
-                }
-            }
-            output
-        }
-    }
 }
 
 fn profile_matches(path: &Path, profile: &DocumentProfileConfig) -> Result<bool> {

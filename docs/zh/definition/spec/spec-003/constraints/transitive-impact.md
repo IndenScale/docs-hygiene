@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-014
-status: proposed
+status: baselined
 ---
 
 # C-014 传递影响

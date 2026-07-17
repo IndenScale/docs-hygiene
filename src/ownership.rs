@@ -1,17 +1,17 @@
 use std::collections::BTreeMap;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
 use serde::Serialize;
 use serde_yaml::{Mapping, Value};
 
 use crate::config::{Config, GovernancePrincipalKind, GovernancePrincipalStatus};
+use crate::date::{format_date, parse_date, utc_today};
+use crate::project_io::{ensure_safe_relative, write_batch_atomically};
 use crate::run_checks;
+use crate::yaml::{mapping_string as yaml_string, set_mapping_value as set_yaml};
 
-mod date;
 mod output;
-
-use date::{format_date, parse_date, utc_today};
 
 pub use output::{print_json_review_reset, print_text_review_reset};
 
@@ -121,7 +121,14 @@ pub fn reset_governed_review(
         );
         return Ok(report);
     }
-    let today = utc_today();
+    let Some(today) = utc_today() else {
+        report.blocked.push(ReviewResetBlock {
+            identity: request.identity.clone(),
+            path: "system-clock".to_owned(),
+            reason: "current UTC date is unavailable".to_owned(),
+        });
+        return Ok(report);
+    };
     let Some(deadline) = parse_date(&request.review_by) else {
         block(
             &mut report,
@@ -328,86 +335,11 @@ fn apply_review_reset(
     write_batch_atomically(root, &pending)
 }
 
-fn write_batch_atomically(root: &Path, pending: &BTreeMap<PathBuf, String>) -> Result<()> {
-    let process = std::process::id();
-    let mut prepared = Vec::new();
-    for (index, (rel, content)) in pending.iter().enumerate() {
-        let destination = root.join(rel);
-        let parent = destination
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("{} has no parent", rel.display()))?;
-        std::fs::create_dir_all(parent)?;
-        let temporary = parent.join(format!(".docs-hygiene-review-{process}-{index}.tmp"));
-        if let Err(error) = std::fs::write(&temporary, content) {
-            for (_, temporary, _) in &prepared {
-                let _ = std::fs::remove_file(temporary);
-            }
-            return Err(error).context("failed to prepare review reset target");
-        }
-        let original = match std::fs::read(&destination) {
-            Ok(bytes) => Some(bytes),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-            Err(error) => {
-                let _ = std::fs::remove_file(&temporary);
-                for (_, temporary, _) in &prepared {
-                    let _ = std::fs::remove_file(temporary);
-                }
-                return Err(error).context("failed to snapshot review reset target");
-            }
-        };
-        prepared.push((destination, temporary, original));
-    }
-    for (committed, (destination, temporary, _)) in prepared.iter().enumerate() {
-        if let Err(error) = std::fs::rename(temporary, destination) {
-            for (destination, _, original) in prepared.iter().take(committed).rev() {
-                match original {
-                    Some(bytes) => {
-                        let _ = std::fs::write(destination, bytes);
-                    }
-                    None => {
-                        let _ = std::fs::remove_file(destination);
-                    }
-                }
-            }
-            for (_, temporary, _) in prepared.iter().skip(committed) {
-                let _ = std::fs::remove_file(temporary);
-            }
-            return Err(error).context("review reset commit failed and was rolled back");
-        }
-    }
-    Ok(())
-}
-
 fn yaml_mapping(yaml: &str, path: &str) -> Result<Mapping> {
     match serde_yaml::from_str::<Value>(yaml)? {
         Value::Mapping(mapping) => Ok(mapping),
         _ => bail!("{path} YAML must be a mapping"),
     }
-}
-
-fn yaml_string<'a>(mapping: &'a Mapping, key: &str) -> Option<&'a str> {
-    mapping
-        .get(Value::String(key.to_owned()))
-        .and_then(Value::as_str)
-}
-
-fn set_yaml(mapping: &mut Mapping, key: &str, value: Value) {
-    mapping.insert(Value::String(key.to_owned()), value);
-}
-
-fn ensure_safe_relative(path: &Path) -> Result<()> {
-    if path.as_os_str().is_empty()
-        || path.is_absolute()
-        || path.components().any(|component| {
-            matches!(
-                component,
-                Component::ParentDir | Component::RootDir | Component::Prefix(_)
-            )
-        })
-    {
-        bail!("unsafe project-relative path '{}'", path.display());
-    }
-    Ok(())
 }
 
 fn valid_principal_directory(config: &Config) -> bool {

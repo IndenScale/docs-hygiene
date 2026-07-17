@@ -1,6 +1,6 @@
 ---
 id: GLOSSARY-HYGIENE-PROFILE
-status: proposed
+status: baselined
 ---
 
 # Hygiene Profile

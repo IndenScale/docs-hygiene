@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-INTENT-SOURCE
-status: proposed
+status: baselined
 ---
 
 # Intent Source

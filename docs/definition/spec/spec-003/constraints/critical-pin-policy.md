@@ -11,8 +11,10 @@ stable identity sets. Empty matcher dimensions are wildcards; unmatched edges
 remain valid without anchors.
 
 Requirements independently constrain allowed algorithms, minimum scope,
-whole-file scope, and maximum audit age. Scope strength is ordered
-`file < commit < block`. `DH_PIN_001` through `DH_PIN_006` distinguish missing,
+whole-file scope, and maximum audit age. Content range is listed smallest to
+largest as `block | file | commit`; policy strength is explicit and separate:
+file accepts block, file, or commit; commit accepts block or commit; block accepts
+only block. `DH_PIN_001` through `DH_PIN_006` distinguish missing,
 insufficient-scope, disallowed-algorithm, changed-content, expired-audit, and
 invalid-declaration states. Diagnostics expose the direct dependent and target
 reverse impact.

@@ -4,6 +4,19 @@ use crate::ContentAnchorScope;
 
 pub const PORTABLE_SNAPSHOT_SCHEMA_VERSION: &str = "docs-hygiene.snapshot.v1";
 
+pub(crate) fn valid_commit_oid(value: &str) -> bool {
+    matches!(value.len(), 40 | 64) && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+pub(crate) fn safe_snapshot_path(value: &str) -> bool {
+    !value.is_empty()
+        && !value.starts_with('/')
+        && !value.contains('\\')
+        && value
+            .split('/')
+            .all(|segment| !matches!(segment, "" | "." | ".."))
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PortableSnapshotManifest {
@@ -71,4 +84,20 @@ pub struct PortableSnapshotSignature {
     pub algorithm: String,
     pub key_id: String,
     pub value: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn snapshot_identity_and_path_policy_is_shared_by_check_and_import() {
+        assert!(valid_commit_oid(&"a".repeat(40)));
+        assert!(valid_commit_oid(&"b".repeat(64)));
+        assert!(!valid_commit_oid("not-a-commit"));
+        assert!(safe_snapshot_path("vendor/docs/term.md"));
+        assert!(!safe_snapshot_path("../term.md"));
+        assert!(!safe_snapshot_path("/absolute.md"));
+        assert!(!safe_snapshot_path("vendor\\term.md"));
+    }
 }

@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-009
-status: proposed
+status: baselined
 ---
 
 # C-009 Document Template Registry

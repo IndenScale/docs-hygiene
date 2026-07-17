@@ -1,6 +1,6 @@
 ---
 id: DH-HYGIENE-PROFILE
-status: proposed
+status: baselined
 ---
 
 # Documentation Hygiene Profile

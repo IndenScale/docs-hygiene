@@ -54,7 +54,9 @@ fn check_document_ownership(
     let principals = validate_principal_directory(config, diagnostics);
     let required = records
         .iter()
-        .filter(|record| matches!(record.status.as_str(), "baselined" | "current"))
+        .filter(|record| {
+            LifecycleStatus::parse(&record.status).is_some_and(LifecycleStatus::is_established)
+        })
         .collect::<Vec<_>>();
     if records.is_empty() {
         for (code, obligation) in [
@@ -386,16 +388,4 @@ fn read_identity_governance_metadata(
         text.as_str()
     };
     serde_yaml::from_str(yaml).ok()
-}
-
-fn ownership_days_from_civil((year, month, day): (i32, u32, u32)) -> i64 {
-    let year = i64::from(year) - i64::from(month <= 2);
-    let era = if year >= 0 { year } else { year - 399 } / 400;
-    let year_of_era = year - era * 400;
-    let month = i64::from(month);
-    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5
-        + i64::from(day)
-        - 1;
-    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
-    era * 146_097 + day_of_era - 719_468
 }

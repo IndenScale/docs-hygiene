@@ -29,8 +29,10 @@ governance:
 `body` 或 `library`，relation 为 `references`、`formalizes`、`realizes`、`projects`，
 不受当前边是否已有 Pin 影响。路径是项目相对 glob，身份列表使用稳定治理 ID。
 
-`algorithms` 接受 `sha256` 和 `git`。`minimumScope` 的顺序是
-`file < commit < block`：commit 比工作树文件快照更强，block 的空间选择性最高。
+`algorithms` 接受 `sha256` 和 `git`。按内容范围从小到大，scope 统一列为
+`block | file | commit`。策略强度与该展示顺序分开：`minimumScope: file` 接受三种 scope，
+`minimumScope: commit` 接受 block 或 commit，`minimumScope: block` 只接受 block。也就是说，
+commit provenance 强于工作树文件快照，而 block 隔离是最严格要求。
 `forbidWholeFile` 同时拒绝 file 和 commit，因此要求 SHA-256 block anchor。
 配置 `maxAgeDays` 后还要求合法 `updatedAt`、非空 `updatedBy` 和非空 `reason`。
 

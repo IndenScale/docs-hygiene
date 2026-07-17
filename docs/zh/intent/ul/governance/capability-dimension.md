@@ -1,6 +1,6 @@
 ---
 id: DH-CAPABILITY-DIMENSION
-status: proposed
+status: baselined
 ---
 
 # 文档卫生能力维度

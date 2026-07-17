@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-INDEX
-status: proposed
+status: baselined
 ---
 
 # SPEC-003 多维文档卫生画像契约

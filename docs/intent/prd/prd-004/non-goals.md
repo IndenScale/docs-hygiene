@@ -1,6 +1,6 @@
 ---
 id: PRD-004-NON-GOALS
-status: proposed
+status: baselined
 ---
 
 # Non-Goals

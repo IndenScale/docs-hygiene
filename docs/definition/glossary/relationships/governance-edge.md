@@ -1,6 +1,6 @@
 ---
 id: GLOSSARY-GOVERNANCE-EDGE
-status: proposed
+status: baselined
 ---
 
 # Governance Edge

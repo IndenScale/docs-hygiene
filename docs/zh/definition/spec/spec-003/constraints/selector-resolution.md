@@ -1,6 +1,6 @@
 ---
 id: SPEC-003-C-011
-status: proposed
+status: baselined
 ---
 
 # C-011 标题 Selector 解析

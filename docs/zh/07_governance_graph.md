@@ -127,8 +127,8 @@ selector 使用小写 ASCII 标题 slug，例如
 
 ## 多粒度与多锚
 
-Markdown frontmatter 可以声明 `anchors` 序列。每项指定一个受管目标和显式的 `file`、
-`block` 或 `commit` scope。file 对完整目标做 hash；block 要求标题 slug `locator`，只对
+Markdown frontmatter 可以声明 `anchors` 序列。每项指定一个受管目标和显式的 `block`、
+`file` 或 `commit` scope。file 对完整目标做 hash；block 要求标题 slug `locator`，只对
 该 ATX 标题段做 hash。多个项目形成独立排序的锁定边，并在各自声明行报告失败。
 
 commit scope 使用 `algorithm: git` 和完整 commit OID，默认关闭；只有配置

@@ -150,7 +150,7 @@ SHA-256 anchor from whole-file to block scope. See
 ## Scoped and Multiple Anchors
 
 Markdown frontmatter may declare an `anchors` sequence. Each item names one
-governed target and an explicit `file`, `block`, or `commit` scope. File scope
+governed target and an explicit `block`, `file`, or `commit` scope. File scope
 hashes the complete target; block scope requires a heading-slug `locator` and
 hashes only that ATX section. Multiple items become independently ordered pinned
 edges and report failures at their own declaration lines.

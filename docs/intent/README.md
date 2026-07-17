@@ -24,4 +24,4 @@ An abandoned proposal uses `abandoned` and does not become a normative baseline.
 - [PRD-001 Three-Dimensional Contract Governance](prd/prd-001/index.md)
 - [PRD-002 Governed Semantic Links and Editor Navigation](prd/prd-002/index.md) — Wiki Links delivered, editor navigation backlog
 - [PRD-003 Progressive Rule Activation](prd/prd-003/index.md) — delivered
-- [PRD-004 Multidimensional Documentation Governance](prd/prd-004/index.md) — in progress; profile, templates, normalized edges, scoped anchors, transitive impact, lifecycle, authority migration, and topology policy delivered
+- [PRD-004 Multidimensional Documentation Governance](prd/prd-004/index.md) — delivered and baselined
