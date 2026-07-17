@@ -1,0 +1,19 @@
+id: SPEC-003-DOMAIN-CONSTRAINTS
+kind: domain
+status: proposed
+members:
+  - profile-evaluation.md
+  - rule-registry.md
+  - atomic-invariants.md
+  - edge-normalization.md
+  - selector-resolution.md
+  - reference-occurrence-ir.md
+  - scoped-content-anchors.md
+  - transitive-impact.md
+  - identity-lifecycle.md
+  - topology-policy.md
+  - template-registry.md
+  - template-lifecycle.md
+  - compatibility.md
+  - exceptions.md
+  - delivery-slices.md

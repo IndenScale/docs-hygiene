@@ -8,3 +8,5 @@ status: baselined
 The public rule IDs are `project.entry-docs`, `docs.structure`,
 `documents.contracts`, `localization.parity`, `concepts.references`,
 `governance.identity`, `governance.traceability`, and `adapters.external`.
+SPEC-003 subsequently adds `governance.topology` after these IDs without
+changing their names or relative order.

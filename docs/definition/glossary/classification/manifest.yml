@@ -9,3 +9,6 @@ members:
   - reference-relation-library.md
   - language-representation.md
   - rule-activation-decision.md
+  - capability-dimension.md
+  - hygiene-maturity.md
+  - hygiene-profile.md

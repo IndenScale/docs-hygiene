@@ -1,0 +1,10 @@
+id: PRD-004-DOMAIN-REQUIREMENTS
+kind: domain
+status: proposed
+members:
+  - unified-governance-edge.md
+  - three-level-maturity.md
+  - capability-profile.md
+  - independent-execution-state.md
+  - centralized-rule-registry.md
+  - compatibility-and-migration.md

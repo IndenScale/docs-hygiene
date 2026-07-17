@@ -16,3 +16,5 @@ Package 与 Test Definition。
 
 - [三维治理 Glossary 目录](glossary/)
 - [三维治理 Spec](spec/spec-001/index.md)
+- [渐进式规则激活 Spec](spec/spec-002/index.md)
+- [多维文档卫生画像 Spec](spec/spec-003/index.md)

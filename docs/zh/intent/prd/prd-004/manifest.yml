@@ -1,0 +1,14 @@
+id: PRD-004
+type: product-requirement
+status: proposed
+delivery_status: in-progress
+refinementLevel: intent
+referenceRelation: body
+members:
+  - index.md
+  - problem.md
+  - roles.md
+  - requirements
+  - acceptance.md
+  - non-goals.md
+  - delivery-status.md

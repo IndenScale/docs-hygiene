@@ -16,3 +16,5 @@ governed Bodies are recursive Spec Packages under `spec/` and Test Definitions.
 
 - [Three-Dimensional Governance Glossary directory](glossary/)
 - [Three-Dimensional Governance Spec](spec/spec-001/index.md)
+- [Progressive Rule Activation Spec](spec/spec-002/index.md)
+- [Multidimensional Hygiene Profile Spec](spec/spec-003/index.md)

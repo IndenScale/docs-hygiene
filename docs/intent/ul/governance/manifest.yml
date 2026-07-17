@@ -6,4 +6,8 @@ members:
   - governed-body.md
   - concept-reference.md
   - rule-activation.md
+  - governance-edge.md
+  - hygiene-maturity.md
+  - capability-dimension.md
+  - hygiene-profile.md
   - contracts

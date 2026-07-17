@@ -22,3 +22,5 @@ Intent Body 使用 `draft` → `review` → `baselined` → `superseded` → `ar
 - [通用语言目录](ul/)
 - [PRD-001 三维契约治理](prd/prd-001/index.md)
 - [PRD-002 受治理语义链接与编辑器导航](prd/prd-002/index.md) — Wiki Link 已交付，编辑器导航待办
+- [PRD-003 渐进式规则激活](prd/prd-003/index.md) — 已交付
+- [PRD-004 多维文档治理](prd/prd-004/index.md) — 推进中；画像、模板、规范化边、多粒度锚、传递影响、生命周期、权威迁移和拓扑策略已交付
