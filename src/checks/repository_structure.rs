@@ -19,10 +19,6 @@ fn check_markdown_links(
     docs: &[DocFile],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Result<()> {
-    let inline_link = Regex::new(
-        r#"!?(?:\[[^\]\n]*\])\((?:<([^>\n]+)>|([^\s)\n]+))(?:\s+[\"'][^)\n]*[\"'])?\)"#,
-    )?;
-    let reference_definition = Regex::new(r#"^\s{0,3}\[[^\]\n]+\]:\s*(?:<([^>\n]+)>|(\S+))"#)?;
     let uri_scheme = Regex::new(r"^[A-Za-z][A-Za-z0-9+.-]*:")?;
     let mut paths = docs
         .iter()
@@ -41,37 +37,24 @@ fn check_markdown_links(
 
     for rel in paths {
         let text = std::fs::read_to_string(root.join(&rel))?;
-        let surface = strip_markdown_code(&text);
-        let mut seen = BTreeSet::new();
-        for (index, line) in surface.lines().enumerate() {
-            let destinations = inline_link
-                .captures_iter(line)
-                .chain(reference_definition.captures_iter(line));
-            for captures in destinations {
-                let destination = captures
-                    .get(1)
-                    .or_else(|| captures.get(2))
-                    .map(|value| value.as_str())
-                    .unwrap_or("");
-                if !seen.insert((index, destination.to_owned())) {
-                    continue;
+        for occurrence in collect_markdown_link_occurrences(&rel, &text) {
+            let destination = occurrence.raw_target;
+            let Some(target) = resolve_repository_link(&rel, &destination, &uri_scheme) else {
+                continue;
+            };
+            if target.as_os_str().is_empty() || !root.join(&target).exists() {
+                let mut diagnostic = Diagnostic::new(
+                    "DH_LINK_001",
+                    Severity::Error,
+                    rel.display().to_string(),
+                    format!(
+                        "Markdown Link target '{destination}' does not resolve to a project-root path."
+                    ),
+                );
+                if let Some(line) = occurrence.location.line {
+                    diagnostic = diagnostic.at_line(line);
                 }
-                let Some(target) = resolve_repository_link(&rel, destination, &uri_scheme) else {
-                    continue;
-                };
-                if target.as_os_str().is_empty() || !root.join(&target).exists() {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            "DH_LINK_001",
-                            Severity::Error,
-                            rel.display().to_string(),
-                            format!(
-                                "Markdown Link target '{destination}' does not resolve to a project-root path."
-                            ),
-                        )
-                        .at_line(index + 1),
-                    );
-                }
+                diagnostics.push(diagnostic);
             }
         }
     }

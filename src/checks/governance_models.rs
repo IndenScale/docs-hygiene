@@ -1,37 +1,3 @@
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
-enum RefinementLevel {
-    Intent,
-    Definition,
-    Implementation,
-}
-
-impl RefinementLevel {
-    fn label(self) -> &'static str {
-        match self {
-            Self::Intent => "intent",
-            Self::Definition => "definition",
-            Self::Implementation => "implementation",
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
-enum ReferenceRelation {
-    Body,
-    Library,
-}
-
-impl ReferenceRelation {
-    fn label(self) -> &'static str {
-        match self {
-            Self::Body => "body",
-            Self::Library => "library",
-        }
-    }
-}
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct GovernanceTarget {
@@ -46,9 +12,6 @@ impl GovernanceTargets {
         self.0.iter()
     }
 
-    fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
 }
 
 impl<'de> Deserialize<'de> for GovernanceTargets {
@@ -84,6 +47,8 @@ struct GovernanceAsset {
     reference_relation: ReferenceRelation,
     status: String,
     #[serde(default)]
+    superseded_by: Option<String>,
+    #[serde(default)]
     formalizes: GovernanceTargets,
     #[serde(default)]
     realizes: GovernanceTargets,
@@ -96,23 +61,32 @@ struct GovernanceAsset {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct PackageMember {
     id: String,
     status: String,
+    #[serde(default)]
+    superseded_by: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct PackageDomain {
     id: String,
     status: String,
+    #[serde(default)]
+    superseded_by: Option<String>,
     kind: String,
     members: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct PackageManifestNode {
     id: String,
     status: String,
+    #[serde(default)]
+    superseded_by: Option<String>,
     #[serde(default)]
     kind: Option<String>,
     members: Vec<String>,
@@ -139,9 +113,13 @@ fn is_governance_lifecycle_status(status: &str) -> bool {
     )
 }
 
-fn check_governance(root: &Path, config: &Config, diagnostics: &mut Vec<Diagnostic>) {
+fn check_governance(
+    root: &Path,
+    config: &Config,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> GovernanceGraph {
     if config.governance.manifests.is_empty() {
-        return;
+        return GovernanceGraph::default();
     }
 
     let mut assets = Vec::new();
@@ -240,12 +218,66 @@ fn check_governance(root: &Path, config: &Config, diagnostics: &mut Vec<Diagnost
         }
     }
 
+    let mut nodes = assets
+        .iter()
+        .map(|asset| GovernanceNode {
+            identity: asset.id.clone(),
+            refinement_level: asset.refinement_level,
+            reference_relation: asset.reference_relation,
+            lifecycle_status: asset.status.clone(),
+            location: GovernanceLocation {
+                path: asset.path.clone(),
+                line: None,
+            },
+        })
+        .collect::<Vec<_>>();
+    let mut edges = collect_vertical_edges(&assets, &index);
+    let wiki = check_governed_references(root, config, &assets, diagnostics);
+    nodes.extend(wiki.nodes);
+    edges.extend(wiki.edges);
+    let mut graph = GovernanceGraph::new(nodes, edges);
+
     for asset in &assets {
         check_package_members(root, config, asset, diagnostics);
-        check_vertical_derivation(asset, &assets, &index, diagnostics);
+        check_vertical_derivation(asset, &graph, diagnostics);
     }
-    check_wiki_references(root, config, &assets, diagnostics);
     if config.governance.require_complete_vertical_derivation {
-        check_vertical_derivation_completeness(&assets, diagnostics);
+        check_vertical_derivation_completeness(&assets, &graph, diagnostics);
     }
+    let identities = collect_governed_identity_records(root, &assets);
+    graph.authority_migrations = check_identity_lifecycle(&identities, &graph, diagnostics);
+    graph
+}
+
+fn collect_vertical_edges(
+    assets: &[GovernanceAsset],
+    index: &BTreeMap<&str, usize>,
+) -> Vec<GovernanceEdge> {
+    let mut edges = Vec::new();
+    for asset in assets {
+        for (relation, targets) in [
+            (GovernanceEdgeKind::Formalizes, &asset.formalizes),
+            (GovernanceEdgeKind::Realizes, &asset.realizes),
+            (GovernanceEdgeKind::Projects, &asset.projects),
+        ] {
+            edges.extend(targets.iter().map(|target| GovernanceEdge {
+                source: asset.id.clone(),
+                target: target.id.clone(),
+                relation,
+                source_location: GovernanceLocation {
+                    path: asset.path.clone(),
+                    line: None,
+                },
+                selector: None,
+                content_anchor: None,
+                lifecycle: LifecycleProvenance {
+                    source_status: asset.status.clone(),
+                    target_status: index
+                        .get(target.id.as_str())
+                        .map(|position| assets[*position].status.clone()),
+                },
+            }));
+        }
+    }
+    edges
 }

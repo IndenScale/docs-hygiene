@@ -5,6 +5,52 @@ use tempfile::tempdir;
 use super::*;
 
 #[test]
+fn rule_registry_is_ordered_unique_and_complete_for_compatibility_families() {
+    let ids = RULE_SPECS.iter().map(|spec| spec.id).collect::<Vec<_>>();
+    assert_eq!(
+        ids,
+        vec![
+            "project.entry-docs",
+            "docs.structure",
+            "documents.contracts",
+            "localization.parity",
+            "concepts.references",
+            "governance.identity",
+            "governance.traceability",
+            "governance.topology",
+            "adapters.external",
+        ]
+    );
+    let unique = ids
+        .iter()
+        .copied()
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(unique.len(), RULE_SPECS.len());
+    let diagnostic_codes = RULE_SPECS
+        .iter()
+        .flat_map(|spec| spec.diagnostic_codes.iter().copied())
+        .collect::<Vec<_>>();
+    let unique_diagnostic_codes = diagnostic_codes
+        .iter()
+        .copied()
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(unique_diagnostic_codes.len(), diagnostic_codes.len());
+    assert!(RULE_SPECS.iter().all(|spec| {
+        !spec.diagnostic_codes.is_empty()
+            && !spec.rationale.is_empty()
+            && !spec.remediation.is_empty()
+            && spec.default_mode == RuleMode::Auto
+    }));
+    assert!(RULE_SPECS.iter().any(|spec| spec.capabilities.len() > 1));
+    assert_eq!(
+        rule_spec_for_diagnostic("DH_DERIVATION_001")
+            .unwrap()
+            .checker,
+        RuleChecker::GovernanceTraceability
+    );
+}
+
+#[test]
 fn scale_signals_are_advisory_and_deterministic() {
     let temp = tempdir().unwrap();
     for index in 0..20 {
@@ -139,4 +185,24 @@ fn unknown_rule_ids_are_rejected() {
     let error = evaluate_rule_activation(temp.path(), &config).unwrap_err();
 
     assert!(error.to_string().contains("unknown rule id 'unknown.rule'"));
+}
+
+#[test]
+fn topology_policy_activates_only_from_explicit_configuration() {
+    let temp = tempdir().unwrap();
+    let implicit = evaluate_rule_activation(temp.path(), &Config::default()).unwrap();
+    assert_eq!(
+        implicit.decision("governance.topology").state,
+        RuleState::Inactive
+    );
+
+    let configured: Config =
+        serde_yaml::from_str("governance:\n  topology:\n    maxFanIn: 8\n    forbidCycles: true\n")
+            .unwrap();
+    let explicit = evaluate_rule_activation(temp.path(), &configured).unwrap();
+    assert_eq!(
+        explicit.decision("governance.topology").state,
+        RuleState::Error
+    );
+    assert_eq!(explicit.facts.configured_topology_policies, 2);
 }

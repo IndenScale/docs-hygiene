@@ -4,15 +4,16 @@ fn check_document_contracts(
     ignore: &GlobSet,
     managed_docs: &[DocFile],
     diagnostics: &mut Vec<Diagnostic>,
-) -> Result<()> {
-    if config.document_contracts.profiles.is_empty()
+) -> Result<DocumentTemplateReport> {
+    let (profiles, template_report) = resolve_document_profiles(config, diagnostics);
+    if profiles.is_empty()
         && config
             .document_contracts
             .maturity
             .recommendations
             .is_empty()
     {
-        return Ok(());
+        return Ok(template_report);
     }
 
     check_maturity_recommendation(root, config, ignore, managed_docs.len(), diagnostics)?;
@@ -32,19 +33,19 @@ fn check_document_contracts(
         if ignore.is_match(rel) {
             continue;
         }
-        let Some(profile) = matching_document_profile(rel, &config.document_contracts.profiles)?
+        let Some(profile) = matching_document_profile(rel, &profiles)?
         else {
             continue;
         };
         check_document_contract(root, rel, profile, declared, diagnostics)?;
     }
-    Ok(())
+    Ok(template_report)
 }
 
 fn matching_document_profile<'a>(
     rel: &Path,
-    profiles: &'a [DocumentProfileConfig],
-) -> Result<Option<&'a DocumentProfileConfig>> {
+    profiles: &'a [ResolvedDocumentProfile],
+) -> Result<Option<&'a ResolvedDocumentProfile>> {
     let filename = rel
         .file_name()
         .and_then(|value| value.to_str())
@@ -59,7 +60,9 @@ fn matching_document_profile<'a>(
         } else {
             let mut builder = GlobSetBuilder::new();
             for path in &matcher.paths {
-                builder.add(Glob::new(path)?);
+                if let Ok(pattern) = Glob::new(path) {
+                    builder.add(pattern);
+                }
             }
             builder.build()?.is_match(rel)
         };
@@ -69,9 +72,7 @@ fn matching_document_profile<'a>(
             matcher
                 .filenames
                 .iter()
-                .map(|pattern| Regex::new(pattern))
-                .collect::<Result<Vec<_>, _>>()?
-                .iter()
+                .filter_map(|pattern| Regex::new(pattern).ok())
                 .any(|pattern| pattern.is_match(filename))
         };
         if path_matches && filename_matches {
@@ -84,7 +85,7 @@ fn matching_document_profile<'a>(
 fn check_document_contract(
     root: &Path,
     rel: &Path,
-    profile: &DocumentProfileConfig,
+    profile: &ResolvedDocumentProfile,
     declared: MaturityLevel,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Result<()> {
@@ -123,7 +124,7 @@ fn check_document_contract(
                 &headings,
                 heading.line,
                 &profile.placeholder_patterns,
-            )?
+            )
         {
             let placeholder_severity = if declared > profile.placeholders_allowed_until {
                 Severity::Error
@@ -158,7 +159,7 @@ fn check_document_contract(
     }
 
     for field in &profile.required_fields {
-        if !Regex::new(&field.pattern)?.is_match(&surface) {
+        if Regex::new(&field.pattern).is_ok_and(|pattern| !pattern.is_match(&surface)) {
             diagnostics.push(Diagnostic::new(
                 "DH_CONTRACT_002",
                 severity,
@@ -206,7 +207,7 @@ fn section_contains_placeholder(
     headings: &[MarkdownHeading],
     heading_line: usize,
     patterns: &[String],
-) -> Result<bool> {
+) -> bool {
     let end_line = headings
         .iter()
         .find(|heading| heading.line > heading_line)
@@ -219,11 +220,11 @@ fn section_contains_placeholder(
         .collect::<Vec<_>>()
         .join("\n");
     for pattern in patterns {
-        if Regex::new(pattern)?.is_match(&body) {
-            return Ok(true);
+        if Regex::new(pattern).is_ok_and(|pattern| pattern.is_match(&body)) {
+            return true;
         }
     }
-    Ok(false)
+    false
 }
 
 fn contract_severity(declared: MaturityLevel, enforce_from: MaturityLevel) -> Severity {

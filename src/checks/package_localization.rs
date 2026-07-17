@@ -76,6 +76,7 @@ fn check_localized_package(
                             identity: PackageMember {
                                 id: node.id,
                                 status: node.status,
+                                superseded_by: node.superseded_by,
                             },
                             kind: node.kind,
                             members: Some(node.members),
@@ -105,6 +106,7 @@ fn check_localized_package(
             };
             if localized.identity.id != canonical.identity.id
                 || localized.identity.status != canonical.identity.status
+                || localized.identity.superseded_by != canonical.identity.superseded_by
                 || localized.kind != canonical.kind
                 || localized.members != canonical.members
             {
@@ -112,7 +114,7 @@ fn check_localized_package(
                     code,
                     Severity::Error,
                     path,
-                    format!("Localized package node for '{language}' must preserve canonical id, status, kind, and direct members."),
+                    format!("Localized package node for '{language}' must preserve canonical id, status, supersededBy, kind, and direct members."),
                 ));
             }
         }
@@ -184,14 +186,4 @@ fn yaml_declares_field(yaml: &str, field: &str) -> bool {
         .ok()
         .and_then(|value| value.as_mapping().cloned())
         .is_some_and(|mapping| mapping.contains_key(serde_yaml::Value::String(field.to_owned())))
-}
-
-fn resolve_governance_target<'a>(
-    target: &GovernanceTarget,
-    assets: &'a [GovernanceAsset],
-    index: &BTreeMap<&str, usize>,
-) -> Option<&'a GovernanceAsset> {
-    index
-        .get(target.id.as_str())
-        .map(|position| &assets[*position])
 }

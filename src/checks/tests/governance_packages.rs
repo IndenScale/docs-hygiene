@@ -55,7 +55,7 @@
         );
         fs::write(
             temp.path().join("prd/index.md"),
-            "---\nid: PRD-1-INDEX\nstatus: baselined\n---\n\n# PRD\n\n[[UL-1]]\n",
+            "---\nid: PRD-1-INDEX\nstatus: baselined\n---\n\n# PRD\n\n[[UL-1]]\n[Navigation only](../ul.yml)\n",
         )
         .unwrap();
         write_asset(
@@ -91,7 +91,7 @@
         fs::create_dir_all(temp.path().join("src")).unwrap();
         fs::write(
             temp.path().join("src/main.rs"),
-            "// [[SDK-1]]\nfn main() {}\n",
+            "// [[SDK-1]]\nconst EXAMPLE: &str = \"[[NOT-A-DEPENDENCY]]\";\nfn main() {}\n",
         )
         .unwrap();
         write_asset(
@@ -103,6 +103,34 @@
         let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
 
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+        assert_eq!(report.governance_graph.metrics.nodes, 6);
+        assert_eq!(report.governance_graph.metrics.edges, 7);
+        assert_eq!(report.governance_graph.metrics.resolved_edges, 7);
+        assert_eq!(report.governance_graph.metrics.unresolved_edges, 0);
+        assert_eq!(report.governance_graph.metrics.isolated_nodes, 0);
+        assert_eq!(
+            report
+                .governance_graph
+                .metrics
+                .relation_counts
+                .get(&GovernanceEdgeKind::SemanticReference),
+            Some(&3)
+        );
+        assert!(report.governance_graph.edges.iter().any(|edge| {
+            edge.source == "SPEC-1"
+                && edge.target == "PRD-1"
+                && edge.relation == GovernanceEdgeKind::Formalizes
+        }));
+        assert!(!report
+            .governance_graph
+            .edges
+            .iter()
+            .any(|edge| edge.target.contains("ul.yml")));
+        assert!(!report
+            .governance_graph
+            .edges
+            .iter()
+            .any(|edge| edge.target == "NOT-A-DEPENDENCY"));
     }
 
     #[test]
@@ -226,7 +254,7 @@ governance:
             diagnostic.code == "DH_LIBRARY_001"
                 && diagnostic
                     .message
-                    .contains("must preserve canonical id, status, kind, and direct members")
+                    .contains("must preserve canonical id, status, supersededBy, kind, and direct members")
         }));
     }
 

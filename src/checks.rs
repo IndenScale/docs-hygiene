@@ -9,9 +9,26 @@ use serde::{Deserialize, Deserializer, Serialize};
 use sha2::{Digest, Sha256};
 use walkdir::WalkDir;
 
-use crate::activation::{ActivationReport, RuleDecision, RuleState, evaluate_rule_activation};
-use crate::config::{Config, DocumentProfileConfig, FilenamePatternConfig, MaturityLevel};
-use crate::report::{Report, Severity};
+use crate::activation::{
+    ActivationReport, RuleApplicability, RuleChecker, RuleDecision, RuleSpec, RuleState,
+    evaluate_rule_activation, rule_spec, rule_spec_for_diagnostic,
+};
+use crate::config::{
+    Config, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
+    FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
+};
+use crate::governance::{
+    ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
+    GovernanceLocation, GovernanceNode, LifecycleProvenance, ReferenceRelation, RefinementLevel,
+};
+use crate::reference::{
+    CONTEXT_GOVERNED_ANCHOR, CONTEXT_GOVERNED_CONTENT, CONTEXT_IDENTITY_DECLARATION,
+    CONTEXT_PROJECT_NAVIGATION, REFERENCE_POLICIES, ReferenceAnchorPayload, ReferenceDisposition,
+    ReferenceOccurrence, ReferencePayload, ReferencePolicy, SYNTAX_FRONTMATTER,
+    SYNTAX_MARKDOWN_LINK, SYNTAX_WIKI_LINK, reference_disposition,
+};
+use crate::report::TemplateRevisionReport;
+use crate::report::{DocumentTemplateReport, Report, Severity, SuppressedDiagnostic};
 
 #[derive(Debug)]
 pub struct Diagnostic {
@@ -138,17 +155,25 @@ struct NormalizedBase {
 
 pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     let activation = evaluate_rule_activation(root, config)?;
+    run_checks_with_activation(root, config, &activation)
+}
+
+pub(crate) fn run_checks_with_activation(
+    root: &Path,
+    config: &Config,
+    activation: &ActivationReport,
+) -> Result<Report> {
     let ignore = build_ignore(root, config)?;
     let mut diagnostics = Vec::new();
 
-    add_activation_guidance(config, &activation, &mut diagnostics);
+    add_activation_guidance(config, activation, &mut diagnostics);
 
     let mut local = Vec::new();
     check_required_files(root, config, &mut local);
     append_rule_diagnostics(
         &mut diagnostics,
         local,
-        activation.decision("project.entry-docs"),
+        activation.decision_for(RuleChecker::EntryDocs),
     );
 
     let mut structure = Vec::new();
@@ -160,7 +185,7 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     append_rule_diagnostics(
         &mut diagnostics,
         structure,
-        activation.decision("docs.structure"),
+        activation.decision_for(RuleChecker::DocumentStructure),
     );
 
     let mut localization = Vec::new();
@@ -169,15 +194,16 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     append_rule_diagnostics(
         &mut diagnostics,
         localization,
-        activation.decision("localization.parity"),
+        activation.decision_for(RuleChecker::Localization),
     );
 
     let mut contracts = Vec::new();
-    check_document_contracts(root, config, &ignore, &docs, &mut contracts)?;
+    let document_templates =
+        check_document_contracts(root, config, &ignore, &docs, &mut contracts)?;
     append_rule_diagnostics(
         &mut diagnostics,
         contracts,
-        activation.decision("documents.contracts"),
+        activation.decision_for(RuleChecker::DocumentContracts),
     );
 
     let mut concepts = Vec::new();
@@ -185,33 +211,48 @@ pub fn run_checks(root: &Path, config: &Config) -> Result<Report> {
     append_rule_diagnostics(
         &mut diagnostics,
         concepts,
-        activation.decision("concepts.references"),
+        activation.decision_for(RuleChecker::Concepts),
     );
 
-    let identity = activation.decision("governance.identity");
-    let traceability = activation.decision("governance.traceability");
-    if identity.state != RuleState::Inactive || traceability.state != RuleState::Inactive {
+    let identity = activation.decision_for(RuleChecker::GovernanceIdentity);
+    let traceability = activation.decision_for(RuleChecker::GovernanceTraceability);
+    let topology = activation.decision_for(RuleChecker::GovernanceTopology);
+    let mut semantic_content_anchors_checked = 0;
+    let mut governance_graph = GovernanceGraph::default();
+    if identity.state != RuleState::Inactive
+        || traceability.state != RuleState::Inactive
+        || topology.state != RuleState::Inactive
+    {
         let mut governance = Vec::new();
-        check_governance(root, config, &mut governance);
+        governance_graph = check_governance(root, config, &mut governance);
+        check_topology_policy(config, &governance_graph, &mut governance);
+        semantic_content_anchors_checked = governance_graph
+            .metrics
+            .relation_counts
+            .get(&GovernanceEdgeKind::PinnedReference)
+            .copied()
+            .unwrap_or_default();
         for diagnostic in governance {
-            let decision = if matches!(diagnostic.code, "DH_DERIVATION_001" | "DH_DERIVATION_002") {
-                traceability
-            } else {
-                identity
-            };
+            let spec = rule_spec_for_diagnostic(diagnostic.code)
+                .expect("native governance diagnostics must be owned by the rule registry");
+            let decision = activation.decision_for(spec.checker);
             append_rule_diagnostics(&mut diagnostics, vec![diagnostic], decision);
         }
     }
 
-    let adapters = activation.decision("adapters.external");
+    let adapters = activation.decision_for(RuleChecker::ExternalAdapters);
     if adapters.state != RuleState::Inactive {
         let mut adapter_diagnostics = Vec::new();
         check_adapters(root, config, &mut adapter_diagnostics)?;
         append_rule_diagnostics(&mut diagnostics, adapter_diagnostics, adapters);
     }
-    let diagnostics = apply_suppressions(config, diagnostics)?;
+    let (diagnostics, suppressed) = apply_suppressions(config, diagnostics)?;
 
-    Ok(Report::new(diagnostics, docs.len(), root))
+    Ok(Report::new(diagnostics, docs.len(), root)
+        .with_suppressed(suppressed)
+        .with_semantic_content_anchors_checked(semantic_content_anchors_checked)
+        .with_governance_graph(governance_graph)
+        .with_document_templates(document_templates))
 }
 
 fn append_rule_diagnostics(
@@ -240,7 +281,11 @@ fn add_activation_guidance(
 ) {
     for decision in &activation.decisions {
         if !matches!(decision.state, RuleState::Advisory | RuleState::Warning)
-            || has_explicit_feature_policy(&decision.rule, config)
+            || has_explicit_feature_policy(
+                rule_spec(&decision.rule)
+                    .expect("activation decisions must be owned by the rule registry"),
+                config,
+            )
         {
             continue;
         }
@@ -265,21 +310,21 @@ fn add_activation_guidance(
     }
 }
 
-fn has_explicit_feature_policy(rule: &str, config: &Config) -> bool {
-    if config.rules.contains_key(rule) {
+fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
+    if config.rules.contains_key(spec.id) {
         return true;
     }
-    match rule {
-        "project.entry-docs" => {
+    match spec.applicability {
+        RuleApplicability::EntryDocs => {
             !config.entry_docs.required.is_empty() || !config.required_files.is_empty()
         }
-        "docs.structure" => {
+        RuleApplicability::DocumentStructure => {
             !config.docs.bases.is_empty()
                 || config.docs.require_continuous_numbering
                 || config.docs.max_lines.is_some()
                 || config.docs.forbid_ascii_art
         }
-        "documents.contracts" => {
+        RuleApplicability::DocumentContracts => {
             !config.document_contracts.profiles.is_empty()
                 || !config
                     .document_contracts
@@ -287,7 +332,7 @@ fn has_explicit_feature_policy(rule: &str, config: &Config) -> bool {
                     .recommendations
                     .is_empty()
         }
-        "localization.parity" => {
+        RuleApplicability::Localization => {
             !config.language_representations.localized.is_empty()
                 || config
                     .docs
@@ -296,24 +341,33 @@ fn has_explicit_feature_policy(rule: &str, config: &Config) -> bool {
                     .any(|base| !base.localized_roots.is_empty())
                 || !config.language.is_empty()
         }
-        "concepts.references" => {
+        RuleApplicability::Concepts => {
             config.concepts.require_concept_file || config.concepts.fail_on_orphan_concept.is_some()
         }
-        "governance.identity" | "governance.traceability" => {
+        RuleApplicability::GovernanceIdentity | RuleApplicability::GovernanceTraceability => {
             !config.governance.manifests.is_empty()
         }
-        "adapters.external" => config.adapters.markdownlint.enabled,
-        _ => false,
+        RuleApplicability::GovernanceTopology => {
+            config.governance.topology.configured_policy_count() > 0
+        }
+        RuleApplicability::ExternalAdapters => config.adapters.markdownlint.enabled,
     }
 }
 
 // Keep each policy surface independently reviewable. These implementation
 // units are included into this module so the split does not widen internal APIs.
 include!("checks/governance_models.rs");
+include!("checks/lifecycle.rs");
 include!("checks/package_structure.rs");
 include!("checks/package_localization.rs");
+include!("checks/reference_collectors.rs");
+include!("checks/reference_normalization.rs");
+include!("checks/selectors.rs");
+include!("checks/anchors.rs");
 include!("checks/wiki_references.rs");
 include!("checks/derivation.rs");
+include!("checks/topology.rs");
+include!("checks/document_templates.rs");
 include!("checks/document_contracts.rs");
 include!("checks/repository_structure.rs");
 include!("checks/repository_content.rs");
@@ -329,6 +383,12 @@ mod tests {
 
     include!("checks/tests/documents.rs");
     include!("checks/tests/policies.rs");
+    include!("checks/tests/template_lifecycle.rs");
     include!("checks/tests/governance_packages.rs");
     include!("checks/tests/governance_graph.rs");
+    include!("checks/tests/anchors.rs");
+    include!("checks/tests/lifecycle.rs");
+    include!("checks/tests/reference_ir.rs");
+    include!("checks/tests/selectors.rs");
+    include!("checks/tests/topology.rs");
 }

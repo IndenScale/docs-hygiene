@@ -10,22 +10,17 @@ use crate::config::{Config, RuleMode};
 
 mod decisions;
 mod output;
+mod registry;
 
 use decisions::{automatic_decision, validate_rule_ids};
 pub use output::{print_json_activation, print_text_activation};
+pub use registry::{
+    CapabilityDimension, ExceptionBehavior, HygieneMaturity, RULE_SPECS, RuleApplicability,
+    RuleCapability, RuleChecker, RuleSpec, rule_spec, rule_spec_for_checker,
+    rule_spec_for_diagnostic,
+};
 
 // Governance Library: [[GLOSSARY-RULE-ACTIVATION-DECISION]]
-
-pub const RULE_IDS: [&str; 8] = [
-    "project.entry-docs",
-    "docs.structure",
-    "documents.contracts",
-    "localization.parity",
-    "concepts.references",
-    "governance.identity",
-    "governance.traceability",
-    "adapters.external",
-];
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -60,10 +55,12 @@ pub struct ProjectFacts {
     pub semantic_wiki_links: usize,
     pub configured_docs_bases: usize,
     pub configured_document_profiles: usize,
+    pub configured_document_templates: usize,
     pub configured_entry_docs: usize,
     pub configured_localized_representations: usize,
     pub configured_localized_roots: usize,
     pub configured_governance_manifests: usize,
+    pub configured_topology_policies: usize,
     pub configured_refinement_levels: Vec<String>,
     pub detected_refinement_levels: Vec<String>,
     pub enabled_adapters: usize,
@@ -95,14 +92,18 @@ impl ActivationReport {
             .find(|decision| decision.rule == rule)
             .expect("built-in rule decision must exist")
     }
+
+    pub fn decision_for(&self, checker: RuleChecker) -> &RuleDecision {
+        self.decision(rule_spec_for_checker(checker).id)
+    }
 }
 
 pub fn evaluate_rule_activation(root: &Path, config: &Config) -> Result<ActivationReport> {
     validate_rule_ids(config)?;
     let facts = collect_project_facts(root, config)?;
-    let decisions = RULE_IDS
+    let decisions = RULE_SPECS
         .iter()
-        .map(|rule| automatic_decision(rule, config, &facts))
+        .map(|spec| automatic_decision(spec, config, &facts))
         .collect();
     Ok(ActivationReport {
         schema_version: "docs-hygiene.rule-activation.v1",
@@ -143,10 +144,12 @@ fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
     let mut facts = ProjectFacts {
         configured_docs_bases: config.docs.bases.len(),
         configured_document_profiles: config.document_contracts.profiles.len(),
+        configured_document_templates: config.document_contracts.templates.len(),
         configured_entry_docs: config.entry_docs.required.len() + config.required_files.len(),
         configured_localized_representations: config.language_representations.localized.len(),
         configured_localized_roots: configured_localized_roots.len(),
         configured_governance_manifests: config.governance.manifests.len(),
+        configured_topology_policies: config.governance.topology.configured_policy_count(),
         enabled_adapters: usize::from(config.adapters.markdownlint.enabled),
         ..ProjectFacts::default()
     };

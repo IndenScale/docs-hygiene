@@ -255,6 +255,7 @@ documentContracts:
         let report = run_checks(temp.path(), &config).unwrap();
 
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+        assert!(!report.document_templates.proves_reuse());
     }
 
     #[test]
@@ -303,6 +304,139 @@ documentContracts:
         ] {
             assert_has_code(&report, code);
         }
+    }
+
+    #[test]
+    fn template_contract_merges_with_profile_and_proves_complete_reuse() {
+        let temp = tempdir().unwrap();
+        fs::write(
+            temp.path().join("README.md"),
+            "# Project\n\n## Context\n\nBackground.\n\n## Decision\n\nUse templates.\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  maturity:
+    declared: maintained
+  templates:
+    - id: maintained-open-contract
+      revision: 1
+      compatibleFrom: 1
+      enforceFrom: maintained
+      orderedSections: true
+      requiredSections:
+        - id: context
+          headings: [Context]
+  profiles:
+    - id: project-readme
+      template: maintained-open-contract
+      templateRevision: 1
+      match:
+        paths: [README.md]
+      requiredSections:
+        - id: decision
+          headings: [Decision]
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+        assert!(report.document_templates.proves_reuse());
+        assert!(report.document_templates.proves_migration());
+        assert_eq!(
+            report.document_templates.bindings["maintained-open-contract"],
+            ["project-readme"]
+        );
+    }
+
+    #[test]
+    fn template_registry_rejects_unknown_bindings_and_duplicate_members() {
+        let temp = tempdir().unwrap();
+        fs::write(temp.path().join("README.md"), "# Project\n").unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  templates:
+    - id: base
+      requiredSections:
+        - id: context
+          headings: [Context]
+  profiles:
+    - id: duplicate
+      template: base
+      match:
+        paths: [README.md]
+      requiredSections:
+        - id: context
+          headings: [背景]
+    - id: unknown
+      template: absent
+      match:
+        paths: [NEVER.md]
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert_has_code(&report, "DH_TEMPLATE_001");
+        assert!(!report.document_templates.registry_valid);
+        assert!(!report.document_templates.proves_reuse());
+    }
+
+    #[test]
+    fn template_registry_reports_unused_templates() {
+        let temp = tempdir().unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  templates:
+    - id: unused
+      enforceFrom: maintained
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert_has_code(&report, "DH_TEMPLATE_002");
+        assert_eq!(report.document_templates.unused_templates, ["unused"]);
+        assert!(!report.document_templates.proves_reuse());
+    }
+
+    #[test]
+    fn invalid_template_expressions_remain_stable_diagnostics() {
+        let temp = tempdir().unwrap();
+        fs::write(
+            temp.path().join("README.md"),
+            "# Project\n\n## Context\n\nContent.\n",
+        )
+        .unwrap();
+        let config: Config = serde_yaml::from_str(
+            r#"
+documentContracts:
+  templates:
+    - id: invalid-pattern
+      placeholderPatterns: ["["]
+      requiredSections:
+        - id: context
+          headings: [Context]
+  profiles:
+    - id: project-readme
+      template: invalid-pattern
+      match:
+        paths: [README.md]
+"#,
+        )
+        .unwrap();
+
+        let report = run_checks(temp.path(), &config).unwrap();
+
+        assert_has_code(&report, "DH_TEMPLATE_001");
+        assert!(!report.document_templates.registry_valid);
     }
 
     #[test]

@@ -77,7 +77,7 @@
             fs::write(
                 package.join("index.md"),
                 format!(
-                    "---\nid: PRD-1-INDEX\nstatus: proposed\n---\n\n# Body\n\n[[TERM-1@sha256:{hash}|Term]]\n"
+                    "---\nid: PRD-1-INDEX\nstatus: proposed\n---\n\n# Body\n\n[[TERM-1#term@sha256:{hash}|Term]]\n"
                 ),
             )
             .unwrap();
@@ -107,6 +107,26 @@ governance:
                 .all(|diagnostic| diagnostic.code != "DH_REFERENCE_001"),
             "{:?}",
             clean.diagnostics
+        );
+        let pinned = clean
+            .governance_graph
+            .edges
+            .iter()
+            .find(|edge| edge.relation == GovernanceEdgeKind::PinnedReference)
+            .unwrap();
+        assert_eq!(pinned.source, "PRD-1");
+        assert_eq!(pinned.target, "TERM-1");
+        assert_eq!(pinned.source_location.path, "docs/prd/example/index.md");
+        assert_eq!(pinned.source_location.line, Some(8));
+        assert_eq!(pinned.selector.as_deref(), Some("term"));
+        assert_eq!(
+            pinned.content_anchor.as_ref().map(|anchor| anchor.digest.as_str()),
+            Some(hash.as_str())
+        );
+        assert_eq!(pinned.lifecycle.source_status, "proposed");
+        assert_eq!(
+            pinned.lifecycle.target_status.as_deref(),
+            Some("baselined")
         );
 
         fs::write(library.join("term.md"), format!("{term}\nChanged.\n")).unwrap();

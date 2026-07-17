@@ -3,8 +3,10 @@ use std::path::PathBuf;
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use docs_hygiene::{
-    Config, Report, evaluate_rule_activation, print_json_activation, print_json_report,
-    print_text_activation, print_text_report, run_checks,
+    Config, Report, evaluate_hygiene_profile, evaluate_rule_activation,
+    migrate_document_template_bindings, print_json_activation, print_json_profile,
+    print_json_report, print_json_template_migration, print_text_activation, print_text_profile,
+    print_text_report, print_text_template_migration, run_checks,
 };
 
 // Governance Library: [[SDK-001]]
@@ -22,6 +24,10 @@ enum Command {
     Check(CheckArgs),
     /// Explain which rule families are active and why.
     ExplainRules(ExplainRulesArgs),
+    /// Evaluate the multidimensional documentation hygiene profile.
+    Profile(ProfileArgs),
+    /// Pin or advance compatible document-template revisions.
+    MigrateTemplates(MigrateTemplatesArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -161,6 +167,44 @@ struct ExplainRulesArgs {
     format: OutputFormat,
 }
 
+#[derive(Debug, Parser)]
+struct ProfileArgs {
+    /// Project root to inspect.
+    #[arg(default_value = ".")]
+    root: PathBuf,
+
+    /// Config file path. Defaults to docs-hygiene.yml under the project root.
+    #[arg(long)]
+    config: Option<PathBuf>,
+
+    /// Output format.
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    format: OutputFormat,
+
+    /// Exit with status 1 when a required dimension is below its target.
+    #[arg(long)]
+    fail_below_target: bool,
+}
+
+#[derive(Debug, Parser)]
+struct MigrateTemplatesArgs {
+    /// Project root containing the policy file.
+    #[arg(default_value = ".")]
+    root: PathBuf,
+
+    /// Config file path. Defaults to docs-hygiene.yml under the project root.
+    #[arg(long)]
+    config: Option<PathBuf>,
+
+    /// Report required changes without writing and fail if migration is needed.
+    #[arg(long)]
+    check: bool,
+
+    /// Output format.
+    #[arg(long, value_enum, default_value_t = OutputFormat::Text)]
+    format: OutputFormat,
+}
+
 #[derive(Clone, Debug, ValueEnum)]
 enum OutputFormat {
     Text,
@@ -172,11 +216,49 @@ fn main() -> Result<()> {
     match cli.command.unwrap_or_else(default_command) {
         Command::Check(args) => check(args),
         Command::ExplainRules(args) => explain_rules(args),
+        Command::Profile(args) => profile(args),
+        Command::MigrateTemplates(args) => migrate_templates(args),
         Command::Init { path } => init(path),
         Command::Scaffold { path, force } => scaffold(path, force),
         Command::Lang { command } => lang(command),
         Command::Explain { code } => explain(&code),
     }
+}
+
+fn migrate_templates(args: MigrateTemplatesArgs) -> Result<()> {
+    let root = args.root.canonicalize()?;
+    let config_path = args.config.unwrap_or_else(|| root.join("docs-hygiene.yml"));
+    let mut config = Config::load(&config_path)?;
+    let report = migrate_document_template_bindings(&mut config, !args.check);
+    if !args.check && report.applied && !report.changes.is_empty() {
+        config.save(&config_path)?;
+    }
+    match args.format {
+        OutputFormat::Text => print_text_template_migration(&report),
+        OutputFormat::Json => print_json_template_migration(&report)?,
+    }
+    if !report.blocked.is_empty() {
+        anyhow::bail!("document-template migration is blocked");
+    }
+    if args.check && !report.changes.is_empty() {
+        anyhow::bail!("document-template migration is required");
+    }
+    Ok(())
+}
+
+fn profile(args: ProfileArgs) -> Result<()> {
+    let root = args.root.canonicalize()?;
+    let config_path = args.config.unwrap_or_else(|| root.join("docs-hygiene.yml"));
+    let config = Config::load(&config_path)?;
+    let report = evaluate_hygiene_profile(&root, &config)?;
+    match args.format {
+        OutputFormat::Text => print_text_profile(&report),
+        OutputFormat::Json => print_json_profile(&report)?,
+    }
+    if args.fail_below_target && !report.meets_targets {
+        anyhow::bail!("docs-hygiene profile is below a required target");
+    }
+    Ok(())
 }
 
 fn explain_rules(args: ExplainRulesArgs) -> Result<()> {

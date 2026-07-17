@@ -69,6 +69,7 @@ fn check_package_members(
             identity: PackageMember {
                 id: asset.id.clone(),
                 status: asset.status.clone(),
+                superseded_by: asset.superseded_by.clone(),
             },
             kind: None,
             members: Some(members.clone()),
@@ -295,6 +296,7 @@ fn check_package_directory(
                 &PackageMember {
                     id: domain.id.clone(),
                     status: domain.status.clone(),
+                    superseded_by: domain.superseded_by.clone(),
                 },
                 &package_rel.join(&domain_manifest_rel),
                 code,
@@ -315,6 +317,7 @@ fn check_package_directory(
                     identity: PackageMember {
                         id: domain.id,
                         status: domain.status,
+                        superseded_by: domain.superseded_by,
                     },
                     kind: Some(domain.kind),
                     members: Some(domain.members.clone()),

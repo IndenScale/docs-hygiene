@@ -51,7 +51,10 @@ fn check_adapters(root: &Path, config: &Config, diagnostics: &mut Vec<Diagnostic
     Ok(())
 }
 
-fn apply_suppressions(config: &Config, diagnostics: Vec<Diagnostic>) -> Result<Vec<Diagnostic>> {
+fn apply_suppressions(
+    config: &Config,
+    diagnostics: Vec<Diagnostic>,
+) -> Result<(Vec<Diagnostic>, Vec<SuppressedDiagnostic>)> {
     let suppressions = config
         .suppressions
         .iter()
@@ -64,18 +67,27 @@ fn apply_suppressions(config: &Config, diagnostics: Vec<Diagnostic>) -> Result<V
         })
         .collect::<Result<Vec<_>, globset::Error>>()?;
 
-    Ok(diagnostics
-        .into_iter()
-        .filter(|diagnostic| {
-            !suppressions.iter().any(|(suppression, paths)| {
+    let mut visible = Vec::new();
+    let mut suppressed = Vec::new();
+    for diagnostic in diagnostics {
+        let matched = suppressions.iter().find(|(suppression, paths)| {
                 let _reason = suppression.reason.as_deref();
                 let code_matches = suppression.code == "*" || suppression.code == diagnostic.code;
                 let path_matches =
                     suppression.paths.is_empty() || paths.is_match(Path::new(&diagnostic.path));
                 code_matches && path_matches
-            })
-        })
-        .collect())
+        });
+        if let Some((suppression, _)) = matched {
+            suppressed.push(SuppressedDiagnostic {
+                code: diagnostic.code.to_owned(),
+                path: diagnostic.path,
+                reason: suppression.reason.clone(),
+            });
+        } else {
+            visible.push(diagnostic);
+        }
+    }
+    Ok((visible, suppressed))
 }
 
 fn grouped_docs<'a>(docs: &[&'a DocFile]) -> BTreeMap<Option<String>, Vec<&'a DocFile>> {

@@ -8,8 +8,7 @@ fn refinement_rank(level: RefinementLevel) -> u8 {
 
 fn check_vertical_derivation(
     asset: &GovernanceAsset,
-    assets: &[GovernanceAsset],
-    index: &BTreeMap<&str, usize>,
+    graph: &GovernanceGraph,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     match (asset.refinement_level, asset.reference_relation) {
@@ -17,22 +16,25 @@ fn check_vertical_derivation(
             reject_vertical_edges(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
         }
@@ -40,26 +42,27 @@ fn check_vertical_derivation(
             require_vertical_edge(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 RefinementLevel::Intent,
                 ReferenceRelation::Body,
                 "DH_DERIVATION_001",
-                assets,
-                index,
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
         }
@@ -67,26 +70,27 @@ fn check_vertical_derivation(
             require_vertical_edge(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 RefinementLevel::Definition,
                 ReferenceRelation::Body,
                 "DH_DERIVATION_001",
-                assets,
-                index,
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 "DH_DERIVATION_001",
+                graph,
                 diagnostics,
             );
         }
@@ -94,22 +98,25 @@ fn check_vertical_derivation(
             reject_vertical_edges(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
         }
@@ -117,26 +124,27 @@ fn check_vertical_derivation(
             require_vertical_edge(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 RefinementLevel::Intent,
                 ReferenceRelation::Library,
                 "DH_DERIVATION_002",
-                assets,
-                index,
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
         }
@@ -144,26 +152,27 @@ fn check_vertical_derivation(
             require_vertical_edge(
                 asset,
                 "projects",
-                &asset.projects,
+                GovernanceEdgeKind::Projects,
                 RefinementLevel::Definition,
                 ReferenceRelation::Library,
                 "DH_DERIVATION_002",
-                assets,
-                index,
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "formalizes",
-                &asset.formalizes,
+                GovernanceEdgeKind::Formalizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
             reject_vertical_edges(
                 asset,
                 "realizes",
-                &asset.realizes,
+                GovernanceEdgeKind::Realizes,
                 "DH_DERIVATION_002",
+                graph,
                 diagnostics,
             );
         }
@@ -173,11 +182,12 @@ fn check_vertical_derivation(
 fn reject_vertical_edges(
     asset: &GovernanceAsset,
     edge_name: &str,
-    targets: &GovernanceTargets,
+    relation: GovernanceEdgeKind,
     code: &'static str,
+    graph: &GovernanceGraph,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if !targets.is_empty() {
+    if graph.edges_from(&asset.id, relation).next().is_some() {
         diagnostics.push(Diagnostic::new(
             code,
             Severity::Error,
@@ -197,15 +207,15 @@ fn reject_vertical_edges(
 fn require_vertical_edge(
     asset: &GovernanceAsset,
     edge_name: &str,
-    targets: &GovernanceTargets,
+    relation: GovernanceEdgeKind,
     expected_refinement_level: RefinementLevel,
     expected_reference_relation: ReferenceRelation,
     code: &'static str,
-    assets: &[GovernanceAsset],
-    index: &BTreeMap<&str, usize>,
+    graph: &GovernanceGraph,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if targets.is_empty() {
+    let edges = graph.edges_from(&asset.id, relation).collect::<Vec<_>>();
+    if edges.is_empty() {
         diagnostics.push(Diagnostic::new(
             code,
             Severity::Error,
@@ -222,15 +232,15 @@ fn require_vertical_edge(
         ));
         return;
     }
-    for target in targets.iter() {
-        let Some(target_asset) = resolve_governance_target(target, assets, index) else {
+    for edge in edges {
+        let Some(target_asset) = graph.node(&edge.target) else {
             diagnostics.push(Diagnostic::new(
                 code,
                 Severity::Error,
                 asset.path.clone(),
                 format!(
                     "Vertical '{}' target '{}' does not exist.",
-                    edge_name, target.id
+                    edge_name, edge.target
                 ),
             ));
             continue;
@@ -249,13 +259,13 @@ fn require_vertical_edge(
                         asset.id,
                         expected_refinement_level.label(),
                         expected_reference_relation.label(),
-                        target_asset.id,
+                        target_asset.identity,
                         target_asset.refinement_level.label(),
                         target_asset.reference_relation.label()
                     ),
                 )
                 .with_related(RelatedInformation::new(
-                    target_asset.path.clone(),
+                    target_asset.location.path.clone(),
                     "Resolved target is declared here.",
                 )),
             );
@@ -265,30 +275,27 @@ fn require_vertical_edge(
 
 fn check_vertical_derivation_completeness(
     assets: &[GovernanceAsset],
+    graph: &GovernanceGraph,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for upstream in assets.iter().filter(|asset| {
         matches!(asset.status.as_str(), "baselined" | "current")
             && asset.refinement_level != RefinementLevel::Implementation
     }) {
-        let derived = assets.iter().any(|downstream| {
-            match (upstream.refinement_level, upstream.reference_relation) {
-                (RefinementLevel::Intent, ReferenceRelation::Body) => downstream
-                    .formalizes
-                    .iter()
-                    .any(|target| target.id == upstream.id),
-                (RefinementLevel::Definition, ReferenceRelation::Body) => downstream
-                    .realizes
-                    .iter()
-                    .any(|target| target.id == upstream.id),
-                (RefinementLevel::Intent, ReferenceRelation::Library)
-                | (RefinementLevel::Definition, ReferenceRelation::Library) => downstream
-                    .projects
-                    .iter()
-                    .any(|target| target.id == upstream.id),
-                (RefinementLevel::Implementation, _) => true,
+        let relation = match (upstream.refinement_level, upstream.reference_relation) {
+            (RefinementLevel::Intent, ReferenceRelation::Body) => {
+                GovernanceEdgeKind::Formalizes
             }
-        });
+            (RefinementLevel::Definition, ReferenceRelation::Body) => {
+                GovernanceEdgeKind::Realizes
+            }
+            (RefinementLevel::Intent, ReferenceRelation::Library)
+            | (RefinementLevel::Definition, ReferenceRelation::Library) => {
+                GovernanceEdgeKind::Projects
+            }
+            (RefinementLevel::Implementation, _) => unreachable!(),
+        };
+        let derived = graph.edges_to(&upstream.id, relation).next().is_some();
         if !derived {
             let code = if upstream.reference_relation == ReferenceRelation::Body {
                 "DH_DERIVATION_001"

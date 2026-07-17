@@ -9,17 +9,37 @@ members:
   - src/activation.rs
   - src/activation/decisions.rs
   - src/activation/output.rs
+  - src/activation/registry.rs
   - src/activation/tests.rs
   - src/lib.rs
   - src/checks.rs
   - src/checks/derivation.rs
   - src/checks/document_contracts.rs
+  - src/checks/document_templates.rs
   - src/checks/governance_models.rs
+  - src/checks/lifecycle.rs
   - src/checks/package_localization.rs
   - src/checks/package_structure.rs
+  - src/checks/reference_collectors.rs
+  - src/checks/reference_normalization.rs
+  - src/checks/anchors.rs
   - src/checks/repository_content.rs
   - src/checks/repository_structure.rs
+  - src/checks/selectors.rs
   - src/checks/support.rs
+  - src/checks/topology.rs
   - src/checks/wiki_references.rs
   - src/config.rs
+  - src/config/document_contracts.rs
+  - src/config/governance.rs
+  - src/governance.rs
+  - src/governance/impact.rs
+  - src/governance/topology.rs
+  - src/profile.rs
+  - src/profile/configuration.rs
+  - src/profile/output.rs
+  - src/profile/registry.rs
+  - src/profile/tests.rs
+  - src/reference.rs
   - src/report.rs
+  - src/template_migration.rs

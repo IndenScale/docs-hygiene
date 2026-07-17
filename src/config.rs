@@ -4,6 +4,18 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
+use crate::activation::HygieneMaturity;
+
+mod document_contracts;
+mod governance;
+
+pub use document_contracts::{
+    DocumentContractFragmentConfig, DocumentContractsConfig, DocumentMatchConfig,
+    DocumentProfileConfig, DocumentTemplateConfig, MaturityConfig, MaturityLevel,
+    MaturityRecommendationConfig, RequiredFieldConfig, RequiredSectionConfig,
+};
+pub use governance::{GovernanceConfig, GovernanceContentAnchorConfig, GovernanceTopologyConfig};
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Config {
@@ -31,6 +43,43 @@ pub struct Config {
     pub governance: GovernanceConfig,
     #[serde(default)]
     pub rules: BTreeMap<String, RulePolicyConfig>,
+    #[serde(default)]
+    pub hygiene_profile: HygieneProfileConfig,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum DimensionApplicability {
+    #[default]
+    Applicable,
+    NotApplicable,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HygieneProfileConfig {
+    #[serde(default)]
+    pub dimensions: HygieneProfileDimensionsConfig,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HygieneProfileDimensionsConfig {
+    pub structure: Option<DimensionProfileConfig>,
+    pub identity: Option<DimensionProfileConfig>,
+    pub dependency: Option<DimensionProfileConfig>,
+    pub topology: Option<DimensionProfileConfig>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DimensionProfileConfig {
+    #[serde(default)]
+    pub applicability: DimensionApplicability,
+    pub target: Option<HygieneMaturity>,
+    #[serde(default = "default_required_dimension")]
+    pub required: bool,
+    pub rationale: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -47,95 +96,6 @@ pub enum RuleMode {
 pub struct RulePolicyConfig {
     #[serde(default)]
     pub mode: RuleMode,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GovernanceConfig {
-    #[serde(default)]
-    pub manifests: Vec<PathBuf>,
-    #[serde(default)]
-    pub require_complete_vertical_derivation: bool,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DocumentContractsConfig {
-    #[serde(default)]
-    pub maturity: MaturityConfig,
-    #[serde(default)]
-    pub profiles: Vec<DocumentProfileConfig>,
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum MaturityLevel {
-    #[default]
-    Seed,
-    Growing,
-    Maintained,
-    Governed,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MaturityConfig {
-    #[serde(default)]
-    pub declared: MaturityLevel,
-    #[serde(default)]
-    pub recommendations: Vec<MaturityRecommendationConfig>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MaturityRecommendationConfig {
-    pub level: MaturityLevel,
-    pub min_project_lines: Option<usize>,
-    pub min_project_bytes: Option<u64>,
-    pub min_managed_documents: Option<usize>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DocumentProfileConfig {
-    pub id: String,
-    #[serde(rename = "match")]
-    pub matcher: DocumentMatchConfig,
-    #[serde(default)]
-    pub required_sections: Vec<RequiredSectionConfig>,
-    #[serde(default)]
-    pub required_fields: Vec<RequiredFieldConfig>,
-    #[serde(default)]
-    pub ordered_sections: bool,
-    #[serde(default = "default_contract_enforce_from")]
-    pub enforce_from: MaturityLevel,
-    #[serde(default = "default_placeholders_allowed_until")]
-    pub placeholders_allowed_until: MaturityLevel,
-    #[serde(default)]
-    pub placeholder_patterns: Vec<String>,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DocumentMatchConfig {
-    #[serde(default)]
-    pub paths: Vec<String>,
-    #[serde(default)]
-    pub filenames: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RequiredSectionConfig {
-    pub id: String,
-    pub headings: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RequiredFieldConfig {
-    pub id: String,
-    pub pattern: String,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -361,8 +321,25 @@ rules:
     mode: auto
   governance.traceability:
     mode: auto
+  governance.topology:
+    mode: auto
   adapters.external:
     mode: auto
+
+hygieneProfile:
+  dimensions:
+    structure:
+      target: controlled
+      required: true
+    identity:
+      target: controlled
+      required: true
+    dependency:
+      applicability: notApplicable
+      rationale: No semantic dependency graph is governed yet.
+    topology:
+      applicability: notApplicable
+      rationale: No semantic dependency graph is governed yet.
 
 documentContracts:
   maturity:
@@ -371,15 +348,21 @@ documentContracts:
       - level: maintained
         minProjectLines: 10000
         minManagedDocuments: 20
-  profiles:
-    - id: project-readme
-      match:
-        paths: [README.md, README_ZH.md]
-        filenames: ["^README(?:_ZH)?\\.md$"]
+  templates:
+    - id: maintained-open-contract
+      revision: 1
+      compatibleFrom: 1
       enforceFrom: maintained
       placeholdersAllowedUntil: growing
       placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
       orderedSections: true
+  profiles:
+    - id: project-readme
+      template: maintained-open-contract
+      templateRevision: 1
+      match:
+        paths: [README.md, README_ZH.md]
+        filenames: ["^README(?:_ZH)?\\.md$"]
       requiredSections:
         - id: overview
           headings: [Overview, 概览]
@@ -425,10 +408,6 @@ fn default_concepts_dir() -> PathBuf {
     PathBuf::from("concept")
 }
 
-fn default_contract_enforce_from() -> MaturityLevel {
-    MaturityLevel::Maintained
-}
-
-fn default_placeholders_allowed_until() -> MaturityLevel {
-    MaturityLevel::Growing
+fn default_required_dimension() -> bool {
+    true
 }

@@ -1,0 +1,37 @@
+id: IMPL-003
+refinementLevel: implementation
+referenceRelation: body
+status: review
+
+realizes: SPEC-003
+
+members:
+  code:
+    - src/governance.rs
+    - src/governance/impact.rs
+    - src/reference.rs
+    - src/checks/governance_models.rs
+    - src/checks/lifecycle.rs
+    - src/checks/reference_collectors.rs
+    - src/checks/reference_normalization.rs
+    - src/checks/anchors.rs
+    - src/checks/wiki_references.rs
+    - src/checks/selectors.rs
+    - src/checks/derivation.rs
+    - src/checks/topology.rs
+    - src/report.rs
+    - src/profile.rs
+    - src/governance/topology.rs
+    - src/config/governance.rs
+  tests:
+    - src/checks/tests/governance_packages.rs
+    - src/checks/tests/governance_graph.rs
+    - src/checks/tests/anchors.rs
+    - src/checks/tests/lifecycle.rs
+    - src/checks/tests/reference_ir.rs
+    - src/checks/tests/selectors.rs
+    - src/checks/tests/topology.rs
+    - tests/cli.rs
+    - tests/dogfood.rs
+  configuration:
+    - docs-hygiene.yml

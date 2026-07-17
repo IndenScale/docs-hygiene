@@ -1,29 +1,41 @@
 #[derive(Clone)]
 struct SemanticTarget {
     refinement_level: RefinementLevel,
+    reference_relation: ReferenceRelation,
+    status: String,
     path: String,
 }
 
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-struct WikiReference {
-    id: String,
-    content_hash: Option<String>,
+struct ReferenceAnalysis {
+    nodes: Vec<GovernanceNode>,
+    edges: Vec<GovernanceEdge>,
 }
 
-fn check_wiki_references(
+fn check_governed_references(
     root: &Path,
     config: &Config,
     assets: &[GovernanceAsset],
     diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> ReferenceAnalysis {
     let targets = build_library_target_index(root, assets, diagnostics);
+    let mut edges = Vec::new();
     for asset in assets
         .iter()
         .filter(|asset| asset.reference_relation == ReferenceRelation::Body)
     {
         let canonical_paths = asset_content_paths(root, asset);
-        let canonical = collect_wiki_references(root, &canonical_paths, diagnostics);
-        validate_asset_wiki_references(root, asset, &canonical, &targets, diagnostics);
+        let canonical =
+            collect_governed_reference_occurrences(root, &canonical_paths, diagnostics);
+        let canonical_edges = normalize_reference_edges(asset, &canonical, &targets);
+        validate_asset_wiki_references(
+            root,
+            config,
+            asset,
+            &canonical_edges,
+            &targets,
+            diagnostics,
+        );
+        edges.extend(canonical_edges);
 
         if asset.refinement_level == RefinementLevel::Implementation {
             continue;
@@ -41,19 +53,36 @@ fn check_wiki_references(
                         .map(|suffix| localized_root.join(suffix))
                 })
                 .collect::<Vec<_>>();
-            let localized = collect_wiki_references(root, &localized_paths, diagnostics);
-            if canonical != localized {
+            let localized =
+                collect_governed_reference_occurrences(root, &localized_paths, diagnostics);
+            if semantic_reference_signatures(&canonical, REFERENCE_POLICIES)
+                != semantic_reference_signatures(&localized, REFERENCE_POLICIES)
+            {
                 diagnostics.push(Diagnostic::new(
                     "DH_REFERENCE_001",
                     Severity::Error,
                     localized_root.display().to_string(),
                     format!(
-                        "Localized Body for '{language}' must preserve canonical Wiki Link targets and content-hash anchors."
+                        "Localized Body for '{language}' must preserve canonical Wiki Link targets, selectors, and content-hash anchors."
                     ),
                 ));
             }
         }
     }
+    let nodes = targets
+        .into_iter()
+        .map(|(identity, target)| GovernanceNode {
+            identity,
+            refinement_level: target.refinement_level,
+            reference_relation: target.reference_relation,
+            lifecycle_status: target.status,
+            location: GovernanceLocation {
+                path: target.path,
+                line: None,
+            },
+        })
+        .collect();
+    ReferenceAnalysis { nodes, edges }
 }
 
 fn build_library_target_index(
@@ -71,6 +100,8 @@ fn build_library_target_index(
             asset.id.clone(),
             SemanticTarget {
                 refinement_level: asset.refinement_level,
+                reference_relation: asset.reference_relation,
+                status: asset.status.clone(),
                 path: asset.path.clone(),
             },
             diagnostics,
@@ -132,6 +163,8 @@ fn collect_declared_library_targets(
                     identity.id,
                     SemanticTarget {
                         refinement_level,
+                        reference_relation: ReferenceRelation::Library,
+                        status: identity.status,
                         path: package_rel.join(&node_rel).display().to_string(),
                     },
                     diagnostics,
@@ -153,6 +186,8 @@ fn collect_declared_library_targets(
                 domain.id,
                 SemanticTarget {
                     refinement_level,
+                    reference_relation: ReferenceRelation::Library,
+                    status: domain.status,
                     path: package_rel.join(&manifest_rel).display().to_string(),
                 },
                 diagnostics,
@@ -263,69 +298,24 @@ fn collect_declared_body_content_paths(
     }
 }
 
-fn collect_wiki_references(
-    root: &Path,
-    paths: &[PathBuf],
-    diagnostics: &mut Vec<Diagnostic>,
-) -> BTreeSet<WikiReference> {
-    let wiki_link = Regex::new(r"\[\[([^\]\n]+)\]\]").expect("static Wiki Link regex");
-    let target = Regex::new(r"^([A-Za-z0-9._-]+)(?:@sha256:([A-Fa-f0-9]{64}))?(?:\|[^\]\n]+)?$")
-        .expect("static Wiki Link target regex");
-    let mut references = BTreeSet::new();
-    for rel in paths {
-        let text = match std::fs::read_to_string(root.join(rel)) {
-            Ok(text) => text,
-            Err(error) => {
-                diagnostics.push(Diagnostic::new(
-                    "DH_REFERENCE_001",
-                    Severity::Error,
-                    rel.display().to_string(),
-                    format!("Body content cannot be read for Wiki Link analysis: {error}."),
-                ));
-                continue;
-            }
-        };
-        for wiki_capture in wiki_link.captures_iter(&strip_markdown_code(&text)) {
-            let Some(captures) = target.captures(&wiki_capture[1]) else {
-                diagnostics.push(Diagnostic::new(
-                    "DH_REFERENCE_001",
-                    Severity::Error,
-                    rel.display().to_string(),
-                    format!(
-                        "Invalid semantic Wiki Link '[[{}]]'; expected [[ID]], [[ID|label]], or [[ID@sha256:<64-hex>|label]].",
-                        &wiki_capture[1]
-                    ),
-                ));
-                continue;
-            };
-            references.insert(WikiReference {
-                id: captures[1].to_owned(),
-                content_hash: captures
-                    .get(2)
-                    .map(|value| value.as_str().to_ascii_lowercase()),
-            });
-        }
-    }
-    references
-}
-
 fn validate_asset_wiki_references(
     root: &Path,
+    config: &Config,
     asset: &GovernanceAsset,
-    references: &BTreeSet<WikiReference>,
+    edges: &[GovernanceEdge],
     targets: &BTreeMap<String, SemanticTarget>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut satisfies_required_relation = false;
-    for reference in references {
-        let Some(target) = targets.get(&reference.id) else {
+    for edge in edges {
+        let Some(target) = targets.get(&edge.target) else {
             diagnostics.push(Diagnostic::new(
                 "DH_REFERENCE_001",
                 Severity::Error,
                 asset.path.clone(),
                 format!(
                     "Wiki Link target '{}' is not a governed Library identity.",
-                    reference.id
+                    edge.target
                 ),
             ));
             continue;
@@ -346,7 +336,7 @@ fn validate_asset_wiki_references(
                     format!(
                         "Asset '{}' cannot reference Library Wiki Link target '{}' from {} refinement level.",
                         asset.id,
-                        reference.id,
+                        edge.target,
                         target.refinement_level.label()
                     ),
                 )
@@ -361,44 +351,11 @@ fn validate_asset_wiki_references(
             ReferenceRelation::Body => same_refinement,
             ReferenceRelation::Library => adjacent_upstream,
         };
-        if let Some(expected_hash) = &reference.content_hash {
-            let target_bytes = match std::fs::read(root.join(&target.path)) {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    diagnostics.push(Diagnostic::new(
-                        "DH_REFERENCE_001",
-                        Severity::Error,
-                        asset.path.clone(),
-                        format!(
-                            "Content-hash target '{}' cannot be read: {error}.",
-                            reference.id
-                        ),
-                    ));
-                    continue;
-                }
-            };
-            let actual_hash = format!("{:x}", Sha256::digest(target_bytes));
-            if &actual_hash != expected_hash {
-                diagnostics.push(
-                    Diagnostic::new(
-                        "DH_REFERENCE_001",
-                        Severity::Error,
-                        asset.path.clone(),
-                        format!(
-                            "Wiki Link target '{}' changed: expected sha256:{expected_hash}, actual sha256:{actual_hash}.",
-                            reference.id
-                        ),
-                    )
-                    .with_related(RelatedInformation::new(
-                        target.path.clone(),
-                        "Changed Library content is here.",
-                    )),
-                );
-            }
-        }
+        validate_edge_selector(root, edge, target, diagnostics);
+        validate_edge_anchor(root, config, edge, target, diagnostics);
     }
     let missing_required_reference = match asset.reference_relation {
-        ReferenceRelation::Body => references.is_empty(),
+        ReferenceRelation::Body => edges.is_empty(),
         ReferenceRelation::Library => {
             asset.refinement_level != RefinementLevel::Intent && !satisfies_required_relation
         }

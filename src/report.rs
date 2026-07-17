@@ -1,8 +1,10 @@
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 
 use crate::checks::{Diagnostic, DiagnosticRange, RelatedInformation};
+use crate::governance::GovernanceGraph;
 
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -17,8 +19,84 @@ pub enum Severity {
 #[derive(Debug)]
 pub struct Report {
     pub diagnostics: Vec<Diagnostic>,
+    pub suppressed_diagnostics: Vec<SuppressedDiagnostic>,
+    pub semantic_content_anchors_checked: usize,
+    pub governance_graph: GovernanceGraph,
+    pub document_templates: DocumentTemplateReport,
     pub summary: Summary,
     pub root: PathBuf,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuppressedDiagnostic {
+    pub code: String,
+    pub path: String,
+    pub reason: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentTemplateReport {
+    pub configured_templates: usize,
+    pub configured_profiles: usize,
+    pub bindings: BTreeMap<String, Vec<String>>,
+    pub template_revisions: BTreeMap<String, TemplateRevisionReport>,
+    pub profile_revision_pins: BTreeMap<String, u64>,
+    pub untemplated_profiles: Vec<String>,
+    pub unused_templates: Vec<String>,
+    pub unrevisioned_templates: Vec<String>,
+    pub unpinned_profiles: Vec<String>,
+    pub outdated_profiles: Vec<String>,
+    pub incompatible_profiles: Vec<String>,
+    pub registry_valid: bool,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateRevisionReport {
+    pub revision: u64,
+    pub compatible_from: u64,
+}
+
+impl DocumentTemplateReport {
+    pub fn proves_reuse(&self) -> bool {
+        self.registry_valid
+            && self.configured_templates > 0
+            && self.configured_profiles > 0
+            && self.untemplated_profiles.is_empty()
+            && self.unused_templates.is_empty()
+            && self.bindings.values().map(Vec::len).sum::<usize>() == self.configured_profiles
+    }
+
+    pub fn proves_migration(&self) -> bool {
+        self.proves_reuse()
+            && self.template_revisions.len() == self.configured_templates
+            && self.profile_revision_pins.len() == self.configured_profiles
+            && self.unrevisioned_templates.is_empty()
+            && self.unpinned_profiles.is_empty()
+            && self.outdated_profiles.is_empty()
+            && self.incompatible_profiles.is_empty()
+    }
+}
+
+impl Default for DocumentTemplateReport {
+    fn default() -> Self {
+        Self {
+            configured_templates: 0,
+            configured_profiles: 0,
+            bindings: BTreeMap::new(),
+            template_revisions: BTreeMap::new(),
+            profile_revision_pins: BTreeMap::new(),
+            untemplated_profiles: Vec::new(),
+            unused_templates: Vec::new(),
+            unrevisioned_templates: Vec::new(),
+            unpinned_profiles: Vec::new(),
+            outdated_profiles: Vec::new(),
+            incompatible_profiles: Vec::new(),
+            registry_valid: true,
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -60,8 +138,35 @@ impl Report {
                 hint_count,
             },
             diagnostics,
+            suppressed_diagnostics: Vec::new(),
+            semantic_content_anchors_checked: 0,
+            governance_graph: GovernanceGraph::default(),
+            document_templates: DocumentTemplateReport::default(),
             root: root.to_path_buf(),
         }
+    }
+
+    pub(crate) fn with_suppressed(
+        mut self,
+        suppressed_diagnostics: Vec<SuppressedDiagnostic>,
+    ) -> Self {
+        self.suppressed_diagnostics = suppressed_diagnostics;
+        self
+    }
+
+    pub(crate) fn with_semantic_content_anchors_checked(mut self, count: usize) -> Self {
+        self.semantic_content_anchors_checked = count;
+        self
+    }
+
+    pub(crate) fn with_governance_graph(mut self, graph: GovernanceGraph) -> Self {
+        self.governance_graph = graph;
+        self
+    }
+
+    pub(crate) fn with_document_templates(mut self, templates: DocumentTemplateReport) -> Self {
+        self.document_templates = templates;
+        self
     }
 
     pub fn explain(code: &str) -> Option<&'static str> {
@@ -96,6 +201,16 @@ impl Report {
             "DH_CONTRACT_004" => {
                 Some("Required document sections are not in the configured order.")
             }
+            "DH_TEMPLATE_001" => Some(
+                "A document template or profile has a duplicate identity, invalid binding, or conflicting semantic member.",
+            ),
+            "DH_TEMPLATE_002" => Some("A configured document template has no profile binding."),
+            "DH_TEMPLATE_003" => {
+                Some("A document template or profile needs a compatible revision pin migration.")
+            }
+            "DH_TEMPLATE_004" => Some(
+                "A document profile revision pin is outside its template compatibility window.",
+            ),
             "DH_MATURITY_001" => {
                 Some("Project scale signals recommend stronger document governance.")
             }
@@ -113,6 +228,9 @@ impl Report {
             "DH_REFERENCE_001" => Some(
                 "A governed asset has a missing, invalid, or content-hash-stale semantic Wiki Link to a Library identity.",
             ),
+            "DH_SELECTOR_001" => {
+                Some("A semantic Wiki Link selector does not resolve to a target Markdown heading.")
+            }
             "DH_LIBRARY_001" => Some(
                 "A Library directory has a missing, malformed, duplicate, or undeclared member term.",
             ),
@@ -124,6 +242,12 @@ impl Report {
             }
             "DH_DERIVATION_002" => {
                 Some("A Library has a missing or invalid adjacent-refinement-level projection.")
+            }
+            "DH_TOPOLOGY_001" => {
+                Some("A governed identity exceeds an explicit Fan-In or Fan-Out threshold.")
+            }
+            "DH_TOPOLOGY_002" => {
+                Some("The normalized governance graph contains a forbidden directed cycle.")
             }
             "DH_ADAPTER_001" => Some("An external documentation adapter reported a failure."),
             "DH_SUPPRESSION_001" => Some("A diagnostic was suppressed by configuration."),

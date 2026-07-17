@@ -7,6 +7,8 @@ entryDocs:
     - LICENSE
     - sdk-manifest.yml
     - implementation-manifest.yml
+    - profile-implementation-manifest.yml
+    - governance-edge-implementation-manifest.yml
   optional:
     - AGENTS.md
     - CLAUDE.md
@@ -155,22 +157,45 @@ language:
   zh:
     minCjkRatio: 0.15
 
+hygieneProfile:
+  dimensions:
+    structure:
+      target: governed
+      required: true
+    identity:
+      target: controlled
+      required: true
+    dependency:
+      target: controlled
+      required: true
+    topology:
+      target: controlled
+      required: false
+
 documentContracts:
   maturity:
-    declared: maintained
+    declared: governed
     recommendations:
       - level: governed
         minProjectLines: 20000
         minManagedDocuments: 20
+  templates:
+    - id: maintained-open-contract
+      revision: 1
+      compatibleFrom: 1
+      enforceFrom: maintained
+      placeholdersAllowedUntil: growing
+      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
+      orderedSections: true
   profiles:
     - id: product-position
+      template: maintained-open-contract
+      templateRevision: 1
       match:
         paths:
           - docs/position/[0-9][0-9]_*.md
           - docs/zh/position/[0-9][0-9]_*.md
         filenames: ["^\\d{2}_[a-z0-9_-]+\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
       requiredSections:
         - id: position-statement
           headings: [Position, 立场主张]
@@ -188,6 +213,8 @@ documentContracts:
         - id: position-status
           pattern: "(?m)^(?:Status:|状态：)\\s*(?:working|adopted|superseded)$"
     - id: package-member
+      template: maintained-open-contract
+      templateRevision: 1
       match:
         paths:
           - docs/intent/prd/**/*.md
@@ -195,22 +222,17 @@ documentContracts:
           - docs/definition/spec/**/*.md
           - docs/zh/definition/spec/**/*.md
         filenames: ["^[a-z0-9-]+\\.md$"]
-      enforceFrom: maintained
-      placeholdersAllowedUntil: growing
-      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
       requiredFields:
         - id: member-id
           pattern: "(?m)^id: [A-Za-z0-9._-]+$"
         - id: lifecycle-status
           pattern: "(?m)^status: (?:draft|review|proposed|baselined|superseded|archived|abandoned)$"
     - id: project-readme
+      template: maintained-open-contract
+      templateRevision: 1
       match:
         paths: [README.md, README_ZH.md]
         filenames: ["^README(?:_ZH)?\\.md$"]
-      enforceFrom: maintained
-      placeholdersAllowedUntil: growing
-      placeholderPatterns: ["(?i)\\b(?:TODO|TBD)\\b", "待补充"]
-      orderedSections: true
       requiredSections:
         - id: quick-start
           headings: [Quick Start, 快速开始]
@@ -219,19 +241,20 @@ documentContracts:
         - id: adapters
           headings: [Adapters, Adapter]
     - id: changelog
+      template: maintained-open-contract
+      templateRevision: 1
       match:
         paths: [CHANGELOG.md]
         filenames: ["^CHANGELOG\\.md$"]
-      enforceFrom: maintained
       requiredFields:
         - id: released-version
           pattern: "(?m)^## \\d+\\.\\d+\\.\\d+(?: |$)"
     - id: roadmap
+      template: maintained-open-contract
+      templateRevision: 1
       match:
         paths: [ROADMAP.md]
         filenames: ["^ROADMAP\\.md$"]
-      enforceFrom: maintained
-      orderedSections: true
       requiredSections:
         - id: current-baseline
           headings: [Current Baseline, 当前基线]
@@ -248,12 +271,20 @@ governance:
     - docs/intent/prd/prd-001/manifest.yml
     - docs/intent/prd/prd-002/manifest.yml
     - docs/intent/prd/prd-003/manifest.yml
+    - docs/intent/prd/prd-004/manifest.yml
     - docs/definition/glossary/manifest.yml
     - docs/definition/spec/spec-001/manifest.yml
     - docs/definition/spec/spec-002/manifest.yml
+    - docs/definition/spec/spec-003/manifest.yml
     - sdk-manifest.yml
     - implementation-manifest.yml
+    - profile-implementation-manifest.yml
+    - governance-edge-implementation-manifest.yml
   requireCompleteVerticalDerivation: true
+  topology:
+    maxFanIn: 8
+    maxFanOut: 12
+    forbidCycles: true
 
 adapters:
   markdownlint:
