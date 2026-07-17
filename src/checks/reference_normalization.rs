@@ -67,6 +67,9 @@ fn normalize_reference_edges_with_policies(
                         digest: anchor.digest.clone(),
                         scope: anchor.scope,
                         locator: anchor.locator.clone(),
+                        updated_at: anchor.updated_at.clone(),
+                        updated_by: anchor.updated_by.clone(),
+                        reason: anchor.reason.clone(),
                     })
                 }
                 Some(_) => return None,

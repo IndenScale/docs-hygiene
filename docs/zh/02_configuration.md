@@ -160,7 +160,7 @@ rules:
 
 ## 治理关系图
 
-`governance.manifests` 启用关系图；`governance.topology` 可选地执行 Fan 与循环阈值；`governance.contentAnchors.verifyGitCommits` 显式启用 commit 锚的本地 Git 校验，默认关闭，file 与 block SHA-256 锚不需要该开关。`governance.coreClaims` 增加显式 Library SSOT 策略。完整契约见[治理关系图](07_governance_graph.md)和 [Library Claim 治理](15_library_claims.md)。
+`governance.manifests` 启用关系图；`governance.topology` 可选地执行 Fan 与循环阈值；`governance.contentAnchors.verifyGitCommits` 显式启用 commit 锚的本地 Git 校验，默认关闭，file 与 block SHA-256 锚不需要该开关。`governance.coreClaims` 增加显式 Library SSOT 策略，`governance.criticalDependencies` 选择必须 Pin 的边。完整契约见[治理关系图](07_governance_graph.md)、[Library Claim 治理](15_library_claims.md)和[关键依赖 Pin](16_critical_dependency_pins.md)。
 
 ## 禁止 ASCII 字符画
 

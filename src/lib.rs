@@ -10,6 +10,7 @@ pub mod config;
 pub mod document_kinds;
 pub mod governance;
 pub mod kind_migration;
+pub mod pin_update;
 pub mod profile;
 pub mod reference;
 pub mod report;
@@ -48,6 +49,10 @@ pub use governance::{
 pub use kind_migration::{
     KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,
     migrate_document_kinds, print_json_kind_migration, print_text_kind_migration,
+};
+pub use pin_update::{
+    PinUpdateBlock, PinUpdateChange, PinUpdateReport, PinUpdateRequest, print_json_pin_update,
+    print_text_pin_update, update_critical_pins,
 };
 pub use profile::{
     DimensionResult, DimensionStatus, HygieneProfileReport, INVARIANTS, InvariantApplicability,

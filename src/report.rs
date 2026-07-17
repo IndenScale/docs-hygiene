@@ -252,6 +252,22 @@ impl Report {
             "DH_CLAIM_001" => Some(
                 "An explicitly governed core claim has an invalid authority, forbidden duplicate, expired migration, or unpinned/stale controlled excerpt.",
             ),
+            "DH_PIN_001" => Some("A critical dependency is missing a required content anchor."),
+            "DH_PIN_002" => Some(
+                "A critical dependency anchor has insufficient scope or violates whole-file policy.",
+            ),
+            "DH_PIN_003" => {
+                Some("A critical dependency anchor uses an algorithm not allowed by policy.")
+            }
+            "DH_PIN_004" => {
+                Some("A critical dependency target changed after its digest was accepted.")
+            }
+            "DH_PIN_005" => {
+                Some("A critical dependency pin is missing audit time or exceeds its maximum age.")
+            }
+            "DH_PIN_006" => Some(
+                "A critical dependency policy or anchor declaration is invalid or unverifiable.",
+            ),
             "DH_DERIVATION_001" => {
                 Some("A Body has a missing or invalid adjacent-refinement-level derivation.")
             }

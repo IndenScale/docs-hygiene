@@ -16,6 +16,7 @@ pub enum InvariantApplicability {
     DocumentTemplates,
     DocumentKinds,
     CoreClaims,
+    CriticalDependencies,
     LocalizedRepresentation,
     SlugSchema,
     ContentAnchor,
@@ -45,6 +46,7 @@ impl InvariantSpec {
             }
             "structure.kind-schema" => InvariantApplicability::DocumentKinds,
             "identity.library-claims" => InvariantApplicability::CoreClaims,
+            "dependency.critical-pins" => InvariantApplicability::CriticalDependencies,
             "identity.canonical-source" => InvariantApplicability::LocalizedRepresentation,
             "identity.slug-schema" => InvariantApplicability::SlugSchema,
             "identity.authority-migration" => InvariantApplicability::AuthorityMigration,
@@ -255,6 +257,21 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         delivery: Delivered,
         checkers: &[GovernanceIdentity],
         diagnostic_codes: &["DH_REFERENCE_001", "DH_SELECTOR_001"],
+    },
+    InvariantSpec {
+        id: "dependency.critical-pins",
+        dimension: Dependency,
+        minimum_maturity: Governed,
+        delivery: Delivered,
+        checkers: &[GovernanceTraceability],
+        diagnostic_codes: &[
+            "DH_PIN_001",
+            "DH_PIN_002",
+            "DH_PIN_003",
+            "DH_PIN_004",
+            "DH_PIN_005",
+            "DH_PIN_006",
+        ],
     },
     InvariantSpec {
         id: "dependency.transitive-impact",

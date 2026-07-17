@@ -21,6 +21,7 @@ invariant has one dimension and minimum maturity.
 | `structure.kind-schema` | governed | typed frontmatter, Kind scaffold, atomic migration | delivered |
 | `identity.stable-ids` | basic | `DH_GOVERNANCE_001`, package checks | delivered |
 | `identity.duplicates` | basic | governance and Library indexes | delivered |
+| `identity.library-claims` | governed | explicit Library authority and confirmed occurrence policy | delivered |
 | `identity.canonical-source` | controlled | representation parity | delivered |
 | `identity.slug-schema` | controlled | kind-scoped index, `DH_SLUG_001` | delivered |
 | `identity.semantic-reference` | controlled | `DH_CONCEPT_*`, `DH_REFERENCE_001` | delivered |
@@ -32,6 +33,7 @@ invariant has one dimension and minimum maturity.
 | `dependency.target-staleness` | controlled | hash mismatch diagnostics | delivered |
 | `dependency.selector` | governed | edge selector, `DH_SELECTOR_001`, localized signature parity | delivered |
 | `dependency.scoped-anchor` | governed | file/block/commit scopes, per-item diagnostics, opt-in Git verification | delivered |
+| `dependency.critical-pins` | governed | edge matchers, `DH_PIN_*`, audited update workflow | delivered |
 | `dependency.transitive-impact` | governed | deterministic reverse reachability across all resolved semantic edges | delivered |
 | `topology.metrics` | basic | normalized node, edge, resolution and isolation counts | delivered |
 | `topology.fan-and-cycles` | controlled | distinct-neighbor degree and deterministic SCCs | delivered |

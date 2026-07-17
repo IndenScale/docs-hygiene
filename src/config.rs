@@ -23,8 +23,9 @@ pub use document_kinds::{
 };
 pub use governance::{
     CoreClaimAuthorityConfig, CoreClaimConfig, CoreClaimOccurrenceConfig,
-    CoreClaimOccurrencePolicy, GovernanceConfig, GovernanceContentAnchorConfig,
-    GovernanceTopologyConfig,
+    CoreClaimOccurrencePolicy, CriticalDependencyMatcherConfig, CriticalDependencyPolicyConfig,
+    CriticalDependencyRelation, CriticalPinRequirementConfig, CriticalPinScope, GovernanceConfig,
+    GovernanceContentAnchorConfig, GovernanceTopologyConfig,
 };
 pub use slug::{SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig};
 

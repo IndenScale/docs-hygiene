@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add critical dependency policies across normalized edge relations, stable Pin
+  diagnostics, maximum-age audit metadata, reverse-impact evidence, and an
+  explicit atomic `update-pins` plan/apply workflow with JSONL audit records.
+
 - Add explicit `governance.coreClaims` Library authorities, confirmed duplicate
   policies, deadline migrations, block-pinned controlled excerpts, lifecycle
   remediation, and a non-blocking `scan-library-claims` candidate report.

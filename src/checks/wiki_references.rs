@@ -71,6 +71,19 @@ fn check_governed_references(
             }
         }
     }
+    for asset in assets
+        .iter()
+        .filter(|asset| asset.reference_relation == ReferenceRelation::Library)
+    {
+        let paths = asset_content_paths(root, asset);
+        let occurrences = collect_governed_reference_occurrences(root, &paths, diagnostics)
+            .into_iter()
+            .filter(|occurrence| occurrence.context == CONTEXT_GOVERNED_ANCHOR)
+            .collect::<BTreeSet<_>>();
+        let pinned = normalize_reference_edges(asset, &occurrences, &targets);
+        validate_optional_governed_pins(root, config, asset, &pinned, &targets, diagnostics);
+        edges.extend(pinned);
+    }
     let nodes = targets
         .into_iter()
         .map(|(identity, target)| GovernanceNode {
@@ -93,10 +106,7 @@ fn build_library_target_index(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> BTreeMap<String, SemanticTarget> {
     let mut targets = BTreeMap::new();
-    for asset in assets
-        .iter()
-        .filter(|asset| asset.reference_relation == ReferenceRelation::Library)
-    {
+    for asset in assets {
         insert_library_target(
             &mut targets,
             asset.id.clone(),
@@ -109,6 +119,9 @@ fn build_library_target_index(
             },
             diagnostics,
         );
+        if asset.reference_relation != ReferenceRelation::Library {
+            continue;
+        }
         let manifest_rel = Path::new(&asset.path);
         if manifest_rel.file_name().and_then(|value| value.to_str()) != Some("manifest.yml")
             || asset.refinement_level == RefinementLevel::Implementation
@@ -312,7 +325,11 @@ fn validate_asset_wiki_references(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut satisfies_required_relation = false;
+    let mut attempted_horizontal_reference = false;
     for edge in edges {
+        let declared_vertical_pin = edge.relation == GovernanceEdgeKind::PinnedReference
+            && asset_declares_vertical_target(asset, &edge.target);
+        attempted_horizontal_reference |= !declared_vertical_pin;
         let Some(target) = targets.get(&edge.target) else {
             diagnostics.push(Diagnostic::new(
                 "DH_REFERENCE_001",
@@ -328,10 +345,12 @@ fn validate_asset_wiki_references(
         let same_refinement = target.refinement_level == asset.refinement_level;
         let adjacent_upstream =
             refinement_rank(target.refinement_level) + 1 == refinement_rank(asset.refinement_level);
-        let valid_relation = match asset.reference_relation {
-            ReferenceRelation::Body => same_refinement,
-            ReferenceRelation::Library => same_refinement || adjacent_upstream,
-        };
+        let valid_relation = declared_vertical_pin
+            || (target.reference_relation == ReferenceRelation::Library
+                && match asset.reference_relation {
+                    ReferenceRelation::Body => same_refinement,
+                    ReferenceRelation::Library => same_refinement || adjacent_upstream,
+                });
         if !valid_relation {
             diagnostics.push(
                 Diagnostic::new(
@@ -352,7 +371,8 @@ fn validate_asset_wiki_references(
             );
             continue;
         }
-        satisfies_required_relation |= match asset.reference_relation {
+        satisfies_required_relation |= target.reference_relation == ReferenceRelation::Library
+            && match asset.reference_relation {
             ReferenceRelation::Body => same_refinement,
             ReferenceRelation::Library => adjacent_upstream,
         };
@@ -360,7 +380,9 @@ fn validate_asset_wiki_references(
         validate_edge_anchor(root, config, edge, target, diagnostics);
     }
     let missing_required_reference = match asset.reference_relation {
-        ReferenceRelation::Body => edges.is_empty(),
+        ReferenceRelation::Body => {
+            !satisfies_required_relation && !attempted_horizontal_reference
+        }
         ReferenceRelation::Library => {
             asset.refinement_level != RefinementLevel::Intent && !satisfies_required_relation
         }
@@ -383,4 +405,54 @@ fn validate_asset_wiki_references(
             ),
         ));
     }
+}
+
+fn validate_optional_governed_pins(
+    root: &Path,
+    config: &Config,
+    asset: &GovernanceAsset,
+    edges: &[GovernanceEdge],
+    targets: &BTreeMap<String, SemanticTarget>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for edge in edges {
+        let Some(target) = targets.get(&edge.target) else {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                edge.source_location.path.clone(),
+                format!("Pinned target '{}' is not a governed identity.", edge.target),
+            ));
+            continue;
+        };
+        let adjacent_upstream =
+            refinement_rank(target.refinement_level) + 1 == refinement_rank(asset.refinement_level);
+        let same_refinement = target.refinement_level == asset.refinement_level;
+        let valid = asset_declares_vertical_target(asset, &edge.target)
+            || (target.reference_relation == ReferenceRelation::Library
+                && (same_refinement || adjacent_upstream));
+        if !valid {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                edge.source_location.path.clone(),
+                format!(
+                    "Pinned target '{}' is not a declared vertical dependency of Library '{}'.",
+                    edge.target, asset.id
+                ),
+            ));
+            continue;
+        }
+        validate_edge_selector(root, edge, target, diagnostics);
+        validate_edge_anchor(root, config, edge, target, diagnostics);
+    }
+}
+
+fn asset_declares_vertical_target(asset: &GovernanceAsset, target: &str) -> bool {
+    asset
+        .formalizes
+        .iter()
+        .chain(asset.realizes.iter())
+        .chain(asset.projects.iter())
+        .any(|candidate| candidate.id == target)
 }

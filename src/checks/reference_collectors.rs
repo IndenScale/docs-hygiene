@@ -93,6 +93,9 @@ fn collect_wiki_link_occurrences(
                         digest: value.as_str().to_ascii_lowercase(),
                         scope: ContentAnchorScope::File,
                         locator: None,
+                        updated_at: None,
+                        updated_by: None,
+                        reason: None,
                     }),
                 },
             ));
@@ -235,6 +238,9 @@ fn collect_frontmatter_occurrences(
                     digest: declaration.digest.to_ascii_lowercase(),
                     scope: declaration.scope,
                     locator: declaration.locator,
+                    updated_at: declaration.updated_at,
+                    updated_by: declaration.updated_by,
+                    reason: declaration.reason,
                 }),
             },
         ));
@@ -251,6 +257,12 @@ struct FrontmatterAnchorDeclaration {
     scope: ContentAnchorScope,
     #[serde(default)]
     locator: Option<String>,
+    #[serde(default)]
+    updated_at: Option<String>,
+    #[serde(default)]
+    updated_by: Option<String>,
+    #[serde(default)]
+    reason: Option<String>,
 }
 
 impl FrontmatterAnchorDeclaration {

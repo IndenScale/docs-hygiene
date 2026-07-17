@@ -2,7 +2,9 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+use crate::governance::ReferenceRelation;
+
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GovernanceConfig {
     #[serde(default)]
@@ -15,6 +17,82 @@ pub struct GovernanceConfig {
     pub content_anchors: GovernanceContentAnchorConfig,
     #[serde(default)]
     pub core_claims: Vec<CoreClaimConfig>,
+    #[serde(default)]
+    pub critical_dependencies: Vec<CriticalDependencyPolicyConfig>,
+    #[serde(default = "default_pin_audit_log")]
+    pub pin_audit_log: PathBuf,
+}
+
+impl Default for GovernanceConfig {
+    fn default() -> Self {
+        Self {
+            manifests: Vec::new(),
+            require_complete_vertical_derivation: false,
+            topology: GovernanceTopologyConfig::default(),
+            content_anchors: GovernanceContentAnchorConfig::default(),
+            core_claims: Vec::new(),
+            critical_dependencies: Vec::new(),
+            pin_audit_log: default_pin_audit_log(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CriticalDependencyPolicyConfig {
+    pub id: String,
+    #[serde(rename = "match")]
+    pub matcher: CriticalDependencyMatcherConfig,
+    pub require: CriticalPinRequirementConfig,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CriticalDependencyMatcherConfig {
+    #[serde(default)]
+    pub source_kinds: Vec<ReferenceRelation>,
+    #[serde(default)]
+    pub target_kinds: Vec<ReferenceRelation>,
+    #[serde(default)]
+    pub relations: Vec<CriticalDependencyRelation>,
+    #[serde(default)]
+    pub source_paths: Vec<String>,
+    #[serde(default)]
+    pub target_paths: Vec<String>,
+    #[serde(default)]
+    pub source_ids: Vec<String>,
+    #[serde(default)]
+    pub target_ids: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CriticalDependencyRelation {
+    References,
+    Formalizes,
+    Realizes,
+    Projects,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CriticalPinRequirementConfig {
+    #[serde(default = "default_pin_algorithms")]
+    pub algorithms: Vec<String>,
+    #[serde(default)]
+    pub minimum_scope: CriticalPinScope,
+    #[serde(default)]
+    pub forbid_whole_file: bool,
+    pub max_age_days: Option<u64>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CriticalPinScope {
+    #[default]
+    File,
+    Commit,
+    Block,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -80,4 +158,12 @@ impl GovernanceTopologyConfig {
 
 fn default_similarity_threshold() -> f64 {
     0.72
+}
+
+fn default_pin_algorithms() -> Vec<String> {
+    vec!["sha256".to_owned()]
+}
+
+fn default_pin_audit_log() -> PathBuf {
+    PathBuf::from(".docs-hygiene/pin-updates.jsonl")
 }

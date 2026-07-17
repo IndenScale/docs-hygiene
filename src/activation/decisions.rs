@@ -228,6 +228,15 @@ fn infer_automatic_decision(
             RuleState::Inactive,
             vec!["no governance identity signal".into()],
         ),
+        RuleApplicability::GovernanceTraceability if facts.configured_critical_dependencies > 0 => {
+            (
+                RuleState::Error,
+                vec![format!(
+                    "{} critical dependency policies configured",
+                    facts.configured_critical_dependencies
+                )],
+            )
+        }
         RuleApplicability::GovernanceTraceability
             if facts.configured_refinement_levels.len() >= 2 =>
         {

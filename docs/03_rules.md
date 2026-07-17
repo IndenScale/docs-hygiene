@@ -115,6 +115,10 @@ also invalid.
 `DH_CLAIM_001` reports an invalid core Library authority, confirmed forbidden
 duplicate, expired migration, or missing/stale controlled-excerpt block pin.
 
+`DH_PIN_001` through `DH_PIN_006` independently report missing Pins,
+insufficient scope, disallowed algorithms, changed content, expired audit age,
+and invalid policy or declaration state for critical dependencies.
+
 `DH_DERIVATION_001` reports a missing, unresolved, wrongly typed, or incomplete
 adjacent-refinement-level Body derivation through `formalizes` or `realizes`.
 

@@ -11,9 +11,12 @@ use docs_hygiene::{
     print_text_template_migration, run_checks, scan_library_claim_candidates,
 };
 
+#[path = "main/pins.rs"]
+mod pins;
 #[path = "main/scaffold.rs"]
 mod scaffold;
 
+use pins::{PinUpdateArgs, update_pins};
 use scaffold::{ScaffoldArgs, scaffold};
 
 // Governance Library: [[SDK-001]]
@@ -39,6 +42,8 @@ enum Command {
     MigrateKinds(MigrateKindsArgs),
     /// Suggest possible Body duplicates of explicitly configured Library claims.
     ScanLibraryClaims(ScanLibraryClaimsArgs),
+    /// Plan or explicitly apply audited critical-dependency pin updates.
+    UpdatePins(PinUpdateArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -257,6 +262,7 @@ fn main() -> Result<()> {
         Command::MigrateTemplates(args) => migrate_templates(args),
         Command::MigrateKinds(args) => migrate_kinds(args),
         Command::ScanLibraryClaims(args) => scan_library_claims(args),
+        Command::UpdatePins(args) => update_pins(args),
         Command::Init { path } => init(path),
         Command::Scaffold(args) => scaffold(args),
         Command::Lang { command } => lang(command),

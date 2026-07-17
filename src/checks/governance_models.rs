@@ -246,6 +246,7 @@ fn check_governance(
     }
     let identities = collect_governed_identity_records(root, &assets);
     graph.authority_migrations = check_identity_lifecycle(&identities, &graph, diagnostics);
+    check_critical_dependencies(root, config, &graph, diagnostics);
     graph
 }
 

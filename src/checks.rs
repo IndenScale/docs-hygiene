@@ -14,9 +14,10 @@ use crate::activation::{
     evaluate_rule_activation, rule_spec, rule_spec_for_diagnostic,
 };
 use crate::config::{
-    Config, CoreClaimOccurrencePolicy, DocumentMatchConfig, DocumentProfileConfig,
-    DocumentTemplateConfig, FilenamePatternConfig, MaturityLevel, RequiredFieldConfig,
-    RequiredSectionConfig, SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
+    Config, CoreClaimOccurrencePolicy, CriticalDependencyPolicyConfig, CriticalDependencyRelation,
+    CriticalPinScope, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
+    FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
+    SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
@@ -367,8 +368,10 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
         RuleApplicability::Concepts => {
             config.concepts.require_concept_file || config.concepts.fail_on_orphan_concept.is_some()
         }
-        RuleApplicability::GovernanceIdentity | RuleApplicability::GovernanceTraceability => {
+        RuleApplicability::GovernanceIdentity => !config.governance.manifests.is_empty(),
+        RuleApplicability::GovernanceTraceability => {
             !config.governance.manifests.is_empty()
+                || !config.governance.critical_dependencies.is_empty()
         }
         RuleApplicability::GovernanceTopology => {
             config.governance.topology.configured_policy_count() > 0
@@ -383,6 +386,8 @@ include!("checks/governance_models.rs");
 include!("checks/lifecycle.rs");
 include!("checks/library_claims.rs");
 include!("checks/library_claim_scan.rs");
+include!("checks/critical_dependency_verification.rs");
+include!("checks/critical_dependencies.rs");
 include!("checks/package_structure.rs");
 include!("checks/package_localization.rs");
 include!("checks/reference_collectors.rs");
@@ -420,4 +425,5 @@ mod tests {
     include!("checks/tests/selectors.rs");
     include!("checks/tests/topology.rs");
     include!("checks/tests/library_claims.rs");
+    include!("checks/tests/critical_dependencies.rs");
 }

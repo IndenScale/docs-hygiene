@@ -20,6 +20,7 @@ status: proposed
 | `structure.kind-schema` | 治理 | 类型化 frontmatter、Kind 脚手架、原子迁移 | 已交付 |
 | `identity.stable-ids` | 基础 | `DH_GOVERNANCE_001`、Package 检查 | 已交付 |
 | `identity.duplicates` | 基础 | Governance 与 Library 索引 | 已交付 |
+| `identity.library-claims` | 治理 | 显式 Library 权威与已确认 occurrence 策略 | 已交付 |
 | `identity.canonical-source` | 受控 | 表示同位 | 已交付 |
 | `identity.slug-schema` | 受控 | Kind 级索引、`DH_SLUG_001` | 已交付 |
 | `identity.semantic-reference` | 受控 | `DH_CONCEPT_*`、`DH_REFERENCE_001` | 已交付 |
@@ -31,6 +32,7 @@ status: proposed
 | `dependency.target-staleness` | 受控 | 哈希不一致诊断 | 已交付 |
 | `dependency.selector` | 治理 | 边 selector、`DH_SELECTOR_001`、本地化签名同位 | 已交付 |
 | `dependency.scoped-anchor` | 治理 | file/block/commit scope、逐项诊断、opt-in Git 校验 | 已交付 |
+| `dependency.critical-pins` | 治理 | 边匹配器、`DH_PIN_*`、审计更新工作流 | 已交付 |
 | `dependency.transitive-impact` | 治理 | 所有已解析语义边上的确定性反向可达集合 | 已交付 |
 | `topology.metrics` | 基础 | 规范化节点、边、解析及孤立节点计数 | 已交付 |
 | `topology.fan-and-cycles` | 受控 | 不同邻居度数与确定性强连通分量 | 已交付 |

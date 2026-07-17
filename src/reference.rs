@@ -29,6 +29,12 @@ pub struct ReferenceAnchorPayload {
     pub scope: ContentAnchorScope,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locator: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_by: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
