@@ -33,3 +33,5 @@ canonical 与 localized Package 表示必须像保持 ID 和 status 一样保持
 这是当前状态一致性契约。历史转移发生时间仍由 Git 留证；检查器不会自动改写消费方、
 删除历史身份，也不会从相似正文推断后继。只有这些快照义务和所有激活的身份检查均通过
 且没有 suppression 时，治理级 lifecycle 与 authority-migration 不变量才通过。
+已建立后继还必须独立满足 [C-019](ownership-review.md) 的责任、复核日落与知识冗余契约，
+不得继承前任证据。

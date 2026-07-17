@@ -10,6 +10,7 @@ pub mod config;
 pub mod document_kinds;
 pub mod governance;
 pub mod kind_migration;
+pub mod ownership;
 pub mod pin_update;
 pub mod portable_snapshot;
 pub mod profile;
@@ -35,9 +36,11 @@ pub use config::{
     FrontmatterConditionConfig, FrontmatterFieldConfig, FrontmatterFieldSource,
     FrontmatterFieldType, FrontmatterInvariantConfig, FrontmatterInvariantOperator,
     FrontmatterPredicateConfig, FrontmatterSchemaConfig, GovernanceContentAnchorConfig,
-    GovernanceTopologyConfig, HygieneProfileConfig, HygieneProfileDimensionsConfig,
-    KindScaffoldConfig, PortableSnapshotConfig, RuleMode, RulePolicyConfig,
-    SupernodeDegreeObservationConfig, SupernodeExceptionConfig, TopologyDirection,
+    GovernanceOwnershipConfig, GovernancePrincipalConfig, GovernancePrincipalKind,
+    GovernancePrincipalStatus, GovernanceTopologyConfig, HygieneProfileConfig,
+    HygieneProfileDimensionsConfig, KindScaffoldConfig, PortableSnapshotConfig, RuleMode,
+    RulePolicyConfig, SupernodeDegreeObservationConfig, SupernodeExceptionConfig,
+    TopologyDirection,
 };
 pub use document_kinds::{
     KindIssue, KindIssueCategory, ScaffoldDocumentPlan, ScaffoldDocumentRequest,
@@ -52,6 +55,10 @@ pub use governance::{
 pub use kind_migration::{
     KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,
     migrate_document_kinds, print_json_kind_migration, print_text_kind_migration,
+};
+pub use ownership::{
+    ReviewResetBlock, ReviewResetChange, ReviewResetReport, ReviewResetRequest,
+    print_json_review_reset, print_text_review_reset, reset_governed_review,
 };
 pub use pin_update::{
     PinUpdateBlock, PinUpdateChange, PinUpdateReport, PinUpdateRequest, print_json_pin_update,
@@ -74,8 +81,9 @@ pub use reference::{
     reference_disposition,
 };
 pub use report::{
-    DocumentTemplateReport, Report, SuppressedDiagnostic, TemplateRevisionReport,
-    print_json_report, print_text_report,
+    Coverage, DocumentTemplateReport, OwnershipIdentityEvidence, OwnershipReport, Report,
+    ReviewState, SuppressedDiagnostic, TemplateRevisionReport, print_json_report,
+    print_text_report,
 };
 pub use snapshot_import::{
     SNAPSHOT_IMPORT_SCHEMA_VERSION, SnapshotImportBlock, SnapshotImportChange,

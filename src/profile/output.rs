@@ -65,6 +65,16 @@ pub fn print_text_profile(report: &HygieneProfileReport) {
             .max()
             .unwrap_or_default(),
     );
+    if report.ownership.enabled {
+        println!(
+            "Ownership: responsibility {}%, review {}%, knowledge redundancy {}%; {} due soon, {} expired.",
+            report.ownership.responsibility_coverage.percentage,
+            report.ownership.review_coverage.percentage,
+            report.ownership.knowledge_redundancy_coverage.percentage,
+            report.ownership.reviews_due_soon,
+            report.ownership.reviews_expired,
+        );
+    }
     println!(
         "Overall observed: {}; configured targets met: {}.",
         maturity_label(report.overall_observed),

@@ -15,19 +15,19 @@
 | 5 | block/file/commit 细粒度引用 | 已落实 | [FEATURE-001](features/01_fine-grained-references.md)、[FEATURE-003](features/03_multi-granularity-pin.md)、[FEATURE-013](features/13_portable-commit-snapshots.md) | — |
 | 6 | Typed Reference 引用对象 | 基本落实 | [FEATURE-002](features/02_reference-syntax-semantics-decoupling.md) | — |
 | 7 | Graph Analysis 与 Fan-Out 预算 | 已落实 | [FEATURE-007](features/07_topology-analysis-and-budgets.md)、[FEATURE-014](features/14_supernode-governance-exceptions.md) | — |
-| 8 | Owner、日落、Reset 与双人理解 | 初步落实 | [FEATURE-008](features/08_identity-lifecycle-and-authority-migration.md) | [FEATURE-015](features/15_document-ownership-and-sunset.md) |
+| 8 | Owner、日落、Reset 与双人理解 | 已落实 | [FEATURE-008](features/08_identity-lifecycle-and-authority-migration.md)、[FEATURE-015](features/15_document-ownership-and-sunset.md) | — |
 
 ## 结论
 
 - 已落实：命名与 slug 身份闭环、Kind/Frontmatter、Library SSOT、关键依赖 Pin、可移植
   commit 快照与离线校验。
 - 基本落实：Typed Reference。
-- 初步落实：只有身份生命周期与权威迁移，尚未形成文档责任和知识冗余闭环。
-- 当前最关键的缺口不是更多解析器，而是谁对文档负责、何时必须复核，以及如何证明至少
-  两人理解。
+- Owner、日落 Reset 与双人知识冗余已经形成离线、确定性、可审计闭环。
+- FEATURE-001 至 FEATURE-015 均已有实现、自动化测试和文档证据；Typed Reference 在当前
+  产品分级中仍判断为“基本落实”，表示后续可继续扩展类型丰富度，而非存在未交付 Feature。
 
 ## 证据口径
 
 落实判断只接受当前 `main` 工作树中的实现、配置和自动化测试。PRD、SPEC、ROADMAP 中的
-计划文字不单独构成交付证据。2026-07-17 复核时，`cargo test` 的 114 个测试全部通过，
-其中包括 83 个单元测试、28 个 CLI/迁移/快照测试、2 个仓库 dogfood 测试和 1 个模板迁移测试。
+计划文字不单独构成交付证据。2026-07-17 复核时，`cargo test` 的 124 个测试全部通过，
+其中包括 91 个单元测试、30 个 CLI/迁移/快照/Reset 测试、2 个仓库 dogfood 测试和 1 个模板迁移测试。

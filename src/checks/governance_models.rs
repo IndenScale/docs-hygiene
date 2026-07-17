@@ -117,11 +117,12 @@ fn check_governance(
     root: &Path,
     config: &Config,
     diagnostics: &mut Vec<Diagnostic>,
-) -> GovernanceGraph {
+) -> (GovernanceGraph, OwnershipReport) {
     if config.governance.manifests.is_empty() {
         let graph = GovernanceGraph::default();
+        let ownership = check_document_ownership(root, config, &[], diagnostics);
         check_portable_snapshots(root, config, &graph, diagnostics);
-        return graph;
+        return (graph, ownership);
     }
 
     let mut assets = Vec::new();
@@ -248,9 +249,10 @@ fn check_governance(
     }
     let identities = collect_governed_identity_records(root, &assets);
     graph.authority_migrations = check_identity_lifecycle(&identities, &graph, diagnostics);
+    let ownership = check_document_ownership(root, config, &identities, diagnostics);
     check_critical_dependencies(root, config, &graph, diagnostics);
     check_portable_snapshots(root, config, &graph, diagnostics);
-    graph
+    (graph, ownership)
 }
 
 fn collect_vertical_edges(

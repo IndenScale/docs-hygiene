@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add opt-in offline principal governance, established-identity Owner, review
+  sunset and two-person knowledge checks, deterministic coverage/bus-factor
+  evidence, and an atomic dry-run/apply `reset-review` workflow with JSONL audit.
+
 - Add exact node/direction supernode exceptions with audited approval and expiry,
   independent budgets, degree history and trend evidence, idle/expired cleanup,
   standard report visibility, and `excepted` profile outcomes.

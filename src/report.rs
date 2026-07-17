@@ -3,11 +3,15 @@ use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 
-use crate::checks::{Diagnostic, DiagnosticData, DiagnosticRange, RelatedInformation};
+use crate::checks::Diagnostic;
 use crate::governance::GovernanceGraph;
 
+mod output;
+mod ownership;
 mod topology;
 
+pub use output::{print_json_report, print_text_report};
+pub use ownership::{Coverage, OwnershipIdentityEvidence, OwnershipReport, ReviewState};
 pub use topology::{TopologyExceptionEvidence, TopologyExceptionStatus};
 
 #[derive(Clone, Copy, Debug, Serialize)]
@@ -26,6 +30,7 @@ pub struct Report {
     pub suppressed_diagnostics: Vec<SuppressedDiagnostic>,
     pub semantic_content_anchors_checked: usize,
     pub governance_graph: GovernanceGraph,
+    pub ownership: OwnershipReport,
     pub topology_exceptions: Vec<TopologyExceptionEvidence>,
     pub document_templates: DocumentTemplateReport,
     pub summary: Summary,
@@ -146,6 +151,7 @@ impl Report {
             suppressed_diagnostics: Vec::new(),
             semantic_content_anchors_checked: 0,
             governance_graph: GovernanceGraph::default(),
+            ownership: OwnershipReport::default(),
             topology_exceptions: Vec::new(),
             document_templates: DocumentTemplateReport::default(),
             root: root.to_path_buf(),
@@ -167,6 +173,11 @@ impl Report {
 
     pub(crate) fn with_governance_graph(mut self, graph: GovernanceGraph) -> Self {
         self.governance_graph = graph;
+        self
+    }
+
+    pub(crate) fn with_ownership(mut self, ownership: OwnershipReport) -> Self {
+        self.ownership = ownership;
         self
     }
 
@@ -320,147 +331,21 @@ impl Report {
             "DH_TOPOLOGY_005" => Some(
                 "A supernode exception has missing, invalid, unordered, or future degree history.",
             ),
+            "DH_OWNERSHIP_001" => Some(
+                "A governed identity has missing or invalid ownership, or its principal directory is invalid.",
+            ),
+            "DH_REVIEW_001" => {
+                Some("A governed identity has missing, invalid, or expired review evidence.")
+            }
+            "DH_REVIEW_002" => Some(
+                "A governed identity review is approaching its deadline and needs an explicit reset.",
+            ),
+            "DH_KNOWLEDGE_001" => {
+                Some("A governed identity lacks current confirmations from two active people.")
+            }
             "DH_ADAPTER_001" => Some("An external documentation adapter reported a failure."),
             "DH_SUPPRESSION_001" => Some("A diagnostic was suppressed by configuration."),
             _ => None,
         }
     }
-}
-
-pub fn print_text_report(report: &Report) {
-    for exception in &report.topology_exceptions {
-        println!(
-            "Topology exception {} [{}]: node {}, {:?}, degree {:?}, global {:?}, exception {}, remaining {:?}, trend {:?}, impact [{}].",
-            exception.id,
-            exception.status.label(),
-            exception.node,
-            exception.direction,
-            exception.current_degree,
-            exception.global_budget,
-            exception.exception_budget,
-            exception.remaining,
-            exception.trend_delta,
-            exception.transitive_impact.join(", "),
-        );
-    }
-    if report.diagnostics.is_empty() {
-        println!(
-            "docs-hygiene passed: {} files checked.",
-            report.summary.files_checked
-        );
-        return;
-    }
-
-    for diag in &report.diagnostics {
-        let line = format!(":{}", diag.range.start.line + 1);
-        println!(
-            "{} {:?} {}{}: {}",
-            diag.code, diag.severity, diag.path, line, diag.message
-        );
-    }
-    println!(
-        "\n{} diagnostics: {} errors, {} warnings, {} info, {} hints across {} docs files.",
-        report.summary.diagnostic_count,
-        report.summary.error_count,
-        report.summary.warning_count,
-        report.summary.info_count,
-        report.summary.hint_count,
-        report.summary.files_checked
-    );
-}
-
-pub fn print_json_report(report: &Report) -> anyhow::Result<()> {
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&JsonReport::from(report))?
-    );
-    Ok(())
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonReport<'a> {
-    schema_version: &'static str,
-    summary: &'a Summary,
-    diagnostics: Vec<JsonDiagnostic<'a>>,
-    topology_exceptions: &'a [TopologyExceptionEvidence],
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonDiagnostic<'a> {
-    source: &'a str,
-    code: &'a str,
-    severity: Severity,
-    message: &'a str,
-    path: &'a str,
-    uri: String,
-    range: &'a DiagnosticRange,
-    related_information: Vec<JsonRelatedInformation<'a>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    data: Option<&'a DiagnosticData>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonRelatedInformation<'a> {
-    path: &'a str,
-    uri: String,
-    range: &'a DiagnosticRange,
-    message: &'a str,
-}
-
-impl<'a> From<&'a Report> for JsonReport<'a> {
-    fn from(report: &'a Report) -> Self {
-        Self {
-            schema_version: "docs-hygiene.diagnostic.v1",
-            summary: &report.summary,
-            diagnostics: report
-                .diagnostics
-                .iter()
-                .map(|diagnostic| JsonDiagnostic::new(report, diagnostic))
-                .collect(),
-            topology_exceptions: &report.topology_exceptions,
-        }
-    }
-}
-
-impl<'a> JsonDiagnostic<'a> {
-    fn new(report: &'a Report, diagnostic: &'a Diagnostic) -> Self {
-        Self {
-            source: diagnostic.source,
-            code: diagnostic.code,
-            severity: diagnostic.severity,
-            message: &diagnostic.message,
-            path: &diagnostic.path,
-            uri: file_uri(&report.root, &diagnostic.path),
-            range: &diagnostic.range,
-            related_information: diagnostic
-                .related_information
-                .iter()
-                .map(|related| JsonRelatedInformation::new(report, related))
-                .collect(),
-            data: diagnostic.data.as_ref(),
-        }
-    }
-}
-
-impl<'a> JsonRelatedInformation<'a> {
-    fn new(report: &'a Report, related: &'a RelatedInformation) -> Self {
-        Self {
-            path: &related.path,
-            uri: file_uri(&report.root, &related.path),
-            range: &related.range,
-            message: &related.message,
-        }
-    }
-}
-
-fn file_uri(root: &Path, path: &str) -> String {
-    let absolute = if path == "." {
-        root.to_path_buf()
-    } else {
-        root.join(path)
-    };
-    format!("file://{}", absolute.display())
 }

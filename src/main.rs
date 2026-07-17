@@ -13,12 +13,15 @@ use docs_hygiene::{
 
 #[path = "main/pins.rs"]
 mod pins;
+#[path = "main/reviews.rs"]
+mod reviews;
 #[path = "main/scaffold.rs"]
 mod scaffold;
 #[path = "main/snapshots.rs"]
 mod snapshots;
 
 use pins::{PinUpdateArgs, update_pins};
+use reviews::{ReviewResetArgs, reset_review};
 use scaffold::{ScaffoldArgs, scaffold};
 use snapshots::{SnapshotImportArgs, import_snapshot};
 
@@ -49,6 +52,8 @@ enum Command {
     UpdatePins(PinUpdateArgs),
     /// Read a declared commit from an explicit local checkout and import offline snapshot payloads.
     ImportSnapshot(SnapshotImportArgs),
+    /// Plan or explicitly apply one audited governed-identity review reset.
+    ResetReview(ReviewResetArgs),
     /// Create a starter docs-hygiene.yml policy file.
     Init {
         /// Path to write.
@@ -269,6 +274,7 @@ fn main() -> Result<()> {
         Command::ScanLibraryClaims(args) => scan_library_claims(args),
         Command::UpdatePins(args) => update_pins(args),
         Command::ImportSnapshot(args) => import_snapshot(args),
+        Command::ResetReview(args) => reset_review(args),
         Command::Init { path } => init(path),
         Command::Scaffold(args) => scaffold(args),
         Command::Lang { command } => lang(command),

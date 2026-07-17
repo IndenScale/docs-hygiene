@@ -235,3 +235,70 @@ fn invariant_registry_ids_are_unique_and_ordered_by_dimension() {
     assert_eq!(INVARIANTS[0].id, "structure.entry-docs");
     assert_eq!(INVARIANTS.last().unwrap().id, "topology.trends");
 }
+
+#[test]
+fn ownership_profile_exposes_coverage_and_suppression_is_not_knowledge_evidence() {
+    let temp = tempdir().unwrap();
+    fs::write(
+        temp.path().join("asset.yml"),
+        r#"id: ASSET-1
+refinementLevel: intent
+referenceRelation: body
+status: current
+ownership:
+  owner: person:alice
+  understoodBy:
+    - { principal: person:alice, confirmedAt: 2000-01-01 }
+review: { reviewBy: 2099-12-31 }
+"#,
+    )
+    .unwrap();
+    let config: Config = serde_yaml::from_str(
+        r#"governance:
+  manifests: [asset.yml]
+  ownership:
+    enabled: true
+    confirmationMaxAgeDays: 50000
+    principals:
+      - { id: "person:alice", kind: person }
+      - { id: "person:bob", kind: person }
+hygieneProfile:
+  dimensions:
+    identity: { target: governed, required: true }
+suppressions:
+  - code: DH_KNOWLEDGE_001
+    paths: [asset.yml]
+    reason: temporary staffing gap
+"#,
+    )
+    .unwrap();
+
+    let report = evaluate_hygiene_profile(temp.path(), &config).unwrap();
+    let identity = &report.dimensions[1];
+    let outcome = |id| {
+        identity
+            .evidence
+            .iter()
+            .find(|evidence| evidence.invariant == id)
+            .unwrap()
+    };
+
+    assert_eq!(
+        outcome("identity.responsibility").outcome,
+        InvariantOutcome::Passed
+    );
+    assert_eq!(
+        outcome("identity.review-sunset").outcome,
+        InvariantOutcome::Passed
+    );
+    assert_eq!(
+        outcome("identity.knowledge-redundancy").outcome,
+        InvariantOutcome::Unverified
+    );
+    assert_eq!(
+        outcome("identity.knowledge-redundancy").suppression_reasons,
+        vec!["temporary staffing gap"]
+    );
+    assert_eq!(report.ownership.responsibility_coverage.percentage, 100);
+    assert_eq!(report.ownership.knowledge_redundancy_coverage.percentage, 0);
+}

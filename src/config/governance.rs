@@ -22,6 +22,8 @@ pub struct GovernanceConfig {
     pub core_claims: Vec<CoreClaimConfig>,
     #[serde(default)]
     pub critical_dependencies: Vec<CriticalDependencyPolicyConfig>,
+    #[serde(default)]
+    pub ownership: GovernanceOwnershipConfig,
     #[serde(default = "default_pin_audit_log")]
     pub pin_audit_log: PathBuf,
 }
@@ -36,9 +38,69 @@ impl Default for GovernanceConfig {
             portable_snapshots: PortableSnapshotConfig::default(),
             core_claims: Vec::new(),
             critical_dependencies: Vec::new(),
+            ownership: GovernanceOwnershipConfig::default(),
             pin_audit_log: default_pin_audit_log(),
         }
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GovernanceOwnershipConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub principals: Vec<GovernancePrincipalConfig>,
+    #[serde(default = "default_confirmation_max_age_days")]
+    pub confirmation_max_age_days: u64,
+    #[serde(default = "default_review_warning_days")]
+    pub review_warning_days: u64,
+    #[serde(default = "default_review_reset_audit_log")]
+    pub reset_audit_log: PathBuf,
+}
+
+impl GovernanceOwnershipConfig {
+    pub fn is_configured(&self) -> bool {
+        self.enabled || !self.principals.is_empty()
+    }
+}
+
+impl Default for GovernanceOwnershipConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            principals: Vec::new(),
+            confirmation_max_age_days: default_confirmation_max_age_days(),
+            review_warning_days: default_review_warning_days(),
+            reset_audit_log: default_review_reset_audit_log(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GovernancePrincipalConfig {
+    pub id: String,
+    pub kind: GovernancePrincipalKind,
+    #[serde(default)]
+    pub status: GovernancePrincipalStatus,
+    #[serde(default)]
+    pub members: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum GovernancePrincipalKind {
+    Person,
+    Group,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum GovernancePrincipalStatus {
+    #[default]
+    Active,
+    Inactive,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -222,4 +284,16 @@ fn default_pin_algorithms() -> Vec<String> {
 
 fn default_pin_audit_log() -> PathBuf {
     PathBuf::from(".docs-hygiene/pin-updates.jsonl")
+}
+
+fn default_confirmation_max_age_days() -> u64 {
+    365
+}
+
+fn default_review_warning_days() -> u64 {
+    30
+}
+
+fn default_review_reset_audit_log() -> PathBuf {
+    PathBuf::from(".docs-hygiene/review-resets.jsonl")
 }

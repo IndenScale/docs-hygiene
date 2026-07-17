@@ -204,6 +204,13 @@ fn infer_automatic_decision(
             RuleState::Inactive,
             vec!["no concept policy or documents".into()],
         ),
+        RuleApplicability::GovernanceIdentity if config.governance.ownership.is_configured() => (
+            RuleState::Error,
+            vec![format!(
+                "ownership governance configured with {} principals",
+                facts.configured_ownership_principals
+            )],
+        ),
         RuleApplicability::GovernanceIdentity if facts.configured_governance_manifests > 0 => (
             RuleState::Error,
             vec![format!(

@@ -16,7 +16,8 @@ use crate::activation::{
 use crate::config::{
     Config, CoreClaimOccurrencePolicy, CriticalDependencyPolicyConfig, CriticalDependencyRelation,
     CriticalPinScope, DocumentMatchConfig, DocumentProfileConfig, DocumentTemplateConfig,
-    FilenamePatternConfig, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
+    FilenamePatternConfig, GovernancePrincipalConfig, GovernancePrincipalKind,
+    GovernancePrincipalStatus, MaturityLevel, RequiredFieldConfig, RequiredSectionConfig,
     SlugNormalization, SlugRenamePolicy, SlugSchemaConfig, SlugSourceConfig,
     SupernodeDegreeObservationConfig, SupernodeExceptionConfig, TopologyDirection,
 };
@@ -37,7 +38,8 @@ use crate::reference::{
 };
 use crate::report::TemplateRevisionReport;
 use crate::report::{
-    DocumentTemplateReport, Report, Severity, SuppressedDiagnostic, TopologyExceptionEvidence,
+    Coverage, DocumentTemplateReport, OwnershipIdentityEvidence, OwnershipReport, Report,
+    ReviewState, Severity, SuppressedDiagnostic, TopologyExceptionEvidence,
     TopologyExceptionStatus,
 };
 
@@ -251,13 +253,14 @@ pub(crate) fn run_checks_with_activation(
     let topology = activation.decision_for(RuleChecker::GovernanceTopology);
     let mut semantic_content_anchors_checked = 0;
     let mut governance_graph = GovernanceGraph::default();
+    let mut ownership = OwnershipReport::default();
     let mut topology_exceptions = Vec::new();
     if identity.state != RuleState::Inactive
         || traceability.state != RuleState::Inactive
         || topology.state != RuleState::Inactive
     {
         let mut governance = Vec::new();
-        governance_graph = check_governance(root, config, &mut governance);
+        (governance_graph, ownership) = check_governance(root, config, &mut governance);
         topology_exceptions = check_topology_policy(config, &governance_graph, &mut governance);
         semantic_content_anchors_checked = governance_graph
             .metrics
@@ -285,6 +288,7 @@ pub(crate) fn run_checks_with_activation(
         .with_suppressed(suppressed)
         .with_semantic_content_anchors_checked(semantic_content_anchors_checked)
         .with_governance_graph(governance_graph)
+        .with_ownership(ownership)
         .with_topology_exceptions(topology_exceptions)
         .with_document_templates(document_templates))
 }
@@ -379,7 +383,9 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
         RuleApplicability::Concepts => {
             config.concepts.require_concept_file || config.concepts.fail_on_orphan_concept.is_some()
         }
-        RuleApplicability::GovernanceIdentity => !config.governance.manifests.is_empty(),
+        RuleApplicability::GovernanceIdentity => {
+            !config.governance.manifests.is_empty() || config.governance.ownership.is_configured()
+        }
         RuleApplicability::GovernanceTraceability => {
             !config.governance.manifests.is_empty()
                 || !config.governance.critical_dependencies.is_empty()
@@ -396,6 +402,7 @@ fn has_explicit_feature_policy(spec: &RuleSpec, config: &Config) -> bool {
 // units are included into this module so the split does not widen internal APIs.
 include!("checks/governance_models.rs");
 include!("checks/lifecycle.rs");
+include!("checks/ownership.rs");
 include!("checks/library_claims.rs");
 include!("checks/library_claim_scan.rs");
 include!("checks/portable_snapshot_signatures.rs");
@@ -435,6 +442,7 @@ mod tests {
     include!("checks/tests/governance_graph.rs");
     include!("checks/tests/anchors.rs");
     include!("checks/tests/lifecycle.rs");
+    include!("checks/tests/ownership.rs");
     include!("checks/tests/reference_ir.rs");
     include!("checks/tests/selectors.rs");
     include!("checks/tests/topology.rs");

@@ -27,7 +27,7 @@ delivery_status: delivered
 - `src/checks/tests/topology.rs` 与 `src/governance.rs` 测试确定性和门禁行为；
 - 本仓库 dogfood `maxFanIn: 8`、`maxFanOut: 12`、`forbidCycles: true`。
 
-## 未覆盖边界
+## 后续闭环
 
-当前阈值是全局硬限制，没有按节点声明的超级节点例外，也没有 owner、理由、到期时间或
-健康度趋势。可审计例外由 [FEATURE-014](14_supernode-governance-exceptions.md) 承载。
+本票据交付全局阈值。按精确节点/方向声明、带 owner、理由、到期和度数趋势的可审计例外
+已经由已交付的 [FEATURE-014](14_supernode-governance-exceptions.md) 闭环。

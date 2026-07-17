@@ -111,7 +111,8 @@ SPEC-003 defines the profile evaluation and migration contract. Atomic invariant
 registration, versioned profile output, N/A exclusion, legacy mapping,
 suppression non-evidence, unified edges, heading selector resolution,
 syntax-neutral reference collection,
-scoped multi-anchor verification, transitive impact, Fan-In/Fan-Out and cycle analysis, and explicit topology thresholds are
-delivered. Budgets and audited exception execution remain planned. The current
+scoped multi-anchor verification, transitive impact, Fan-In/Fan-Out and cycle
+analysis, explicit topology thresholds and audited exceptions, responsibility,
+review sunset, and knowledge redundancy are delivered. The current
 four-level document-contract maturity and nine rule-family activation model
 remain the executable compatibility baseline.

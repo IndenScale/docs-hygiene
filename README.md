@@ -82,6 +82,9 @@ Docs Hygiene currently provides deterministic project-level governance checks:
   typed provenance, Ed25519 trust, lifecycle policy, and explicit local import;
 - exact node/direction supernode exceptions with audited budgets, expiry,
   degree trends, cleanup diagnostics, and non-passing `excepted` evidence;
+- offline person/group principals, established-identity Owner, review sunset and
+  two-person confirmation gates, coverage/bus-factor evidence, and atomic
+  dry-run/apply review resets with JSONL audit;
 - path, identity, and structure parity across canonical and localized representations;
 - semantic references from governed content to `concept/*.md` and Library identities;
 - project-root-local Markdown Links, image targets, and semantic Wiki Links;
@@ -167,7 +170,8 @@ docs-hygiene check --format json
 Other commands include `init`, `lang`, `migrate-templates`, `migrate-kinds`,
 `scan-library-claims`, `explain`, and `explain-rules`. `update-pins` plans or
 explicitly applies critical Pin refreshes; `import-snapshot` explicitly
-materializes portable payloads from a local Git checkout. Run
+materializes portable payloads from a local Git checkout; `reset-review` plans
+or applies one audited deadline reset. Run
 `docs-hygiene --help` for the complete interface.
 
 ## Policy
@@ -219,6 +223,7 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 - [Critical Dependency Pins](docs/16_critical_dependency_pins.md)
 - [Portable Commit Snapshots](docs/17_portable_snapshots.md)
 - [Audited Supernode Exceptions](docs/18_supernode_exceptions.md)
+- [Document Ownership And Review Sunset](docs/19_document_ownership.md)
 - [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
 - [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
 - [Hygiene Profiles](docs/12_hygiene_profile.md)

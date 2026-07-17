@@ -25,6 +25,7 @@ pub enum InvariantApplicability {
     Selector,
     GovernanceGraph,
     AuthorityMigration,
+    OwnershipPolicy,
     TopologyPolicy,
     TopologyExceptions,
 }
@@ -53,6 +54,9 @@ impl InvariantSpec {
             "identity.canonical-source" => InvariantApplicability::LocalizedRepresentation,
             "identity.slug-schema" => InvariantApplicability::SlugSchema,
             "identity.authority-migration" => InvariantApplicability::AuthorityMigration,
+            "identity.responsibility"
+            | "identity.review-sunset"
+            | "identity.knowledge-redundancy" => InvariantApplicability::OwnershipPolicy,
             "dependency.content-anchor" | "dependency.target-staleness" => {
                 InvariantApplicability::ContentAnchor
             }
@@ -216,6 +220,30 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         delivery: Delivered,
         checkers: &[GovernanceIdentity],
         diagnostic_codes: &["DH_GOVERNANCE_001"],
+    },
+    InvariantSpec {
+        id: "identity.responsibility",
+        dimension: Identity,
+        minimum_maturity: Governed,
+        delivery: Delivered,
+        checkers: &[GovernanceIdentity],
+        diagnostic_codes: &["DH_OWNERSHIP_001"],
+    },
+    InvariantSpec {
+        id: "identity.review-sunset",
+        dimension: Identity,
+        minimum_maturity: Governed,
+        delivery: Delivered,
+        checkers: &[GovernanceIdentity],
+        diagnostic_codes: &["DH_REVIEW_001", "DH_REVIEW_002"],
+    },
+    InvariantSpec {
+        id: "identity.knowledge-redundancy",
+        dimension: Identity,
+        minimum_maturity: Governed,
+        delivery: Delivered,
+        checkers: &[GovernanceIdentity],
+        diagnostic_codes: &["DH_KNOWLEDGE_001"],
     },
     InvariantSpec {
         id: "dependency.resolve",

@@ -13,6 +13,7 @@ members:
   - portable-commit-snapshot.md
   - transitive-impact.md
   - identity-lifecycle.md
+  - ownership-review.md
   - topology-policy.md
   - supernode-exceptions.md
   - template-registry.md

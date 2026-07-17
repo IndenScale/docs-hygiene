@@ -68,6 +68,8 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
   本地导入的可移植 commit snapshot；
 - 带独立预算、expiry、度数趋势、清理诊断和非 Passed `excepted` 证据的精确
   node/direction 超级节点例外；
+- 离线 person/group Principal、已建立身份的 Owner/复核日落/双人确认门禁、覆盖率与
+  bus factor 证据，以及带 JSONL 审计的原子 Reset dry-run/apply；
 - canonical 与 localized 语言表示的路径、身份和结构同位；
 - 从受管内容到 `concept/*.md` 和 Library 身份的语义引用；
 - 项目根目录内 Markdown Link、图片目标和语义 Wiki Link 的有效性；
@@ -144,8 +146,8 @@ docs-hygiene check --format json
 
 其他命令包括 `init`、`lang`、`migrate-templates`、`migrate-kinds`、
 `scan-library-claims`、`explain` 和 `explain-rules`。`update-pins` 规划或显式执行关键
-Pin 刷新；`import-snapshot` 从本地 Git checkout 显式生成 portable payload。运行
-`docs-hygiene --help` 查看完整界面。
+Pin 刷新；`import-snapshot` 从本地 Git checkout 显式生成 portable payload；
+`reset-review` 规划或执行单个审计期限 Reset。运行 `docs-hygiene --help` 查看完整界面。
 
 ## 策略
 
@@ -190,6 +192,7 @@ adapters:
 - [关键依赖 Pin](docs/zh/16_critical_dependency_pins.md)
 - [可移植 Commit 快照](docs/zh/17_portable_snapshots.md)
 - [可审计超级节点例外](docs/zh/18_supernode_exceptions.md)
+- [文档责任与复核日落](docs/zh/19_document_ownership.md)
 - [渐进式规则激活](docs/zh/10_progressive_rule_activation.md)
 - [文档卫生治理模型](docs/zh/11_hygiene_governance_model.md)
 - [文档卫生画像](docs/zh/12_hygiene_profile.md)

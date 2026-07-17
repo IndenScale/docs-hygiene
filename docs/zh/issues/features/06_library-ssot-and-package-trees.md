@@ -28,8 +28,8 @@ Docs Hygiene 已把共享含义从 Body 主张中抽离为同精化层级的 Lib
 - `src/checks/tests/governance_packages.rs` 和 `tests/dogfood.rs` 覆盖正反例；
 - `docs/intent/ul/`、`docs/definition/glossary/` 与 `sdk-manifest.yml` 在本仓库 dogfood。
 
-## 未覆盖边界
+## 后续闭环
 
-检查器能证明“引用了 Library”，不能从自然语言判断 Body 是否重复定义核心概念，也没有
-核心概念候选清单和抽取迁移流程。该闭环由
-[FEATURE-011](11_library-ssot-extraction-and-duplication.md) 承载。
+本票据只证明“引用了 Library”。显式核心 claim 权威、重复策略、候选扫描与抽取迁移输入
+已经由已交付的 [FEATURE-011](11_library-ssot-extraction-and-duplication.md) 闭环；系统仍不从
+自然语言相似度直接生成阻断结论。

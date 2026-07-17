@@ -115,6 +115,15 @@ also invalid.
 `DH_CLAIM_001` reports an invalid core Library authority, confirmed forbidden
 duplicate, expired migration, or missing/stale controlled-excerpt block pin.
 
+`DH_OWNERSHIP_001` reports an invalid offline principal directory or a missing,
+unresolvable, inactive, or unexpanded Owner for an established identity.
+
+`DH_REVIEW_001` reports missing, invalid, or expired review evidence;
+`DH_REVIEW_002` warns inside the configured approach window.
+
+`DH_KNOWLEDGE_001` reports fewer than two unique current confirmations from
+active person principals. Groups never count as individual confirmations.
+
 `DH_PIN_001` through `DH_PIN_006` independently report missing Pins,
 insufficient scope, disallowed algorithms, changed content, expired audit age,
 and invalid policy or declaration state for critical dependencies.

@@ -63,6 +63,7 @@ pub fn evaluate_hygiene_profile(root: &Path, config: &Config) -> Result<HygieneP
         decisions: activation.decisions,
         document_templates: checks.document_templates,
         governance_graph: checks.governance_graph,
+        ownership: checks.ownership,
         topology_exceptions: checks.topology_exceptions,
         dimensions,
         overall_observed,
@@ -188,6 +189,7 @@ fn evaluate_invariant(
         InvariantApplicability::AuthorityMigration => {
             !checks.governance_graph.authority_migrations.is_empty()
         }
+        InvariantApplicability::OwnershipPolicy => config.governance.ownership.is_configured(),
         InvariantApplicability::ContentAnchor => checks.semantic_content_anchors_checked > 0,
         InvariantApplicability::ScopedContentAnchor => checks
             .governance_graph

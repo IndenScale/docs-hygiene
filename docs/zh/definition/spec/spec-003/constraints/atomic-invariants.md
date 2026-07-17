@@ -26,6 +26,9 @@ status: proposed
 | `identity.semantic-reference` | 受控 | `DH_CONCEPT_*`、`DH_REFERENCE_001` | 已交付 |
 | `identity.lifecycle` | 治理 | 状态义务与终止目标拒绝 | 已交付 |
 | `identity.authority-migration` | 治理 | `supersededBy`、后继校验、有序迁移证据 | 已交付 |
+| `identity.responsibility` | 治理 | 离线 Principal 目录、精确 Owner 解析、覆盖证据 | 已交付 |
+| `identity.review-sunset` | 治理 | 期限 warning/error、显式 Reset 计划/执行与审计 | 已交付 |
+| `identity.knowledge-redundancy` | 治理 | 带日期 active-person 确认与逐身份 bus factor | 已交付 |
 | `dependency.resolve` | 基础 | Wiki Link 与垂直目标解析 | 已交付 |
 | `dependency.typed-edges` | 受控 | 有序的规范化边记录 | 已交付 |
 | `dependency.content-anchor` | 受控 | 全目标 SHA-256 | 已交付 |

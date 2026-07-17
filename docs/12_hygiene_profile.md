@@ -65,7 +65,8 @@ docs-hygiene profile --fail-below-target
 
 JSON uses `docs-hygiene.profile.v1`. It contains the project fact snapshot,
 ordered execution decisions, document-template coverage and bindings, the
-normalized governance graph and topology metrics, dimensional targets and
+normalized governance graph and topology metrics, ownership/review/knowledge
+coverage with per-identity bus factor, dimensional targets and
 observations, N/A rationale, invariant evidence, the optional overall result,
 and whether all configured required targets are met.
 The failure flag is opt-in and prints the report before returning a non-zero
@@ -80,7 +81,8 @@ cycle analysis, explicit topology thresholds, and versioned syntax-neutral
 reference collection, scoped multi-anchor verification, transitive impact,
 identity lifecycle, authority migration, critical Pin policy, and portable
 offline commit snapshots, audited topology budgets, supernode exceptions, and
-degree trends are delivered. An applied exception intentionally remains
+degree trends, responsibility coverage, review sunset, and knowledge
+redundancy are delivered. An applied exception intentionally remains
 `excepted`, never Passed evidence.
 The authoritative coverage ledger is
 [SPEC-003 C-007](definition/spec/spec-003/constraints/atomic-invariants.md).

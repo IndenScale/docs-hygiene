@@ -27,6 +27,9 @@ invariant has one dimension and minimum maturity.
 | `identity.semantic-reference` | controlled | `DH_CONCEPT_*`, `DH_REFERENCE_001` | delivered |
 | `identity.lifecycle` | governed | status obligations and terminal-target rejection | delivered |
 | `identity.authority-migration` | governed | `supersededBy`, successor validation, ordered migration evidence | delivered |
+| `identity.responsibility` | governed | offline principal directory, exact Owner resolution, coverage evidence | delivered |
+| `identity.review-sunset` | governed | deadline warning/error, explicit reset plan/apply and audit | delivered |
+| `identity.knowledge-redundancy` | governed | dated active-person confirmations and per-identity bus factor | delivered |
 | `dependency.resolve` | basic | Wiki Link and vertical target resolution | delivered |
 | `dependency.typed-edges` | controlled | ordered normalized edge records | delivered |
 | `dependency.content-anchor` | controlled | whole-target SHA-256 | delivered |

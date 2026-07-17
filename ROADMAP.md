@@ -56,16 +56,20 @@ remain the authority for delivered behavior.
 - The eleventh PRD-004 slice enforces lifecycle status obligations across assets
   and package identities, validates `supersededBy` successors, rejects stale
   terminal targets, and reports ordered authority-migration evidence.
+- Subsequent delivered slices add kind-scoped slug identity, typed Document Kind
+  schemas and scaffolding, explicit Library claim governance, critical Pin policy,
+  portable offline commit snapshots, audited supernode exceptions, and degree trends.
+- The current final slice adds offline principal identities, established-identity
+  Owner/review/two-person obligations, deterministic coverage and bus-factor
+  evidence, and atomic audited review resets, completing the current
+  [PRD-004](docs/intent/prd/prd-004/index.md) / [SPEC-003 C-019](docs/definition/spec/spec-003/constraints/ownership-review.md)
+  baseline.
 
 ## Planned
 
 - [PRD-001 Three-Layer Contract Governance](docs/intent/prd/prd-001/index.md)
   will extend the delivered asset graph with item-level requirement coverage,
   symbol-level semantic projection and end-to-end traces from intent to implementation.
-- [PRD-004 Multidimensional Documentation Governance](docs/intent/prd/prd-004/index.md)
-  is in progress through [SPEC-003](docs/definition/spec/spec-003/index.md). Next
-  slices add budgets, exceptions, and trends while retaining rule activation as
-  a separate execution state.
 
 ## Backlog
 

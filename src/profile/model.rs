@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::activation::{CapabilityDimension, HygieneMaturity, ProjectFacts, RuleDecision};
 use crate::governance::GovernanceGraph;
-use crate::report::{DocumentTemplateReport, TopologyExceptionEvidence};
+use crate::report::{DocumentTemplateReport, OwnershipReport, TopologyExceptionEvidence};
 
 use super::InvariantDelivery;
 
@@ -61,6 +61,7 @@ pub struct HygieneProfileReport {
     pub decisions: Vec<RuleDecision>,
     pub document_templates: DocumentTemplateReport,
     pub governance_graph: GovernanceGraph,
+    pub ownership: OwnershipReport,
     pub topology_exceptions: Vec<TopologyExceptionEvidence>,
     pub dimensions: Vec<DimensionResult>,
     pub overall_observed: Option<HygieneMaturity>,

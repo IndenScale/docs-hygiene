@@ -30,8 +30,8 @@ Docs Hygiene 已能根据文档 Kind 的路径/文件名信号绑定开放契约
 - Git 提交 `737d746` 对应最初的路径推导文档契约，后续模板生命周期由
   `10b84a7` 补齐。
 
-## 未覆盖边界
+## 后续闭环
 
-`requiredFields` 仍是正文/原始文本正则，不是字段级类型 Schema；`scaffold` 只创建固定的
-starter tree，不接受 Kind、Profile 或模板 revision。后续由
+本票据中的 `requiredFields` 仍是正文/原始文本正则。字段级类型 Schema，以及接受 Kind、
+Profile 和模板 revision 的 scaffold 已由
 [FEATURE-010](10_kind-aware-scaffolding-and-frontmatter-schema.md) 交付。

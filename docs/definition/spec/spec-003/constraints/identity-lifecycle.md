@@ -38,3 +38,6 @@ historical transitions occurred. The checker does not rewrite consumers,
 delete historical identities, or infer a successor from similar prose. The
 governed lifecycle and authority-migration invariants pass only when these
 snapshot obligations and all active identity checks pass without suppression.
+Established successors independently satisfy the ownership, review-sunset, and
+knowledge-redundancy contract in [C-019](ownership-review.md); predecessor
+evidence is never inherited.
