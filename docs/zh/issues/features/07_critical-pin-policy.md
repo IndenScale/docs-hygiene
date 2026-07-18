@@ -21,5 +21,6 @@ whole-file 策略和审计年龄；普通依赖不承担 Pin 成本。
 
 ## 交付证据
 
-`src/checks/critical_dependencies.rs`、`src/pin_update.rs`、`tests/pin_update.rs`。
-Repo scope 接入将在 FEATURE-006 交付后扩展，不影响现有 File/Block 策略已交付判断。
+`src/checks/critical_dependencies.rs`、`src/pin_update.rs`、`src/repository_anchor.rs`、
+`tests/pin_update.rs`。Repo scope 已由 FEATURE-006 接入同一策略与更新工作流，并以完整
+commit OID 校验当前 tracked repository state。
