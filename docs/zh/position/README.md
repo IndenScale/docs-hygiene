@@ -5,7 +5,8 @@
 
 ## 文档
 
-- [三维治理模型](01_three_dimensional_governance_model.md)
+- [认知资产治理模型](02_cognitive_asset_governance_model.md)
+- [三维软件文档 Profile](01_three_dimensional_governance_model.md)
 
 ## 变更路由
 

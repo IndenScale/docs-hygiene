@@ -2,6 +2,7 @@ id: UL-DOMAIN-ARCHITECTURE
 kind: domain
 status: baselined
 members:
+  - cognitive-asset-governance-model.md
   - three-dimensional-governance-model.md
   - refinement-levels
   - reference-relation.md

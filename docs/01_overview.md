@@ -1,37 +1,75 @@
 # Overview
 
-Docs Hygiene is a **Policy Engine** for project documentation.
+Docs Hygiene is a **Policy Engine** for cognitive assets expressed in project
+documentation. It compiles explicit identities, dependencies, lifecycle, and
+project policy into deterministic findings; it does not infer business truth
+from prose.
 
-It preserves documentation invariants within an explicitly selected project
-root. The tool checks required entry files, numbered document structure,
-language parity, length budgets, and concept integrity.
+## Governance Responsibilities
 
-Docs Hygiene does not replace general-purpose Markdown or prose linters. It
-checks project-root-aware links and document contracts directly, while external
-tools remain available through **Adapter** configuration.
+| Responsibility | Authority or mechanism | Governing question |
+| --- | --- | --- |
+| Semantic Authority | Library | What does this mean, and which definition is authoritative? |
+| Change Propagation | Dependency | Who may be affected when an upstream asset changes? |
+| Human Judgment | Decision | What did people choose, why, and when must it be reconsidered? |
+
+Library entries and Decision records are governed assets. A Reference is one
+kind of Dependency. See the
+[Cognitive Asset Governance Model](position/02_cognitive_asset_governance_model.md).
+
+The current CLI ships stable Library identities, semantic and pinned
+Dependencies, scoped freshness evidence, lifecycle, structural impact, topology,
+ownership review, and audited updates. A first-class Decision asset, general
+Agent Attestation, and Issue Review are product directions rather than current
+behavior.
+
+## Review and Automation Boundary
+
+Dependency analysis distinguishes three concepts:
+
+```text
+potentialImpact  = structurally reachable consumers
+invalidated      = pinned consumers whose locked upstream state changed
+reviewSet        = invalidated consumers that policy requires someone to handle
+```
+
+Current `transitiveImpact` is structural `potentialImpact`; critical Pins and
+scoped anchors provide deterministic invalidation evidence. Unpinned edges stay
+advisory when upstream content changes, so projects can avoid false positives by
+Pinning only dependencies that require exact-state review. An external AI may
+analyze Info-level findings, but Docs Hygiene does not configure unattended
+Agents or hide probabilistic judgment inside deterministic checks.
+
+Architecture remains a human responsibility. DH may expose paths, communities,
+concentration, and possible isolation boundaries. It does not decide to insert
+an intermediate contract or rewrite the dependency graph.
+
+## Software Documentation Profile
+
+The built-in profile locates assets by refinement level, reference relation, and
+language representation. It preserves progressive refinement, Body-to-Library
+semantics, and canonical/localized parity. These coordinates instantiate the
+product responsibilities for software documentation; they are not the top-level
+product ontology. See the
+[Three-Dimensional Software Documentation Profile](position/01_three_dimensional_governance_model.md).
 
 ## Product Boundary
 
-Docs Hygiene owns documentation hygiene rules that require project context:
+Docs Hygiene owns project-context-aware rules for:
 
-- required public entry files
-- root entry docs with an allow-by-default posture
-- docs bases with a deny-by-default posture
-- numbered docs structure and index files
-- language-representation parity between canonical and localized documents
-- language threshold checks
-- concept foreign keys
-- dead semantic Wiki Links and project-root-local Markdown Link targets
-- governed YAML frontmatter contracts
-- type-specific document profiles and recursive Package directory structure
-- explainable progressive activation from deterministic project facts
-- external adapter orchestration
+- required public entry files and deny-by-default docs bases;
+- numbered structure, indexes, document contracts, and governed frontmatter;
+- stable identities, Library authorities, semantic references, and lifecycle;
+- canonical/localized representation parity;
+- typed Dependency edges, Pins, scoped anchors, impact, and topology;
+- explainable progressive activation, ownership review, and audited updates;
+- external Adapter orchestration.
 
 It does not own general Markdown formatting, external URL crawling, spelling,
 or prose style. Those stay in tools such as markdownlint, lychee, Vale, cspell,
-or slop-lint. This boundary does not exclude project-root-aware validation of
-Markdown targets, Wiki Link identities, frontmatter, or document structure.
+or slop-lint. It does not decide whether a narrative is true, schedule Agents,
+or make architecture and product Decisions on a team's behalf.
 
 The delivered [Documentation Hygiene Governance Model](11_hygiene_governance_model.md)
-separates capability dimensions, maturity, and execution state while retaining
-the product boundary above.
+separates capability dimensions, maturity, and execution state within this
+boundary.

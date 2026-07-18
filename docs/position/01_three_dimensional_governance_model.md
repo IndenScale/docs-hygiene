@@ -1,8 +1,13 @@
-# Three-Dimensional Governance Model
+# Three-Dimensional Software Documentation Profile
 
 Status: adopted
 
-Scope: Docs Hygiene product model
+Scope: built-in software-documentation profile
+
+This profile derives from the [Cognitive Asset Governance Model](02_cognitive_asset_governance_model.md).
+It is a coordinate system for one governed surface, not the top-level product
+ontology. Library supplies Semantic Authority, typed edges implement Change
+Propagation, and project policy controls where Human Judgment is required.
 
 ## Position
 
@@ -19,8 +24,8 @@ cover an entire repository or one project directory inside a monorepo. The
 current CLI loads policy and resolves assets from one explicitly selected
 project root per run; it does not auto-discover or orchestrate other projects.
 
-Docs Hygiene locates every governed project asset along three independent
-dimensions:
+Within this profile, Docs Hygiene locates every governed project asset along
+three independent dimensions:
 
 1. Refinement level preserves progressive refinement from intent to implementation.
 2. Reference relation preserves semantic dependencies between project assertions and shared definitions.

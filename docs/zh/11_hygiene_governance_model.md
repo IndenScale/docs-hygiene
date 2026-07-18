@@ -1,12 +1,16 @@
 # 文档卫生治理模型
 
-本文定义 [PRD-004](intent/prd/prd-004/index.md) 已基线化的模型，用于组织当前已交付
+本文定义 [PRD-004](intent/prd/prd-004/index.md) 已基线化的运行模型，用于组织当前已交付
 能力，而不是用一个线性成熟度代表所有治理问题。当前可执行行为以配置、规则、测试和
 [渐进式规则激活](10_progressive_rule_activation.md)为准。
 
+本模型位于[认知资产治理模型](position/02_cognitive_asset_governance_model.md)之下：身份与
+SSOT 落实 Semantic Authority，依赖与拓扑落实 Change Propagation，责任复核、激活策略
+和审计更新为 Human Judgment 提供基础。本运行画像不声称一等 Decision 资产已经交付。
+
 ## 模型
 
-文档卫生包含三个相互独立的轴：
+文档卫生运行画像包含三个相互独立的轴：
 
 1. 能力维度说明评估哪个治理范围；
 2. 成熟度说明该范围治理到多深；

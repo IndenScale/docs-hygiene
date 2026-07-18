@@ -6,7 +6,8 @@ they do not replace the UL directory, PRDs, Glossary directory, or specification
 
 ## Documents
 
-- [Three-Dimensional Governance Model](01_three_dimensional_governance_model.md)
+- [Cognitive Asset Governance Model](02_cognitive_asset_governance_model.md)
+- [Three-Dimensional Software Documentation Profile](01_three_dimensional_governance_model.md)
 
 ## Change Routing
 

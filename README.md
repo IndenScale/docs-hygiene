@@ -2,7 +2,7 @@
 
 English | [中文](README_ZH.md)
 
-**Docs Hygiene (DH) is a governance tool for project documentation.**
+**Docs Hygiene (DH) engineers cognitive-asset governance in project documentation.**
 
 In the age of AI coding, documentation is the SSOT for project intent and
 decisions. Agents can amplify implementation capacity quickly, but they amplify
@@ -17,9 +17,30 @@ continuously verifiable invariants. It does not interpret natural language on a
 team's behalf. Instead, it deterministically exposes broken structure, identity,
 references, and traceability before implementation amplifies the deviation.
 
-## Three Kinds of Invariants
+Within [Retrospective Engineering](https://indenscale.github.io/synthesis/retrospective-engineering/),
+DH acts as Dependabot for documentation. Retrospective Engineering reconstructs
+forward design from historical evidence and governs technical debt plus part of
+cognitive debt; DH continuously checks the resulting knowledge assets' identity,
+dependencies, freshness, and evolution so they do not silently become stale again.
+DH does not decide whether a business narrative is true or replace domain experts.
 
-| Governance direction | What Docs Hygiene preserves |
+## Three Governance Responsibilities
+
+| Responsibility | Authority or mechanism | Governing question |
+| --- | --- | --- |
+| Semantic Authority | Library | What does this mean, and which definition is authoritative? |
+| Change Propagation | Dependency | Who may be affected when an upstream asset changes? |
+| Human Judgment | Decision | What did people choose, why, and when must it be reconsidered? |
+
+Library entries and Decision records are governed assets; a Reference is a kind
+of Dependency. DH currently ships Library identity, dependency graphs, Pins,
+impact, and lifecycle foundations. First-class Decision assets, general Agent
+Attestation, and Issue Review remain product directions. See the
+[Cognitive Asset Governance Model](docs/position/02_cognitive_asset_governance_model.md).
+
+## Built-In Software Documentation Profile
+
+| Profile direction | What Docs Hygiene preserves |
 | --- | --- |
 | From intent to implementation | Progressive refinement and traceability from Intent through Definition to Implementation |
 | From project assertions to shared definitions | Body references to same-level Library identities and progressive Library projection |
@@ -30,9 +51,9 @@ refinement level, reference relation, and language representation. Together,
 they make intent-level decisions verifiably realizable in implementation, expose
 deviation early, and reduce the cost of repeatedly rediscovering terminology,
 document identity, authoritative representations, and implementation grounds.
-
-See the [Three-Dimensional Governance Model](docs/position/01_three_dimensional_governance_model.md)
-for the formal product model.
+This is a built-in profile of the Cognitive Asset Governance Model, not the
+top-level product ontology. See the
+[Three-Dimensional Software Documentation Profile](docs/position/01_three_dimensional_governance_model.md).
 
 ## Project and Execution Boundaries
 
@@ -185,7 +206,7 @@ stronger semantic and traceability gates as it matures.
 
 This repository dogfoods Docs Hygiene with its own
 [docs-hygiene.yml](docs-hygiene.yml). It demonstrates the complete
-three-dimensional model, but it is not a fixed directory template that every
+software-documentation profile, but it is not a fixed directory template that every
 project must copy.
 
 See [Configuration](docs/02_configuration.md) for policy syntax. Shipped behavior
@@ -215,6 +236,8 @@ See [External Tool Adapters](docs/04_adapters.md) for the current contract.
 ## Documentation
 
 - [Overview](docs/01_overview.md)
+- [Cognitive Asset Governance Model](docs/position/02_cognitive_asset_governance_model.md)
+- [Three-Dimensional Software Documentation Profile](docs/position/01_three_dimensional_governance_model.md)
 - [Configuration](docs/02_configuration.md)
 - [Rules](docs/03_rules.md)
 - [CI and JSON output](docs/05_ci.md)

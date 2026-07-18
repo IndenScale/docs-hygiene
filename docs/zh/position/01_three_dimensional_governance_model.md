@@ -1,8 +1,12 @@
-# 三维治理模型
+# 三维软件文档 Profile
 
 状态：adopted
 
-范围：Docs Hygiene 产品模型
+范围：内建软件文档 Profile
+
+本 Profile 派生自[认知资产治理模型](02_cognitive_asset_governance_model.md)。它是一类受治理
+表面的坐标系，不再作为顶层产品本体。Library 提供 Semantic Authority，类型化边实现
+Change Propagation，项目策略控制何处需要 Human Judgment。
 
 ## 立场主张
 
@@ -15,7 +19,7 @@
 仓库，也可以对应 monorepo 中的一个项目目录。当前 CLI 每次从显式指定的项目根目录
 加载策略和解析资产，不自动发现或编排其他项目。
 
-Docs Hygiene 使用三个相互独立的维度定位每项受治理的项目资产：
+在本 Profile 中，Docs Hygiene 使用三个相互独立的维度定位每项受治理的项目资产：
 
 1. 精化层级守护从意图到实现的逐层精化；
 2. 引用关系守护项目主张与共享定义之间的语义依赖；

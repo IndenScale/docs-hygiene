@@ -3,6 +3,6 @@ id: DH-THREE-DIMENSIONAL-GOVERNANCE-MODEL
 status: baselined
 ---
 
-# Three-Dimensional Governance Model
+# Three-Dimensional Software Documentation Profile
 
-Product architecture that locates every governed asset by refinement level, reference relation, and language representation. Typed edges connect assets without duplicating semantic identity across languages.
+Built-in profile that locates software-documentation assets by refinement level, reference relation, and language representation. It instantiates the Cognitive Asset Governance Model without serving as the top-level product ontology.

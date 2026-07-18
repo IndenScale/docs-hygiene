@@ -1,6 +1,6 @@
 # Terminology Migration
 
-The three-dimensional governance model introduces breaking configuration names:
+The three-dimensional software-documentation profile introduces breaking configuration names:
 
 | Previous name | Current name |
 | --- | --- |

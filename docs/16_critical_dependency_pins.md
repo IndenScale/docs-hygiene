@@ -2,7 +2,11 @@
 
 `governance.criticalDependencies` upgrades selected normalized governance edges
 from optional anchoring to an explicit Pin policy. Edges outside every matcher
-remain valid without a Pin.
+remain valid without a Pin. They may appear in structural impact analysis, but
+an upstream content change does not make them stale. A Pin opts a dependency
+into deterministic invalidation when its locked content hash or equivalent
+reviewed state drifts, so policy should Pin only dependencies that require that
+freshness guarantee.
 
 ## Policy
 

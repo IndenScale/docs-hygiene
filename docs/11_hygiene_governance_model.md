@@ -1,14 +1,20 @@
 # Documentation Hygiene Governance Model
 
-This document defines the model baselined by
+This document defines the operational model baselined by
 [PRD-004](intent/prd/prd-004/index.md). It organizes delivered capabilities
 without forcing one linear maturity score to represent every concern. Current
 executable behavior is defined by configuration, rules, tests, and
 [Progressive Rule Activation](10_progressive_rule_activation.md).
 
+It sits below the [Cognitive Asset Governance Model](position/02_cognitive_asset_governance_model.md):
+identity and SSOT operationalize Semantic Authority; dependency and topology
+operationalize Change Propagation; ownership review, activation policy, and
+audited updates provide foundations for Human Judgment. First-class Decision
+assets are not claimed as shipped by this operational profile.
+
 ## Model
 
-Documentation hygiene has three independent axes:
+The operational hygiene profile has three independent axes:
 
 1. A capability dimension states what governance surface is assessed.
 2. A maturity level states how deeply that surface is governed.
