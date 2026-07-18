@@ -77,8 +77,7 @@ pub fn import_portable_snapshot(
             target: None,
             path: manifest_rel.display().to_string(),
             reason: format!(
-                "snapshot import requires schemaVersion '{}' and active status",
-                PORTABLE_SNAPSHOT_SCHEMA_VERSION
+                "snapshot import requires schemaVersion '{PORTABLE_SNAPSHOT_SCHEMA_VERSION}' and active status"
             ),
         });
         return Ok(report);

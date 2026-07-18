@@ -9,7 +9,7 @@ This page covers three things: building DH, generating the project policy, and r
 
 ## Prerequisites
 
-- Rust 1.85 or later;
+- Rust 1.88 or later;
 - A project directory managed with Git;
 - The ability to run commands locally or in CI.
 

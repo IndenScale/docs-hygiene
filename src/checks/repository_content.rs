@@ -158,8 +158,7 @@ fn check_language(
                     Severity::Warning,
                     doc.rel.display().to_string(),
                     format!(
-                        "CJK ratio {:.3} is below configured minCjkRatio {:.3} for {lang}.",
-                        ratio, min
+                        "CJK ratio {ratio:.3} is below configured minCjkRatio {min:.3} for {lang}."
                     ),
                 ));
             }
@@ -171,8 +170,7 @@ fn check_language(
                     Severity::Warning,
                     doc.rel.display().to_string(),
                     format!(
-                        "CJK ratio {:.3} is above configured maxCjkRatio {:.3} for {lang}.",
-                        ratio, max
+                        "CJK ratio {ratio:.3} is above configured maxCjkRatio {max:.3} for {lang}."
                     ),
                 ));
             }

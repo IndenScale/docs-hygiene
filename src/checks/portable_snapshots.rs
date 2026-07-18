@@ -86,8 +86,7 @@ fn validate_snapshot_manifest(
             "DH_SNAPSHOT_001",
             path.clone(),
             format!(
-                "Portable snapshot requires schemaVersion '{}', a stable id, and at least one entry.",
-                PORTABLE_SNAPSHOT_SCHEMA_VERSION
+                "Portable snapshot requires schemaVersion '{PORTABLE_SNAPSHOT_SCHEMA_VERSION}', a stable id, and at least one entry."
             ),
             diagnostics,
         );

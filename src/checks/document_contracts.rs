@@ -293,8 +293,7 @@ fn check_maturity_recommendation(
             Severity::Info,
             ".",
             format!(
-                "Project signals recommend document governance maturity {:?}; declared {:?} ({} lines, {} bytes, {} managed docs).",
-                level, declared, project_lines, project_bytes, managed_documents
+                "Project signals recommend document governance maturity {level:?}; declared {declared:?} ({project_lines} lines, {project_bytes} bytes, {managed_documents} managed docs)."
             ),
         ));
     }

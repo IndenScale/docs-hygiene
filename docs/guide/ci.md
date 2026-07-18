@@ -131,7 +131,7 @@ governance contract blocks the workflow.
 
 ```yaml
 - name: Test, including repository dogfood policy
-  run: cargo +1.85.0 test --locked
+  run: cargo +1.88.0 test --locked
 ```
 
 The dogfood test disables external adapters because their executables are

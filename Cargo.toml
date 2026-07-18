@@ -2,7 +2,7 @@
 name = "docs-hygiene"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Policy-as-code checker for documentation structure, language representations, and governance traceability."
 license = "MIT"
 readme = "README.md"

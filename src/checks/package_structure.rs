@@ -126,7 +126,7 @@ fn check_non_directory_library_members(
                 "DH_LIBRARY_001",
                 Severity::Error,
                 asset.path.clone(),
-                format!("Library member '{}' does not exist.", member),
+                format!("Library member '{member}' does not exist."),
             ));
         }
     }
