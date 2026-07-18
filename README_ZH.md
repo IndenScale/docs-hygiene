@@ -1,6 +1,10 @@
 # Docs Hygiene
 
-[English](README.md) | 中文
+[![文档站点](https://img.shields.io/badge/%E6%96%87%E6%A1%A3%E7%AB%99%E7%82%B9-%E4%B8%AD%E6%96%87_%7C_EN-1783ff)](https://indenscale.github.io/docs-hygiene/)
+[![CI](https://github.com/IndenScale/docs-hygiene/actions/workflows/ci.yml/badge.svg)](https://github.com/IndenScale/docs-hygiene/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-16c456)](LICENSE)
+
+[English](README.md) | 中文 · 站点：[中文](https://indenscale.github.io/docs-hygiene/) | [English](https://indenscale.github.io/docs-hygiene/en/)
 
 **Docs Hygiene（DH）对项目文档中的认知资产实施工程化治理。**
 
@@ -200,6 +204,8 @@ adapters:
 
 ## 文档导航
 
+- [在线文档站（中文）](https://indenscale.github.io/docs-hygiene/)
+- [Documentation Site (English)](https://indenscale.github.io/docs-hygiene/en/)
 - [文档门户](docs/zh/README.md)
 - [概览](docs/zh/guide/overview.md)
 - [认知资产治理模型](docs/zh/position/02_cognitive_asset_governance_model.md)

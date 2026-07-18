@@ -1,6 +1,10 @@
 # Docs Hygiene
 
-English | [中文](README_ZH.md)
+[![Docs Site](https://img.shields.io/badge/docs_site-EN_%7C_%E4%B8%AD%E6%96%87-1783ff)](https://indenscale.github.io/docs-hygiene/en/)
+[![CI](https://github.com/IndenScale/docs-hygiene/actions/workflows/ci.yml/badge.svg)](https://github.com/IndenScale/docs-hygiene/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-16c456)](LICENSE)
+
+English | [中文](README_ZH.md) · Site: [English](https://indenscale.github.io/docs-hygiene/en/) | [中文](https://indenscale.github.io/docs-hygiene/)
 
 **Docs Hygiene (DH) engineers cognitive-asset governance in project documentation.**
 
@@ -232,6 +236,8 @@ See [External Tool Adapters](docs/guide/adapters.md) for the current contract.
 
 ## Documentation
 
+- [Documentation Site (English)](https://indenscale.github.io/docs-hygiene/en/)
+- [在线文档站（中文）](https://indenscale.github.io/docs-hygiene/)
 - [Documentation Portal](docs/README.md)
 - [Overview](docs/guide/overview.md)
 - [Cognitive Asset Governance Model](docs/position/02_cognitive_asset_governance_model.md)
