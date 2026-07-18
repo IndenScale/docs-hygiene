@@ -5,6 +5,8 @@ struct SemanticTarget {
     status: String,
     superseded_by: Option<String>,
     path: String,
+    document_kind: Option<String>,
+    alternates: Vec<SemanticTarget>,
 }
 
 struct ReferenceAnalysis {
@@ -18,7 +20,7 @@ fn check_governed_references(
     assets: &[GovernanceAsset],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> ReferenceAnalysis {
-    let targets = build_library_target_index(root, assets, diagnostics);
+    let targets = build_library_target_index(root, config, assets, diagnostics);
     check_core_library_claims(root, config, assets, &targets, diagnostics);
     let mut edges = Vec::new();
     for asset in assets
@@ -28,12 +30,12 @@ fn check_governed_references(
         let canonical_paths = asset_content_paths(root, asset);
         let canonical =
             collect_governed_reference_occurrences(root, &canonical_paths, diagnostics);
-        let canonical_edges = normalize_reference_edges(asset, &canonical, &targets);
+        let mut canonical_edges = normalize_reference_edges(asset, &canonical, &targets);
         validate_asset_wiki_references(
             root,
             config,
             asset,
-            &canonical_edges,
+            &mut canonical_edges,
             &targets,
             diagnostics,
         );
@@ -80,21 +82,26 @@ fn check_governed_references(
             .into_iter()
             .filter(|occurrence| occurrence.context == CONTEXT_GOVERNED_ANCHOR)
             .collect::<BTreeSet<_>>();
-        let pinned = normalize_reference_edges(asset, &occurrences, &targets);
-        validate_optional_governed_pins(root, config, asset, &pinned, &targets, diagnostics);
+        let mut pinned = normalize_reference_edges(asset, &occurrences, &targets);
+        validate_optional_governed_pins(root, config, asset, &mut pinned, &targets, diagnostics);
         edges.extend(pinned);
     }
     let nodes = targets
         .into_iter()
-        .map(|(identity, target)| GovernanceNode {
-            identity,
-            refinement_level: target.refinement_level,
-            reference_relation: target.reference_relation,
-            lifecycle_status: target.status,
-            location: GovernanceLocation {
-                path: target.path,
-                line: None,
-            },
+        .flat_map(|(identity, target)| {
+            let mut candidates = vec![target.clone()];
+            candidates.extend(target.alternates);
+            candidates.into_iter().map(move |candidate| GovernanceNode {
+                identity: identity.clone(),
+                refinement_level: candidate.refinement_level,
+                reference_relation: candidate.reference_relation,
+                document_kind: candidate.document_kind,
+                lifecycle_status: candidate.status,
+                location: GovernanceLocation {
+                    path: candidate.path,
+                    line: None,
+                },
+            })
         })
         .collect();
     ReferenceAnalysis { nodes, edges }
@@ -102,6 +109,7 @@ fn check_governed_references(
 
 fn build_library_target_index(
     root: &Path,
+    config: &Config,
     assets: &[GovernanceAsset],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> BTreeMap<String, SemanticTarget> {
@@ -116,6 +124,8 @@ fn build_library_target_index(
                 status: asset.status.clone(),
                 superseded_by: asset.superseded_by.clone(),
                 path: asset.path.clone(),
+                document_kind: inferred_document_kind(config, &asset.path),
+                alternates: Vec::new(),
             },
             diagnostics,
         );
@@ -141,6 +151,7 @@ fn build_library_target_index(
             Path::new(""),
             &members,
             asset.refinement_level,
+            config,
             &mut targets,
             diagnostics,
         );
@@ -155,6 +166,7 @@ fn collect_declared_library_targets(
     directory_rel: &Path,
     members: &[String],
     refinement_level: RefinementLevel,
+    config: &Config,
     targets: &mut BTreeMap<String, SemanticTarget>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -183,6 +195,11 @@ fn collect_declared_library_targets(
                         status: identity.status,
                         superseded_by: identity.superseded_by,
                         path: package_rel.join(&node_rel).display().to_string(),
+                        document_kind: inferred_document_kind(
+                            config,
+                            &package_rel.join(&node_rel).display().to_string(),
+                        ),
+                        alternates: Vec::new(),
                     },
                     diagnostics,
                 );
@@ -207,6 +224,11 @@ fn collect_declared_library_targets(
                     status: domain.status,
                     superseded_by: domain.superseded_by,
                     path: package_rel.join(&manifest_rel).display().to_string(),
+                    document_kind: inferred_document_kind(
+                        config,
+                        &package_rel.join(&manifest_rel).display().to_string(),
+                    ),
+                    alternates: Vec::new(),
                 },
                 diagnostics,
             );
@@ -216,11 +238,31 @@ fn collect_declared_library_targets(
                 &node_rel,
                 &domain.members,
                 refinement_level,
+                config,
                 targets,
                 diagnostics,
             );
         }
     }
+}
+
+fn inferred_document_kind(config: &Config, path: &str) -> Option<String> {
+    let path = Path::new(path);
+    let filename = path.file_name()?.to_str()?;
+    normalized_bases(config).into_iter().find_map(|base| {
+        let belongs = std::iter::once(base.root.as_path())
+            .chain(base.localized_roots.values().map(PathBuf::as_path))
+            .any(|root| path.starts_with(root));
+        if !belongs {
+            return None;
+        }
+        base.patterns.into_iter().find_map(|pattern| {
+            Regex::new(&pattern.regex)
+                .ok()
+                .filter(|regex| regex.is_match(filename))
+                .map(|_| pattern.document_kind)
+        })
+    })
 }
 
 fn insert_library_target(
@@ -229,19 +271,22 @@ fn insert_library_target(
     target: SemanticTarget,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if let Some(existing) = targets.insert(id.clone(), target.clone()) {
+    if let Some(existing) = targets.get_mut(&id) {
         diagnostics.push(
             Diagnostic::new(
                 "DH_GOVERNANCE_001",
                 Severity::Error,
-                target.path,
+                target.path.clone(),
                 format!("Library semantic identity '{id}' is declared more than once."),
             )
             .with_related(RelatedInformation::new(
-                existing.path,
+                existing.path.clone(),
                 "First declaration is here.",
             )),
         );
+        existing.alternates.push(target);
+    } else {
+        targets.insert(id, target);
     }
 }
 
@@ -320,7 +365,7 @@ fn validate_asset_wiki_references(
     root: &Path,
     config: &Config,
     asset: &GovernanceAsset,
-    edges: &[GovernanceEdge],
+    edges: &mut [GovernanceEdge],
     targets: &BTreeMap<String, SemanticTarget>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -342,26 +387,47 @@ fn validate_asset_wiki_references(
             ));
             continue;
         };
+        if edge.resolution.outcome == ReferenceResolutionOutcome::Ambiguous {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                edge.source_location.path.clone(),
+                format!(
+                    "Reference target '{}' is ambiguous across {} governed endpoints.",
+                    edge.target,
+                    edge.resolution.endpoints.len()
+                ),
+            ));
+            continue;
+        }
         let same_refinement = target.refinement_level == asset.refinement_level;
         let adjacent_upstream =
             refinement_rank(target.refinement_level) + 1 == refinement_rank(asset.refinement_level);
-        let valid_relation = declared_vertical_pin
-            || (target.reference_relation == ReferenceRelation::Library
-                && match asset.reference_relation {
-                    ReferenceRelation::Body => same_refinement,
-                    ReferenceRelation::Library => same_refinement || adjacent_upstream,
-                });
-        if !valid_relation {
+        let type_issues = edge
+            .resolution
+            .incompatibilities
+            .iter()
+            .copied()
+            .filter(|issue| {
+                matches!(
+                    issue,
+                    ReferenceCompatibilityIssue::RefinementLevel
+                        | ReferenceCompatibilityIssue::ReferenceRelation
+                        | ReferenceCompatibilityIssue::DocumentKind
+                )
+            })
+            .collect::<Vec<_>>();
+        if !type_issues.is_empty() {
             diagnostics.push(
                 Diagnostic::new(
                     "DH_REFERENCE_001",
                     Severity::Error,
                     asset.path.clone(),
                     format!(
-                        "Asset '{}' cannot reference Library Wiki Link target '{}' from {} refinement level.",
+                        "Asset '{}' has incompatible reference target '{}': {:?}.",
                         asset.id,
                         edge.target,
-                        target.refinement_level.label()
+                        type_issues
                     ),
                 )
                 .with_related(RelatedInformation::new(
@@ -376,8 +442,14 @@ fn validate_asset_wiki_references(
             ReferenceRelation::Body => same_refinement,
             ReferenceRelation::Library => adjacent_upstream,
         };
-        validate_edge_selector(root, edge, target, diagnostics);
-        validate_edge_anchor(root, config, edge, target, diagnostics);
+        if !validate_edge_selector(root, edge, target, diagnostics) {
+            edge.resolution
+                .add_incompatibility(ReferenceCompatibilityIssue::Selector);
+        }
+        if !validate_edge_anchor(root, config, edge, target, diagnostics) {
+            edge.resolution
+                .add_incompatibility(ReferenceCompatibilityIssue::Anchor);
+        }
     }
     let missing_required_reference = match asset.reference_relation {
         ReferenceRelation::Body => {
@@ -411,7 +483,7 @@ fn validate_optional_governed_pins(
     root: &Path,
     config: &Config,
     asset: &GovernanceAsset,
-    edges: &[GovernanceEdge],
+    edges: &mut [GovernanceEdge],
     targets: &BTreeMap<String, SemanticTarget>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -425,26 +497,53 @@ fn validate_optional_governed_pins(
             ));
             continue;
         };
-        let adjacent_upstream =
-            refinement_rank(target.refinement_level) + 1 == refinement_rank(asset.refinement_level);
-        let same_refinement = target.refinement_level == asset.refinement_level;
-        let valid = asset_declares_vertical_target(asset, &edge.target)
-            || (target.reference_relation == ReferenceRelation::Library
-                && (same_refinement || adjacent_upstream));
-        if !valid {
+        if edge.resolution.outcome == ReferenceResolutionOutcome::Ambiguous {
             diagnostics.push(Diagnostic::new(
                 "DH_REFERENCE_001",
                 Severity::Error,
                 edge.source_location.path.clone(),
                 format!(
-                    "Pinned target '{}' is not a declared vertical dependency of Library '{}'.",
-                    edge.target, asset.id
+                    "Pinned target '{}' is ambiguous across {} governed endpoints.",
+                    edge.target,
+                    edge.resolution.endpoints.len()
                 ),
             ));
             continue;
         }
-        validate_edge_selector(root, edge, target, diagnostics);
-        validate_edge_anchor(root, config, edge, target, diagnostics);
+        let type_issues = edge
+            .resolution
+            .incompatibilities
+            .iter()
+            .copied()
+            .filter(|issue| {
+                matches!(
+                    issue,
+                    ReferenceCompatibilityIssue::RefinementLevel
+                        | ReferenceCompatibilityIssue::ReferenceRelation
+                        | ReferenceCompatibilityIssue::DocumentKind
+                )
+            })
+            .collect::<Vec<_>>();
+        if !type_issues.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                "DH_REFERENCE_001",
+                Severity::Error,
+                edge.source_location.path.clone(),
+                format!(
+                    "Pinned target '{}' is incompatible with Library '{}': {:?}.",
+                    edge.target, asset.id, type_issues
+                ),
+            ));
+            continue;
+        }
+        if !validate_edge_selector(root, edge, target, diagnostics) {
+            edge.resolution
+                .add_incompatibility(ReferenceCompatibilityIssue::Selector);
+        }
+        if !validate_edge_anchor(root, config, edge, target, diagnostics) {
+            edge.resolution
+                .add_incompatibility(ReferenceCompatibilityIssue::Anchor);
+        }
     }
 }
 

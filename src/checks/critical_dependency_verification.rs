@@ -33,31 +33,18 @@ fn critical_pin_state(
                 None => PinState::Invalid(format!("block selector '#{locator}' does not resolve")),
             }
         }
-        ContentAnchorScope::Commit => {
+        ContentAnchorScope::Repo => {
             if !config.governance.content_anchors.verify_git_commits {
-                return PinState::Invalid("commit verification is disabled".to_owned());
+                return PinState::Invalid("repo anchor verification is disabled".to_owned());
             }
-            let object = format!("{}:{}", anchor.digest, target.location.path);
-            match Command::new("git")
-                .args(["-C"])
-                .arg(root)
-                .args(["cat-file", "blob"])
-                .arg(&object)
-                .output()
-            {
-                Ok(output) if output.status.success() => {
-                    match std::fs::read(root.join(&target.location.path)) {
-                        Ok(current) if current == output.stdout => PinState::Current,
-                        Ok(_) => PinState::Stale {
-                            actual: "working-tree-content".to_owned(),
-                        },
-                        Err(error) => PinState::Invalid(format!("target cannot be read: {error}")),
-                    }
+            match crate::repository_anchor::verify_repository_anchor(root, &anchor.digest) {
+                crate::repository_anchor::RepositoryAnchorState::Current => PinState::Current,
+                crate::repository_anchor::RepositoryAnchorState::Stale => PinState::Stale {
+                    actual: "tracked-repository-state".to_owned(),
+                },
+                crate::repository_anchor::RepositoryAnchorState::Invalid(error) => {
+                    PinState::Invalid(error)
                 }
-                Ok(output) => PinState::Invalid(
-                    String::from_utf8_lossy(&output.stderr).trim().to_owned(),
-                ),
-                Err(error) => PinState::Invalid(format!("Git cannot run: {error}")),
             }
         }
     }

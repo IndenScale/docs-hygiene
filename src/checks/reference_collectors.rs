@@ -93,6 +93,7 @@ fn collect_wiki_link_occurrences(
                         digest: value.as_str().to_ascii_lowercase(),
                         scope: ContentAnchorScope::File,
                         locator: None,
+                        expected_document_kind: None,
                         updated_at: None,
                         updated_by: None,
                         reason: None,
@@ -239,6 +240,7 @@ fn collect_frontmatter_occurrences(
                     digest: declaration.digest.to_ascii_lowercase(),
                     scope: declaration.scope,
                     locator: declaration.locator,
+                    expected_document_kind: declaration.expected_document_kind,
                     updated_at: declaration.updated_at,
                     updated_by: declaration.updated_by,
                     reason: declaration.reason,
@@ -259,6 +261,8 @@ struct FrontmatterAnchorDeclaration {
     scope: ContentAnchorScope,
     #[serde(default)]
     locator: Option<String>,
+    #[serde(default)]
+    expected_document_kind: Option<String>,
     #[serde(default)]
     updated_at: Option<String>,
     #[serde(default)]
@@ -316,18 +320,18 @@ impl FrontmatterAnchorDeclaration {
                     );
                 }
             }
-            ContentAnchorScope::Commit => {
+            ContentAnchorScope::Repo => {
                 if self.algorithm != "git" || !git_commit.is_match(&self.digest) {
                     return Err(
-                        "Commit anchor requires algorithm 'git' and a full 40- or 64-hex object ID."
+                        "Repo anchor requires algorithm 'git' and a full 40- or 64-hex commit OID."
                             .to_owned(),
                     );
                 }
                 if self.locator.is_some() {
-                    return Err("Commit anchor must not declare a locator.".to_owned());
+                    return Err("Repo anchor must not declare a locator.".to_owned());
                 }
                 if self.snapshot.is_some() {
-                    return Err("Commit anchor must not declare snapshot provenance.".to_owned());
+                    return Err("Repo anchor must not declare snapshot provenance.".to_owned());
                 }
             }
         }

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Replace `scope: commit` blob checks with `scope: repo` full tracked-state
+  verification; add first-class reference expectation, endpoint, resolution and
+  compatibility records; and report deterministic bridge-connected communities,
+  cross-community edges, optional membership baselines, and `DH_TOPOLOGY_006`.
+
 - Baseline PRD-004 and SPEC-003 against the delivered implementation; rewrite the
   roadmap as current capability rather than delivery chronology; reorganize the
   Issue archive into seven dependency-ordered Epics and atomic Features; and

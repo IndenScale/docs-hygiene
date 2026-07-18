@@ -57,6 +57,23 @@ fn check_topology_policy(
             diagnostics.push(diagnostic);
         }
     }
+    if config.governance.topology.enforce_community_baseline {
+        for change in &graph.community_changes {
+            let path = graph
+                .node(&change.identity)
+                .map(|node| node.location.path.clone())
+                .unwrap_or_else(|| "docs-hygiene.yml".to_owned());
+            diagnostics.push(Diagnostic::new(
+                "DH_TOPOLOGY_006",
+                Severity::Error,
+                path,
+                format!(
+                    "Governance community baseline changed for '{}': expected {:?}, actual {:?}.",
+                    change.identity, change.expected_community, change.actual_community
+                ),
+            ));
+        }
+    }
     exceptions.sort_by(|left, right| {
         (&left.id, &left.node, left.direction).cmp(&(&right.id, &right.node, right.direction))
     });

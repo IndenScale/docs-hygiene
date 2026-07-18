@@ -19,6 +19,7 @@ pub mod profile;
 mod project_io;
 pub mod reference;
 pub mod report;
+mod repository_anchor;
 pub mod snapshot_import;
 pub mod template_migration;
 mod yaml;
@@ -52,9 +53,12 @@ pub use document_kinds::{
     validate_kind_frontmatter,
 };
 pub use governance::{
-    ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
+    ContentAnchor, ContentAnchorScope, GovernanceBoundaryEdge, GovernanceCommunity,
+    GovernanceCommunityChange, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
     GovernanceGraphMetrics, GovernanceLocation, GovernanceNode, LifecycleProvenance,
-    ReferenceRelation, RefinementLevel, SnapshotProvenance,
+    ReferenceCompatibilityIssue, ReferenceEndpoint, ReferenceEndpointExpectation,
+    ReferenceExpectation, ReferenceRelation, ReferenceResolution, ReferenceResolutionOutcome,
+    RefinementLevel, SnapshotProvenance,
 };
 pub use kind_migration::{
     KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,

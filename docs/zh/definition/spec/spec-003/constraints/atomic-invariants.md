@@ -30,16 +30,17 @@ status: baselined
 | `identity.review-sunset` | 治理 | 期限 warning/error、显式 Reset 计划/执行与审计 | 已交付 |
 | `identity.knowledge-redundancy` | 治理 | 带日期 active-person 确认与逐身份 bus factor | 已交付 |
 | `dependency.resolve` | 基础 | Wiki Link 与垂直目标解析 | 已交付 |
-| `dependency.typed-edges` | 受控 | 有序的规范化边记录 | 已交付 |
+| `dependency.typed-edges` | 受控 | expectation、类型化端点、显式解析结果与兼容分类 | 已交付 |
 | `dependency.content-anchor` | 受控 | 全目标 SHA-256 | 已交付 |
 | `dependency.target-staleness` | 受控 | 哈希不一致诊断 | 已交付 |
 | `dependency.selector` | 治理 | 边 selector、`DH_SELECTOR_001`、本地化签名同位 | 已交付 |
-| `dependency.scoped-anchor` | 治理 | block/file/commit scope、逐项诊断、opt-in Git 校验 | 已交付 |
+| `dependency.scoped-anchor` | 治理 | block/file/repo scope、逐项诊断、完整 tracked state Git 校验 | 已交付 |
 | `dependency.critical-pins` | 治理 | 边匹配器、`DH_PIN_*`、审计更新工作流 | 已交付 |
 | `dependency.portable-snapshot` | 治理 | 离线 payload、类型化 provenance、签名、`DH_SNAPSHOT_*` | 已交付 |
 | `dependency.transitive-impact` | 治理 | 所有已解析语义边上的确定性反向可达集合 | 已交付 |
 | `topology.metrics` | 基础 | 规范化节点、边、解析及孤立节点计数 | 已交付 |
 | `topology.fan-and-cycles` | 受控 | 不同邻居度数与确定性强连通分量 | 已交付 |
+| `topology.communities` | 受控 | 确定性桥连通成员、边界边和基线变化 | 已交付 |
 | `topology.thresholds` | 受控 | `DH_TOPOLOGY_001`、`DH_TOPOLOGY_002` | 已交付 |
 | `topology.budgets` | 治理 | 全局/例外预算、剩余额度、`DH_TOPOLOGY_001/003` | 已交付 |
 | `topology.public-exceptions` | 治理 | 精确 node/direction 审计声明、`excepted` 证据 | 已交付 |

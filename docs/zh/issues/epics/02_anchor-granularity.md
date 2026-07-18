@@ -1,7 +1,7 @@
 ---
 id: EPIC-002
 status: baselined
-delivery_status: partial
+delivery_status: delivered
 depends_on: [EPIC-001]
 ---
 
@@ -28,4 +28,4 @@ depends_on: [EPIC-001]
 - File、Block、Repo 的覆盖关系和策略比较无歧义；
 - Repo scope 校验完整 tracked repository state，而不是单个目标 blob。
 
-当前 File、Block、策略与快照已交付；Repo-wise 语义尚未交付，因此 Epic 为部分交付。
+File、Block、Repo、策略与快照均已交付；Repo scope 校验完整 tracked repository state。

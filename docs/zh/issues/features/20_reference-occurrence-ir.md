@@ -17,7 +17,7 @@ Wiki Link、Markdown Link 和 frontmatter collector 只产出带版本的 Refere
 
 - 新语法只需新增 collector 和策略条目；
 - 未知语法/上下文不产生伪语义边；
-- 公开 edge JSON 保持兼容。
+- ReferenceOccurrence v1 契约保持兼容，规范化 edge 只做显式增量扩展。
 
 ## 交付证据
 

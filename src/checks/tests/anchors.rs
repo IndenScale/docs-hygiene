@@ -96,19 +96,20 @@ fn frontmatter_multi_anchors_validate_file_and_block_scopes_independently() {
 #[test]
 fn invalid_frontmatter_anchors_are_reported_at_each_declaration() {
     let rel = Path::new("docs/body.md");
-    let text = "---\nid: BODY-1\nstatus: proposed\nanchors:\n  - target: TERM-1\n    algorithm: sha256\n    digest: bad\n    scope: block\n  - target: TERM-2\n    algorithm: git\n    digest: bad\n    scope: commit\n---\n";
+    let text = "---\nid: BODY-1\nstatus: proposed\nanchors:\n  - target: TERM-1\n    algorithm: sha256\n    digest: bad\n    scope: block\n  - target: TERM-2\n    algorithm: git\n    digest: bad\n    scope: repo\n  - target: TERM-3\n    algorithm: git\n    digest: 1111111111111111111111111111111111111111\n    scope: commit\n---\n";
     let mut diagnostics = Vec::new();
 
     let occurrences = collect_frontmatter_occurrences(rel, text, &mut diagnostics);
 
     assert_eq!(occurrences.len(), 1);
-    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics.len(), 3);
     assert_eq!(diagnostics[0].range.start.line, 4);
     assert_eq!(diagnostics[1].range.start.line, 8);
+    assert_eq!(diagnostics[2].range.start.line, 12);
 }
 
 #[test]
-fn commit_anchor_requires_opt_in_and_compares_the_governed_target_to_git() {
+fn repo_anchor_requires_opt_in_and_compares_all_tracked_state_to_git() {
     let temp = tempdir().unwrap();
     let library = temp.path().join("docs/ul");
     let body = temp.path().join("docs/prd");
@@ -153,7 +154,7 @@ fn commit_anchor_requires_opt_in_and_compares_the_governed_target_to_git() {
     fs::write(
         body.join("index.md"),
         format!(
-            "---\nid: PRD-1-INDEX\nstatus: proposed\nanchors:\n  - target: TERM-1\n    algorithm: git\n    digest: {commit}\n    scope: commit\n---\n\n# Body\n"
+            "---\nid: PRD-1-INDEX\nstatus: proposed\nanchors:\n  - target: TERM-1\n    algorithm: git\n    digest: {commit}\n    scope: repo\n---\n\n# Body\n"
         ),
     )
     .unwrap();
@@ -181,6 +182,6 @@ fn commit_anchor_requires_opt_in_and_compares_the_governed_target_to_git() {
     assert!(changed.diagnostics.iter().any(|diagnostic| {
         diagnostic
             .message
-            .contains("differs from Git object")
+            .contains("tracked repository state differs")
     }));
 }

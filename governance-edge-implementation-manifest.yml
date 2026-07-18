@@ -10,6 +10,7 @@ members:
     - src/date.rs
     - src/markdown.rs
     - src/project_io.rs
+    - src/repository_anchor.rs
     - src/yaml.rs
     - src/governance.rs
     - src/governance/impact.rs

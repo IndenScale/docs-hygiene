@@ -124,7 +124,7 @@ pub fn import_portable_snapshot(
                     .as_deref()
                     .and_then(|locator| markdown_heading_block(text, locator))
             }),
-            ContentAnchorScope::Commit => None,
+            ContentAnchorScope::Repo => None,
         };
         let Some(pinned) = pinned else {
             report.blocked.push(SnapshotImportBlock {

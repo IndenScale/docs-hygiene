@@ -17,5 +17,6 @@ Reference declaration surfaces first produce the versioned, syntax-neutral
 occurrence IR defined by [C-012](reference-occurrence-ir.md). Explicit policy,
 not collector syntax, determines whether an occurrence reaches this edge model.
 
-When present, a heading selector is validated against the canonical target and
+Expectation, endpoint type, explicit resolution outcome, and compatibility
+classification follow [C-020](typed-reference-resolution.md). When present, a heading selector is validated against the canonical target and
 retained on the normalized edge according to [C-011](selector-resolution.md).

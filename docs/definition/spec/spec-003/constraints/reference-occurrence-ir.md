@@ -45,10 +45,11 @@ The sole reference-edge normalizer consumes occurrences and policy. A new
 syntax can therefore connect through a collector and policy entry without a
 syntax branch in normalization. Unknown `(syntax, context)` pairs produce no
 semantic edge. Built-in anchor policy supports SHA-256 for file and block
-scopes and Git object IDs for explicitly enabled commit scope under C-013.
+scopes and Git commit OIDs for explicitly enabled repo scope under C-013.
 
 This IR is an internal extension contract. Its schema version changes when
-field meaning or compatibility changes. Existing file-anchor JSON remains
+field meaning or compatibility changes. Existing file-anchor payloads remain
 unchanged; scoped anchors add explicit fields under C-013. Normalized edges
-continue to follow [C-003](edge-normalization.md); selector resolution follows
-[C-011](selector-resolution.md).
+follow [C-003](edge-normalization.md) and are additively extended with typed
+expectation and resolution under [C-020](typed-reference-resolution.md);
+selector resolution follows [C-011](selector-resolution.md).

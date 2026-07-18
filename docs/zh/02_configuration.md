@@ -160,7 +160,7 @@ rules:
 
 ## 治理关系图
 
-`governance.manifests` 启用关系图；`governance.topology` 可选地执行 Fan/循环阈值和精确审计超级节点例外；`governance.ownership` 启用离线 Principal 目录、已建立身份的 Owner/复核/知识冗余义务和原子 Reset 审计；`governance.contentAnchors.verifyGitCommits` 显式启用 commit 锚的本地 Git 校验，默认关闭，file 与 block SHA-256 锚不需要该开关。`governance.coreClaims` 增加显式 Library SSOT 策略，`governance.criticalDependencies` 选择必须 Pin 的边，`governance.portableSnapshots` 登记离线 commit 证据和可选 Ed25519 信任。完整契约见[治理关系图](07_governance_graph.md)、[Library Claim 治理](15_library_claims.md)、[关键依赖 Pin](16_critical_dependency_pins.md)、[可移植 Commit 快照](17_portable_snapshots.md)、[可审计超级节点例外](18_supernode_exceptions.md)和[文档责任治理](19_document_ownership.md)。
+`governance.manifests` 启用关系图；`governance.topology` 报告确定性的桥连通社区，并可选执行 Fan/循环阈值、`communityBaseline` 和精确审计超级节点例外；`governance.ownership` 启用离线 Principal 目录、已建立身份的 Owner/复核/知识冗余义务和原子 Reset 审计；`governance.contentAnchors.verifyGitCommits` 显式启用 repo 锚的本地 Git 校验，默认关闭，file 与 block SHA-256 锚不需要该开关。`governance.coreClaims` 增加显式 Library SSOT 策略，`governance.criticalDependencies` 选择必须 Pin 的边，`governance.portableSnapshots` 登记离线 commit 证据和可选 Ed25519 信任。完整契约见[治理关系图](07_governance_graph.md)、[Library Claim 治理](15_library_claims.md)、[关键依赖 Pin](16_critical_dependency_pins.md)、[可移植 Commit 快照](17_portable_snapshots.md)、[可审计超级节点例外](18_supernode_exceptions.md)和[文档责任治理](19_document_ownership.md)。
 
 ## 禁止 ASCII 字符画
 

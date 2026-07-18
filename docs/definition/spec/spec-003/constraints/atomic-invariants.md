@@ -31,16 +31,17 @@ invariant has one dimension and minimum maturity.
 | `identity.review-sunset` | governed | deadline warning/error, explicit reset plan/apply and audit | delivered |
 | `identity.knowledge-redundancy` | governed | dated active-person confirmations and per-identity bus factor | delivered |
 | `dependency.resolve` | basic | Wiki Link and vertical target resolution | delivered |
-| `dependency.typed-edges` | controlled | ordered normalized edge records | delivered |
+| `dependency.typed-edges` | controlled | expectation, typed endpoint, explicit resolution outcome and compatibility | delivered |
 | `dependency.content-anchor` | controlled | whole-target SHA-256 | delivered |
 | `dependency.target-staleness` | controlled | hash mismatch diagnostics | delivered |
 | `dependency.selector` | governed | edge selector, `DH_SELECTOR_001`, localized signature parity | delivered |
-| `dependency.scoped-anchor` | governed | block/file/commit scopes, per-item diagnostics, opt-in Git verification | delivered |
+| `dependency.scoped-anchor` | governed | block/file/repo scopes, per-item diagnostics, full tracked-state Git verification | delivered |
 | `dependency.critical-pins` | governed | edge matchers, `DH_PIN_*`, audited update workflow | delivered |
 | `dependency.portable-snapshot` | governed | offline payloads, typed provenance, signatures, `DH_SNAPSHOT_*` | delivered |
 | `dependency.transitive-impact` | governed | deterministic reverse reachability across all resolved semantic edges | delivered |
 | `topology.metrics` | basic | normalized node, edge, resolution and isolation counts | delivered |
 | `topology.fan-and-cycles` | controlled | distinct-neighbor degree and deterministic SCCs | delivered |
+| `topology.communities` | controlled | deterministic bridge-connected members, boundary edges and baseline changes | delivered |
 | `topology.thresholds` | controlled | `DH_TOPOLOGY_001`, `DH_TOPOLOGY_002` | delivered |
 | `topology.budgets` | governed | global/exception budgets, remaining capacity, `DH_TOPOLOGY_001/003` | delivered |
 | `topology.public-exceptions` | governed | exact node/direction audit declarations, `excepted` evidence | delivered |

@@ -436,12 +436,12 @@ fn choose_pin_shape(
         }
         bail!("block scope requires allowed algorithm 'sha256'");
     }
-    if policy.require.minimum_scope == ContentAnchorScope::Commit
+    if policy.require.minimum_scope == ContentAnchorScope::Repo
         && policy.require.algorithms.iter().any(|value| value == "git")
     {
-        return Ok(("git".to_owned(), ContentAnchorScope::Commit));
+        return Ok(("git".to_owned(), ContentAnchorScope::Repo));
     }
-    if policy.require.minimum_scope == ContentAnchorScope::Commit
+    if policy.require.minimum_scope == ContentAnchorScope::Repo
         && policy
             .require
             .algorithms
@@ -459,7 +459,7 @@ fn choose_pin_shape(
         return Ok(("sha256".to_owned(), ContentAnchorScope::File));
     }
     if policy.require.algorithms.iter().any(|value| value == "git") {
-        return Ok(("git".to_owned(), ContentAnchorScope::Commit));
+        return Ok(("git".to_owned(), ContentAnchorScope::Repo));
     }
     bail!("policy has no supported algorithm")
 }

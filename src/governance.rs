@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -136,7 +136,7 @@ pub enum ContentAnchorScope {
     Block,
     #[default]
     File,
-    Commit,
+    Repo,
 }
 
 impl ContentAnchorScope {
@@ -146,21 +146,21 @@ impl ContentAnchorScope {
 
     /// Returns whether this scope satisfies a configured minimum pin scope.
     ///
-    /// Scope strength is a governance policy, not declaration order: a commit
-    /// identifies a whole-file revision, while a block isolates the narrowest
-    /// reviewed content boundary.
+    /// Scope strength is a governance policy, not declaration order: a repo
+    /// anchor proves one complete tracked repository state, while a block
+    /// isolates the narrowest reviewed content boundary.
     pub(crate) fn meets_minimum(self, minimum: Self) -> bool {
         self.strength() >= minimum.strength()
     }
 
     pub(crate) fn covers_whole_file(self) -> bool {
-        matches!(self, Self::File | Self::Commit)
+        matches!(self, Self::File | Self::Repo)
     }
 
     fn strength(self) -> u8 {
         match self {
             Self::File => 0,
-            Self::Commit => 1,
+            Self::Repo => 1,
             Self::Block => 2,
         }
     }
@@ -176,6 +176,116 @@ pub struct LifecycleProvenance {
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ReferenceEndpointExpectation {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub refinement_levels: Vec<RefinementLevel>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub reference_relations: Vec<ReferenceRelation>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub document_kinds: Vec<String>,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceExpectation {
+    pub relation: GovernanceEdgeKind,
+    pub endpoint: ReferenceEndpointExpectation,
+}
+
+impl ReferenceExpectation {
+    pub(crate) fn new(
+        relation: GovernanceEdgeKind,
+        mut refinement_levels: Vec<RefinementLevel>,
+        mut reference_relations: Vec<ReferenceRelation>,
+        mut document_kinds: Vec<String>,
+    ) -> Self {
+        refinement_levels.sort();
+        refinement_levels.dedup();
+        reference_relations.sort();
+        reference_relations.dedup();
+        document_kinds.sort();
+        document_kinds.dedup();
+        Self {
+            relation,
+            endpoint: ReferenceEndpointExpectation {
+                refinement_levels,
+                reference_relations,
+                document_kinds,
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceEndpoint {
+    pub refinement_level: RefinementLevel,
+    pub reference_relation: ReferenceRelation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document_kind: Option<String>,
+    pub lifecycle_status: String,
+    pub location: GovernanceLocation,
+}
+
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ReferenceResolutionOutcome {
+    Resolved,
+    Unresolved,
+    Ambiguous,
+    Incompatible,
+}
+
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ReferenceCompatibilityIssue {
+    MissingTarget,
+    AmbiguousTarget,
+    RefinementLevel,
+    ReferenceRelation,
+    DocumentKind,
+    Lifecycle,
+    Selector,
+    Anchor,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceResolution {
+    pub outcome: ReferenceResolutionOutcome,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub endpoints: Vec<ReferenceEndpoint>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub incompatibilities: Vec<ReferenceCompatibilityIssue>,
+}
+
+impl ReferenceResolution {
+    pub(crate) fn unresolved() -> Self {
+        Self {
+            outcome: ReferenceResolutionOutcome::Unresolved,
+            endpoints: Vec::new(),
+            incompatibilities: vec![ReferenceCompatibilityIssue::MissingTarget],
+        }
+    }
+
+    pub(crate) fn add_incompatibility(&mut self, issue: ReferenceCompatibilityIssue) {
+        if !self.incompatibilities.contains(&issue) {
+            self.incompatibilities.push(issue);
+            self.incompatibilities.sort();
+        }
+        if self.outcome == ReferenceResolutionOutcome::Resolved
+            && !matches!(
+                issue,
+                ReferenceCompatibilityIssue::Selector | ReferenceCompatibilityIssue::Anchor
+            )
+        {
+            self.outcome = ReferenceResolutionOutcome::Incompatible;
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GovernanceEdge {
     pub source: String,
     pub target: String,
@@ -186,6 +296,8 @@ pub struct GovernanceEdge {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub content_anchor: Option<ContentAnchor>,
     pub lifecycle: LifecycleProvenance,
+    pub expectation: ReferenceExpectation,
+    pub resolution: ReferenceResolution,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -194,6 +306,8 @@ pub struct GovernanceNode {
     pub identity: String,
     pub refinement_level: RefinementLevel,
     pub reference_relation: ReferenceRelation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document_kind: Option<String>,
     pub lifecycle_status: String,
     pub location: GovernanceLocation,
 }
@@ -205,11 +319,37 @@ pub struct GovernanceGraphMetrics {
     pub edges: usize,
     pub resolved_edges: usize,
     pub unresolved_edges: usize,
+    pub ambiguous_edges: usize,
+    pub incompatible_edges: usize,
     pub isolated_nodes: usize,
     pub relation_counts: BTreeMap<GovernanceEdgeKind, usize>,
     pub fan_in: BTreeMap<String, usize>,
     pub fan_out: BTreeMap<String, usize>,
     pub cycle_groups: Vec<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GovernanceCommunity {
+    pub id: String,
+    pub members: Vec<String>,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GovernanceBoundaryEdge {
+    pub source: String,
+    pub target: String,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GovernanceCommunityChange {
+    pub identity: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_community: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actual_community: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize)]
@@ -220,32 +360,69 @@ pub struct GovernanceGraph {
     pub metrics: GovernanceGraphMetrics,
     pub transitive_impact: BTreeMap<String, Vec<String>>,
     pub authority_migrations: BTreeMap<String, String>,
+    pub communities: Vec<GovernanceCommunity>,
+    pub cross_community_edges: Vec<GovernanceBoundaryEdge>,
+    pub community_changes: Vec<GovernanceCommunityChange>,
 }
 
 impl GovernanceGraph {
     pub fn new(mut nodes: Vec<GovernanceNode>, mut edges: Vec<GovernanceEdge>) -> Self {
         nodes.sort();
-        nodes.dedup_by(|left, right| left.identity == right.identity);
+        nodes.dedup();
+        let candidates = nodes.iter().fold(
+            BTreeMap::<String, Vec<ReferenceEndpoint>>::new(),
+            |mut candidates, node| {
+                candidates
+                    .entry(node.identity.clone())
+                    .or_default()
+                    .push(ReferenceEndpoint::from(node));
+                candidates
+            },
+        );
+        for edge in &mut edges {
+            let supplemental = edge
+                .resolution
+                .incompatibilities
+                .iter()
+                .copied()
+                .filter(|issue| {
+                    matches!(
+                        issue,
+                        ReferenceCompatibilityIssue::Selector | ReferenceCompatibilityIssue::Anchor
+                    )
+                })
+                .collect::<Vec<_>>();
+            edge.resolution = resolve_reference(&edge.expectation, candidates.get(&edge.target));
+            for issue in supplemental {
+                edge.resolution.add_incompatibility(issue);
+            }
+            edge.lifecycle.target_status = edge
+                .resolution
+                .endpoints
+                .first()
+                .map(|endpoint| endpoint.lifecycle_status.clone());
+        }
         edges.sort();
         edges.dedup();
+        nodes.dedup_by(|left, right| left.identity == right.identity);
 
-        let identities = nodes
-            .iter()
-            .map(|node| node.identity.as_str())
-            .collect::<BTreeSet<_>>();
         let mut relation_counts = BTreeMap::new();
-        let mut resolved_edges = 0;
         for edge in &edges {
             *relation_counts.entry(edge.relation).or_default() += 1;
-            if identities.contains(edge.target.as_str()) {
-                resolved_edges += 1;
-            }
         }
+        let resolution_count = |outcome| {
+            edges
+                .iter()
+                .filter(|edge| edge.resolution.outcome == outcome)
+                .count()
+        };
         let metrics = GovernanceGraphMetrics {
             nodes: nodes.len(),
             edges: edges.len(),
-            resolved_edges,
-            unresolved_edges: edges.len().saturating_sub(resolved_edges),
+            resolved_edges: resolution_count(ReferenceResolutionOutcome::Resolved),
+            unresolved_edges: resolution_count(ReferenceResolutionOutcome::Unresolved),
+            ambiguous_edges: resolution_count(ReferenceResolutionOutcome::Ambiguous),
+            incompatible_edges: resolution_count(ReferenceResolutionOutcome::Incompatible),
             isolated_nodes: 0,
             relation_counts,
             ..GovernanceGraphMetrics::default()
@@ -265,7 +442,42 @@ impl GovernanceGraph {
             metrics,
             transitive_impact,
             authority_migrations: BTreeMap::new(),
+            communities: topology.communities,
+            cross_community_edges: topology.cross_community_edges,
+            community_changes: Vec::new(),
         }
+    }
+
+    pub(crate) fn compare_community_baseline(&mut self, baseline: &BTreeMap<String, String>) {
+        if baseline.is_empty() {
+            self.community_changes.clear();
+            return;
+        }
+        let actual = self
+            .communities
+            .iter()
+            .flat_map(|community| {
+                community
+                    .members
+                    .iter()
+                    .map(|member| (member.clone(), community.id.clone()))
+            })
+            .collect::<BTreeMap<_, _>>();
+        self.community_changes = baseline
+            .keys()
+            .chain(actual.keys())
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .filter_map(|identity| {
+                let expected = baseline.get(identity);
+                let observed = actual.get(identity);
+                (expected != observed).then(|| GovernanceCommunityChange {
+                    identity: identity.clone(),
+                    expected_community: expected.cloned(),
+                    actual_community: observed.cloned(),
+                })
+            })
+            .collect();
     }
 
     pub fn node(&self, identity: &str) -> Option<&GovernanceNode> {
@@ -293,6 +505,73 @@ impl GovernanceGraph {
     }
 }
 
+impl From<&GovernanceNode> for ReferenceEndpoint {
+    fn from(node: &GovernanceNode) -> Self {
+        Self {
+            refinement_level: node.refinement_level,
+            reference_relation: node.reference_relation,
+            document_kind: node.document_kind.clone(),
+            lifecycle_status: node.lifecycle_status.clone(),
+            location: node.location.clone(),
+        }
+    }
+}
+
+pub(crate) fn resolve_reference(
+    expectation: &ReferenceExpectation,
+    candidates: Option<&Vec<ReferenceEndpoint>>,
+) -> ReferenceResolution {
+    let Some(candidates) = candidates.filter(|candidates| !candidates.is_empty()) else {
+        return ReferenceResolution::unresolved();
+    };
+    if candidates.len() > 1 {
+        return ReferenceResolution {
+            outcome: ReferenceResolutionOutcome::Ambiguous,
+            endpoints: candidates.clone(),
+            incompatibilities: vec![ReferenceCompatibilityIssue::AmbiguousTarget],
+        };
+    }
+    let endpoint = &candidates[0];
+    let mut incompatibilities = Vec::new();
+    if !expectation.endpoint.refinement_levels.is_empty()
+        && !expectation
+            .endpoint
+            .refinement_levels
+            .contains(&endpoint.refinement_level)
+    {
+        incompatibilities.push(ReferenceCompatibilityIssue::RefinementLevel);
+    }
+    if !expectation.endpoint.reference_relations.is_empty()
+        && !expectation
+            .endpoint
+            .reference_relations
+            .contains(&endpoint.reference_relation)
+    {
+        incompatibilities.push(ReferenceCompatibilityIssue::ReferenceRelation);
+    }
+    if !expectation.endpoint.document_kinds.is_empty()
+        && endpoint
+            .document_kind
+            .as_ref()
+            .is_none_or(|kind| !expectation.endpoint.document_kinds.contains(kind))
+    {
+        incompatibilities.push(ReferenceCompatibilityIssue::DocumentKind);
+    }
+    if LifecycleStatus::parse(&endpoint.lifecycle_status).is_some_and(LifecycleStatus::is_terminal)
+    {
+        incompatibilities.push(ReferenceCompatibilityIssue::Lifecycle);
+    }
+    ReferenceResolution {
+        outcome: if incompatibilities.is_empty() {
+            ReferenceResolutionOutcome::Resolved
+        } else {
+            ReferenceResolutionOutcome::Incompatible
+        },
+        endpoints: candidates.clone(),
+        incompatibilities,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -302,6 +581,7 @@ mod tests {
             identity: identity.to_owned(),
             refinement_level: RefinementLevel::Intent,
             reference_relation: ReferenceRelation::Body,
+            document_kind: None,
             lifecycle_status: "current".to_owned(),
             location: GovernanceLocation {
                 path: format!("{identity}.yml"),
@@ -325,6 +605,13 @@ mod tests {
                 source_status: "current".to_owned(),
                 target_status: Some("current".to_owned()),
             },
+            expectation: ReferenceExpectation::new(
+                GovernanceEdgeKind::Formalizes,
+                vec![RefinementLevel::Intent],
+                vec![ReferenceRelation::Body],
+                Vec::new(),
+            ),
+            resolution: ReferenceResolution::unresolved(),
         }
     }
 
@@ -416,5 +703,92 @@ mod tests {
         assert!(LifecycleStatus::Archived.is_terminal());
         assert!(LifecycleStatus::Abandoned.is_terminal());
         assert!(LifecycleStatus::Superseded.requires_successor());
+    }
+
+    #[test]
+    fn resolution_classifies_ambiguous_and_incompatible_endpoints_before_topology() {
+        let mut duplicate = node("B");
+        duplicate.location.path = "other-B.yml".to_owned();
+        let ambiguous =
+            GovernanceGraph::new(vec![node("A"), node("B"), duplicate], vec![edge("A", "B")]);
+        assert_eq!(ambiguous.metrics.ambiguous_edges, 1);
+        assert_eq!(
+            ambiguous.edges[0].resolution.outcome,
+            ReferenceResolutionOutcome::Ambiguous
+        );
+        assert_eq!(ambiguous.metrics.fan_out["A"], 0);
+
+        let mut wrong_kind = node("B");
+        wrong_kind.document_kind = Some("article".to_owned());
+        let mut typed_edge = edge("A", "B");
+        typed_edge.expectation.endpoint.document_kinds = vec!["term".to_owned()];
+        let incompatible = GovernanceGraph::new(vec![node("A"), wrong_kind], vec![typed_edge]);
+        assert_eq!(incompatible.metrics.incompatible_edges, 1);
+        assert_eq!(
+            incompatible.edges[0].resolution.incompatibilities,
+            vec![ReferenceCompatibilityIssue::DocumentKind]
+        );
+        assert_eq!(incompatible.metrics.fan_out["A"], 0);
+        assert!(!incompatible.transitive_impact.contains_key("B"));
+    }
+
+    #[test]
+    fn graph_discovers_deterministic_bridge_communities_and_boundary_changes() {
+        let mut parallel_relation = edge("A", "B");
+        parallel_relation.relation = GovernanceEdgeKind::PinnedReference;
+        parallel_relation.expectation.relation = GovernanceEdgeKind::PinnedReference;
+        let edges = vec![
+            edge("A", "B"),
+            parallel_relation,
+            edge("B", "C"),
+            edge("C", "A"),
+            edge("C", "D"),
+            edge("D", "E"),
+            edge("E", "F"),
+            edge("F", "D"),
+            edge("A", "B"),
+        ];
+        let mut graph = GovernanceGraph::new(
+            ["A", "B", "C", "D", "E", "F"]
+                .into_iter()
+                .map(node)
+                .collect(),
+            edges,
+        );
+        assert_eq!(
+            graph.communities,
+            vec![
+                GovernanceCommunity {
+                    id: "community:A".to_owned(),
+                    members: vec!["A".to_owned(), "B".to_owned(), "C".to_owned()],
+                },
+                GovernanceCommunity {
+                    id: "community:D".to_owned(),
+                    members: vec!["D".to_owned(), "E".to_owned(), "F".to_owned()],
+                },
+            ]
+        );
+        assert_eq!(
+            graph.cross_community_edges,
+            vec![GovernanceBoundaryEdge {
+                source: "C".to_owned(),
+                target: "D".to_owned(),
+            }]
+        );
+        let mut baseline = ["A", "B", "C"]
+            .into_iter()
+            .map(|identity| (identity.to_owned(), "community:A".to_owned()))
+            .chain(
+                ["D", "E", "F"]
+                    .into_iter()
+                    .map(|identity| (identity.to_owned(), "community:D".to_owned())),
+            )
+            .collect::<BTreeMap<_, _>>();
+        graph.compare_community_baseline(&baseline);
+        assert!(graph.community_changes.is_empty());
+        baseline.insert("F".to_owned(), "community:A".to_owned());
+        graph.compare_community_baseline(&baseline);
+        assert_eq!(graph.community_changes.len(), 1);
+        assert_eq!(graph.community_changes[0].identity, "F");
     }
 }

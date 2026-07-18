@@ -1,7 +1,9 @@
 #[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct GovernanceTarget {
     id: String,
+    #[serde(default)]
+    document_kind: Option<String>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -23,16 +25,26 @@ impl<'de> Deserialize<'de> for GovernanceTargets {
         #[serde(untagged)]
         enum OneOrMany {
             OneId(String),
-            One(GovernanceTarget),
             ManyIds(Vec<String>),
             Many(Vec<GovernanceTarget>),
+            One(GovernanceTarget),
         }
 
         Ok(match OneOrMany::deserialize(deserializer)? {
-            OneOrMany::OneId(id) => Self(vec![GovernanceTarget { id }]),
+            OneOrMany::OneId(id) => Self(vec![GovernanceTarget {
+                id,
+                document_kind: None,
+            }]),
             OneOrMany::One(target) => Self(vec![target]),
             OneOrMany::ManyIds(ids) => {
-                Self(ids.into_iter().map(|id| GovernanceTarget { id }).collect())
+                Self(
+                    ids.into_iter()
+                        .map(|id| GovernanceTarget {
+                            id,
+                            document_kind: None,
+                        })
+                        .collect(),
+                )
             }
             OneOrMany::Many(targets) => Self(targets),
         })
@@ -109,7 +121,8 @@ fn check_governance(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> (GovernanceGraph, OwnershipReport) {
     if config.governance.manifests.is_empty() {
-        let graph = GovernanceGraph::default();
+        let mut graph = GovernanceGraph::default();
+        graph.compare_community_baseline(&config.governance.topology.community_baseline);
         let ownership = check_document_ownership(root, config, &[], diagnostics);
         check_portable_snapshots(root, config, &graph, diagnostics);
         return (graph, ownership);
@@ -217,6 +230,7 @@ fn check_governance(
             identity: asset.id.clone(),
             refinement_level: asset.refinement_level,
             reference_relation: asset.reference_relation,
+            document_kind: None,
             lifecycle_status: asset.status.clone(),
             location: GovernanceLocation {
                 path: asset.path.clone(),
@@ -229,6 +243,7 @@ fn check_governance(
     nodes.extend(wiki.nodes);
     edges.extend(wiki.edges);
     let mut graph = GovernanceGraph::new(nodes, edges);
+    graph.compare_community_baseline(&config.governance.topology.community_baseline);
 
     for asset in &assets {
         check_package_members(root, config, asset, diagnostics);
@@ -272,8 +287,46 @@ fn collect_vertical_edges(
                         .get(target.id.as_str())
                         .map(|position| assets[*position].status.clone()),
                 },
+                expectation: vertical_reference_expectation(
+                    asset,
+                    relation,
+                    target.document_kind.clone(),
+                ),
+                resolution: ReferenceResolution::unresolved(),
             }));
         }
     }
     edges
+}
+
+fn vertical_reference_expectation(
+    asset: &GovernanceAsset,
+    relation: GovernanceEdgeKind,
+    document_kind: Option<String>,
+) -> ReferenceExpectation {
+    let (levels, target_relation) = match relation {
+        GovernanceEdgeKind::Formalizes => {
+            (vec![RefinementLevel::Intent], ReferenceRelation::Body)
+        }
+        GovernanceEdgeKind::Realizes => {
+            (vec![RefinementLevel::Definition], ReferenceRelation::Body)
+        }
+        GovernanceEdgeKind::Projects => (
+            match asset.refinement_level {
+                RefinementLevel::Intent => Vec::new(),
+                RefinementLevel::Definition => vec![RefinementLevel::Intent],
+                RefinementLevel::Implementation => vec![RefinementLevel::Definition],
+            },
+            ReferenceRelation::Library,
+        ),
+        GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
+            unreachable!("vertical manifests emit only derivation relations")
+        }
+    };
+    ReferenceExpectation::new(
+        relation,
+        levels,
+        vec![target_relation],
+        document_kind.into_iter().collect(),
+    )
 }

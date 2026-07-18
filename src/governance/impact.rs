@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::{GovernanceEdge, GovernanceNode};
+use super::{GovernanceEdge, GovernanceNode, ReferenceResolutionOutcome};
 
 pub(super) fn analyze_transitive_impact(
     nodes: &[GovernanceNode],
@@ -15,7 +15,10 @@ pub(super) fn analyze_transitive_impact(
         .map(|identity| (identity.clone(), BTreeSet::new()))
         .collect::<BTreeMap<_, _>>();
     for edge in edges {
-        if identities.contains(&edge.source) && identities.contains(&edge.target) {
+        if edge.resolution.outcome == ReferenceResolutionOutcome::Resolved
+            && identities.contains(&edge.source)
+            && identities.contains(&edge.target)
+        {
             incoming
                 .get_mut(&edge.target)
                 .expect("resolved target identity was checked")

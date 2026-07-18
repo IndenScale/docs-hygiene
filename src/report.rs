@@ -331,6 +331,9 @@ impl Report {
             "DH_TOPOLOGY_005" => Some(
                 "A supernode exception has missing, invalid, unordered, or future degree history.",
             ),
+            "DH_TOPOLOGY_006" => Some(
+                "A detected graph community differs from an explicitly enforced community baseline.",
+            ),
             "DH_OWNERSHIP_001" => Some(
                 "A governed identity has missing or invalid ownership, or its principal directory is invalid.",
             ),

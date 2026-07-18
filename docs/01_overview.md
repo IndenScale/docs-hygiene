@@ -32,6 +32,6 @@ or prose style. Those stay in tools such as markdownlint, lychee, Vale, cspell,
 or slop-lint. This boundary does not exclude project-root-aware validation of
 Markdown targets, Wiki Link identities, frontmatter, or document structure.
 
-The planned [Documentation Hygiene Governance Model](11_hygiene_governance_model.md)
-separates capability dimensions, maturity, and execution state. It does not
-change the delivered product boundary until PRD-004 is implemented.
+The delivered [Documentation Hygiene Governance Model](11_hygiene_governance_model.md)
+separates capability dimensions, maturity, and execution state while retaining
+the product boundary above.

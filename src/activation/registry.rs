@@ -252,6 +252,7 @@ pub const RULE_SPECS: [RuleSpec; 9] = [
             "DH_TOPOLOGY_003",
             "DH_TOPOLOGY_004",
             "DH_TOPOLOGY_005",
+            "DH_TOPOLOGY_006",
         ],
         rationale: "Explicit graph thresholds keep dependency concentration and cycles reviewable.",
         remediation: "Configure governance.topology thresholds or set rules.governance.topology.mode explicitly.",

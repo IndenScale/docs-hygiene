@@ -33,8 +33,8 @@ governed Epic/Feature Issue archive retains final capability and acceptance evid
   reference-occurrence IR; explicit syntax/context policy decides semantic use.
 - Semantic references, pins, derivations, and projections normalize to one
   governance-edge graph with selector, lifecycle, and provenance evidence.
-- File and block anchors share one scope model. The current opt-in Git mechanism
-  compares a governed target with its blob at a commit; critical dependency
+- Block, file, and repo anchors share one scope model. The opt-in Git mechanism
+  compares the complete tracked repository state with a commit; critical dependency
   policies select edges and require algorithms, minimum scope, audit age, and
   explicit Pin updates.
 - Portable snapshots provide signed, offline file/block evidence without making
@@ -44,17 +44,17 @@ governed Epic/Feature Issue archive retains final capability and acceptance evid
 
 - Recursive UL, Glossary, and SDK Libraries provide stable shared identities;
   explicit claim authority and controlled excerpts prevent duplicate SSOTs.
-- Deterministic Fan-In/Fan-Out, cycle groups, reverse impact, budgets, trends,
-  and node/direction-specific audited exceptions expose dependency risk.
+- Every edge retains expectation, typed endpoint candidates, explicit resolution
+  outcome, and ordered compatibility issues reused by graph analysis.
+- Deterministic bridge-connected communities, cross-community edges, optional
+  boundary baselines, Fan-In/Fan-Out, cycle groups, reverse impact, budgets,
+  trends, and node/direction-specific audited exceptions expose dependency risk.
 - Offline principals, Owner declarations, review sunset, explicit reset audit,
   coverage, bus factor, and two-person understanding evidence govern established
   identities.
 
 ## Planned
 
-- Replace commit-as-scope with a true repository granularity: `scope: repo`
-  uses a full Git commit OID to verify all tracked repository state. Commit is
-  the Repo-wise implementation mechanism, not a content granularity.
 - [PRD-001 Three-Layer Contract Governance](docs/intent/prd/prd-001/index.md)
   extends the delivered asset graph with item-level requirement coverage,
   symbol-level semantic projection, and complete intent-to-implementation traces.

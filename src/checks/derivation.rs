@@ -178,41 +178,35 @@ fn require_vertical_edge(
         return;
     }
     for edge in edges {
-        let Some(target_asset) = graph.node(&edge.target) else {
-            diagnostics.push(Diagnostic::new(
-                code,
-                Severity::Error,
-                asset.path.clone(),
-                format!(
-                    "Vertical '{}' target '{}' does not exist.",
-                    edge_name, edge.target
-                ),
-            ));
-            continue;
-        };
-        if target_asset.refinement_level != expected_refinement_level
-            || target_asset.reference_relation != expected_reference_relation
-        {
+        if edge.resolution.outcome != ReferenceResolutionOutcome::Resolved {
+            let actual = edge
+                .resolution
+                .endpoints
+                .first()
+                .map(|endpoint| {
+                    format!(
+                        "{} {}",
+                        endpoint.refinement_level.label(),
+                        endpoint.reference_relation.label()
+                    )
+                })
+                .unwrap_or_else(|| "no endpoint".to_owned());
             diagnostics.push(
                 Diagnostic::new(
                     code,
                     Severity::Error,
                     asset.path.clone(),
                     format!(
-                        "Vertical '{}' from '{}' must target an {} {}, but '{}' is {} {}.",
+                        "Vertical '{}' from '{}' must target an {} {}, but '{}' resolved as {} ({:?}).",
                         edge_name,
                         asset.id,
                         expected_refinement_level.label(),
                         expected_reference_relation.label(),
-                        target_asset.identity,
-                        target_asset.refinement_level.label(),
-                        target_asset.reference_relation.label()
+                        edge.target,
+                        actual,
+                        edge.resolution.incompatibilities
                     ),
-                )
-                .with_related(RelatedInformation::new(
-                    target_asset.location.path.clone(),
-                    "Resolved target is declared here.",
-                )),
+                ),
             );
         }
     }

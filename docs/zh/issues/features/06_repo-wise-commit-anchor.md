@@ -2,7 +2,7 @@
 id: FEATURE-006
 epic: EPIC-002
 status: baselined
-delivery_status: planned
+delivery_status: delivered
 depends_on: [FEATURE-004, FEATURE-005]
 ---
 
@@ -21,7 +21,8 @@ depends_on: [FEATURE-004, FEATURE-005]
 - untracked 文件不影响结果；
 - 报告明确区分 `scope=repo`、`algorithm=git` 和 commit OID。
 
-## 当前差距
+## 交付证据
 
-当前 `ContentAnchorScope::Commit` 仍存在，校验只读取 `<commit>:<target-path>` blob，
-不能证明 Repo-wise 语义，因此不得标记为 delivered。
+`src/repository_anchor.rs`、`src/checks/anchors.rs`、
+`src/checks/critical_dependency_verification.rs` 与 repository anchor 测试。校验使用
+`git diff <commit> --` 比较完整 tracked state，显式忽略 untracked 文件。

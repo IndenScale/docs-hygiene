@@ -118,13 +118,13 @@ or natural-language contradictions.
 
 ## Normalized Edge Record
 
-[PRD-004](intent/prd/prd-004/index.md) now normalizes semantic references,
-pinned references, derivations, and projections into one ordered dependency
+[PRD-004](intent/prd/prd-004/index.md) now normalizes semantic references, pinned references, derivations, and projections into one ordered dependency
 edge record. Each record carries source and target identity, relation kind,
 source location, optional selector and content anchor, and lifecycle provenance.
-The profile reports ordered nodes and edges plus basic resolution, relation, and
-isolation metrics. Existing resolution, staleness, and reverse-completeness
-checks consume these records. Standard Markdown Links remain navigational and
+It also carries a typed expectation, resolved endpoint candidates, and an explicit `resolved`, `unresolved`, `ambiguous`, or `incompatible` outcome. The profile
+reports ordered nodes and edges plus resolution, relation, and isolation metrics.
+Staleness, reverse completeness, impact, and topology consume these records.
+Standard Markdown Links remain navigational and
 never enter the semantic graph without an explicit semantic relation.
 For non-Markdown implementation members, semantic Wiki Links are recognized
 only on standalone comment lines; string literals and fixtures are not edges.
@@ -134,7 +134,9 @@ Declaration syntax is separated from that edge contract by the versioned
 frontmatter collectors all emit this shape. An explicit `(syntax, context)`
 policy classifies them as semantic dependency, navigation only, or identity
 declaration before the syntax-independent normalizer runs. This makes Markdown's
-non-semantic default an inspectable policy while preserving the public edge JSON.
+non-semantic default an inspectable policy. The occurrence contract remains
+stable; normalized edge JSON is extended additively with typed expectation and
+resolution records under C-020.
 See [SPEC-003 C-012](definition/spec/spec-003/constraints/reference-occurrence-ir.md).
 
 ## Heading Selectors
@@ -150,15 +152,15 @@ SHA-256 anchor from whole-file to block scope. See
 ## Scoped and Multiple Anchors
 
 Markdown frontmatter may declare an `anchors` sequence. Each item names one
-governed target and an explicit `block`, `file`, or `commit` scope. File scope
+governed target and an explicit `block`, `file`, or `repo` scope. File scope
 hashes the complete target; block scope requires a heading-slug `locator` and
 hashes only that ATX section. Multiple items become independently ordered pinned
 edges and report failures at their own declaration lines.
 
-Commit scope uses `algorithm: git` and a full commit OID. It is disabled by
+Repo scope uses `algorithm: git` and a full commit OID. It is disabled by
 default and requires `governance.contentAnchors.verifyGitCommits: true`; the
-checker then compares the current target with the same path's blob at that
-commit. Existing inline selector-plus-SHA-256 links remain whole-file anchors.
+checker then compares the commit with the complete tracked repository state;
+untracked files do not affect it. Existing inline selector-plus-SHA-256 links remain whole-file anchors.
 See [SPEC-003 C-013](definition/spec/spec-003/constraints/scoped-content-anchors.md). Exported or cross-repository SHA-256 file/block anchors may instead carry typed `snapshot` provenance backed by registered local payloads; see [Portable Commit Snapshots](17_portable_snapshots.md) and [SPEC-003 C-017](definition/spec/spec-003/constraints/portable-commit-snapshot.md).
 
 ## Transitive Impact
@@ -184,17 +186,15 @@ identities, so repeated links or parallel edge kinds do not inflate degree.
 Directed cycle groups are deterministic strongly connected components; a
 self-loop is a one-node cycle group.
 
-Topology enforcement is opt-in:
-
-```yaml
-governance:
-  topology:
-    maxFanIn: 8
-    maxFanOut: 12
-    forbidCycles: true
-```
+The graph also reports deterministic bridge-connected communities, their ordered
+members, and distinct directed cross-community edges. Repeated links and parallel
+relations do not change membership. `communityBaseline` records expected
+membership; changes remain advisory unless `enforceCommunityBaseline: true`.
 
 Configured limits activate the independent `governance.topology` rule family.
-Graph presence and repository scale alone never activate blocking topology
-policy. `DH_TOPOLOGY_001` reports Fan threshold violations and
-`DH_TOPOLOGY_002` reports forbidden cycle groups; audited, exact-node directional exceptions follow [SPEC-003 C-018](definition/spec/spec-003/constraints/supernode-exceptions.md).
+Graph presence and repository scale alone never activate blocking topology policy.
+`DH_TOPOLOGY_001` reports Fan threshold violations, `DH_TOPOLOGY_002` reports
+forbidden cycle groups, and `DH_TOPOLOGY_006` reports enforced community drift.
+Configuration is documented in [Configuration](02_configuration.md); community
+semantics follow [SPEC-003 C-021](definition/spec/spec-003/constraints/graph-communities.md),
+and audited directional exceptions follow [SPEC-003 C-018](definition/spec/spec-003/constraints/supernode-exceptions.md).

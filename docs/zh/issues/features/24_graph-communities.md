@@ -1,8 +1,8 @@
 ---
 id: FEATURE-024
 epic: EPIC-007
-status: proposed
-delivery_status: planned
+status: baselined
+delivery_status: delivered
 depends_on: [FEATURE-021, FEATURE-022, FEATURE-023]
 ---
 
@@ -20,6 +20,9 @@ depends_on: [FEATURE-021, FEATURE-022, FEATURE-023]
 - 报告社区成员、跨界边和边界变化；
 - 社区建议默认不直接阻断 CI，除非项目显式配置边界策略。
 
-## 当前差距
+## 交付证据
 
-当前实现只有 SCC、Fan 和影响分析，没有社区发现或模块边界模型。
+`src/governance/topology.rs` 对去重后的已解析类型化边运行确定性的无向桥分解：删除桥后
+的连通分量形成社区，最小成员提供稳定 ID，无随机种子。画像报告社区成员、跨社区边和
+基线变化；`communityBaseline` 默认仅报告，只有 `enforceCommunityBaseline: true` 才以
+`DH_TOPOLOGY_006` 阻断。governance/topology 测试覆盖重复边、稳定边界及显式执行策略。

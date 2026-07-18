@@ -23,3 +23,7 @@ Audited supernode exceptions follow [C-018](supernode-exceptions.md). They can
 make one exact Fan violation non-blocking, but its threshold evidence is
 `excepted` rather than Passed. Governed budget, exception, and trend mechanisms
 therefore do not override the controlled threshold proof obligation.
+
+Deterministic community discovery and optional baseline enforcement follow
+[C-021](graph-communities.md). Community reporting is always non-blocking unless
+`enforceCommunityBaseline` is explicitly true.

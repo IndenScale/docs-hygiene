@@ -69,7 +69,7 @@ profile serializes the ordered records, reverse transitive-impact sets, and
 graph metrics. Heading selectors, impact, and Fan/cycle policy now consume the
 same model; budgets and trends remain later layers.
 
-ATX-block, file, and opt-in commit anchors now share the same edge model.
+ATX-block, file, and opt-in repo anchors now share the same edge model.
 Block-local hashes, multi-anchor declarations, and deterministic transitive
 propagation are delivered, so the repository dependency dimension now reaches
 governed maturity.

@@ -33,12 +33,12 @@ of whether the normalized edge currently has a Pin. Paths are project-relative
 globs; identity lists use stable governed IDs.
 
 `algorithms` accepts `sha256` and `git`. By content range, scopes are listed
-smallest to largest as `block | file | commit`. Policy strength is separate from
+smallest to largest as `block | file | repo`. Policy strength is separate from
 that display order: `minimumScope: file` accepts all three scopes;
-`minimumScope: commit` accepts block or commit; and `minimumScope: block`
-accepts only block. This treats commit provenance as stronger than a working-tree
+`minimumScope: repo` accepts block or repo; and `minimumScope: block`
+accepts only block. This treats full-repository commit provenance as stronger than a working-tree
 file snapshot and block isolation as the strictest requirement.
-`forbidWholeFile` rejects both file and commit scope and therefore requires a
+`forbidWholeFile` rejects both file and repo scope and therefore requires a
 SHA-256 block anchor.
 `maxAgeDays`, when present, additionally requires valid `updatedAt`, non-empty
 `updatedBy`, and non-empty `reason` audit metadata.
@@ -96,15 +96,15 @@ The default is read-only. The versioned `docs-hygiene.pin-update.v1` plan lists
 old and new digests, policy, source, target, relation, selector, actor, reason,
 and date. Repeated `--policy` and `--target` options select a subset. Unknown
 selections, unresolved selectors, malformed anchors, unsafe paths, unsupported
-algorithm/scope pairs, or uncommitted commit targets block the selected plan
+algorithm/scope pairs, or tracked state that differs from `HEAD` block the selected plan
 before any write.
 
 `--apply` updates frontmatter anchors and appends the same records to
 `governance.pinAuditLog` as one rollback-protected atomic batch. Missing
 reference and vertical Pins can be synthesized in governed Markdown content
 when their required scope is resolvable; existing Pins whose scope or algorithm
-is no longer sufficient are migrated. Commit updates use `HEAD` only when its
-target blob equals the working tree. Running `docs-hygiene check` never changes
+is no longer sufficient are migrated. Repo updates use `HEAD` only when the
+complete tracked repository state equals that commit. Running `docs-hygiene check` never changes
 or accepts a fingerprint.
 
 The `dependency.scoped-anchor` profile invariant continues to prove mechanism

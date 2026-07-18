@@ -228,6 +228,10 @@ pub struct GovernanceTopologyConfig {
     #[serde(default)]
     pub forbid_cycles: bool,
     #[serde(default)]
+    pub community_baseline: BTreeMap<String, String>,
+    #[serde(default)]
+    pub enforce_community_baseline: bool,
+    #[serde(default)]
     pub exceptions: Vec<SupernodeExceptionConfig>,
 }
 
@@ -236,6 +240,7 @@ impl GovernanceTopologyConfig {
         usize::from(self.max_fan_in.is_some())
             + usize::from(self.max_fan_out.is_some())
             + usize::from(self.forbid_cycles)
+            + usize::from(self.enforce_community_baseline)
             + self.exceptions.len()
     }
 }

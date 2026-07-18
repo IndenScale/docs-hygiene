@@ -177,7 +177,7 @@ fn validate_snapshot_entry(
     let locator_valid = match entry.scope {
         ContentAnchorScope::File => entry.locator.is_none(),
         ContentAnchorScope::Block => entry.locator.as_deref().is_some_and(valid_heading_slug),
-        ContentAnchorScope::Commit => false,
+        ContentAnchorScope::Repo => false,
     };
     if !safe_snapshot_path(&entry.path)
         || !safe_snapshot_path(&entry.payload)
@@ -210,7 +210,7 @@ fn validate_snapshot_entry(
                     )
                 })
         }),
-        ContentAnchorScope::Commit => unreachable!("commit scope rejected above"),
+        ContentAnchorScope::Repo => unreachable!("repo scope rejected above"),
     };
     let actual = match bytes {
         Ok(bytes) => format!("{:x}", Sha256::digest(bytes)),

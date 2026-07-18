@@ -1,7 +1,7 @@
 ---
 id: EPIC-007
 status: baselined
-delivery_status: partial
+delivery_status: delivered
 depends_on: [EPIC-006]
 ---
 
@@ -27,4 +27,4 @@ depends_on: [EPIC-006]
 - 社区或模块边界具有稳定、可解释的输出；
 - 阈值、超级节点例外、Owner 和复核证据均可审计。
 
-图、Fan 预算和人员责任已交付；图社区/模块边界尚未交付，因此 Epic 为部分交付。
+图、确定性社区、跨社区边、Fan 预算和人员责任均已交付。

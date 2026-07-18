@@ -1,7 +1,7 @@
 # 可移植 Commit 快照
 
 可移植快照把 commit 证据保存为已登记的本地 payload。它扩展 SHA-256 file/block anchor，
-使 `check` 不再依赖产出仓库、网络或 Git。既有 `scope: commit` 继续作为本地仓库机制。
+使 `check` 不再依赖产出仓库、网络或 Git。`scope: repo` 继续作为本地完整仓库机制。
 
 ## 登记
 
@@ -45,7 +45,7 @@ signature:
 完整 40 或 64 hex OID。entry 的 `path` 指向产出仓库路径，`payload` 相对当前 manifest。
 
 file entry hash 完整 payload 字节。block entry 保留完整源 payload，但只 hash `locator`
-唯一解析的 ATX 标题段，规则与普通 block anchor 相同。portable manifest 不允许 commit
+唯一解析的 ATX 标题段，规则与普通 block anchor 相同。portable manifest 不允许 repo
 scope。
 
 ## Anchor Provenance

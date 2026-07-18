@@ -101,7 +101,7 @@ pub(super) fn compute_pin_digest(
             })?;
             Ok(format!("{:x}", Sha256::digest(block)))
         }
-        ("git", ContentAnchorScope::Commit) => {
+        ("git", ContentAnchorScope::Repo) => {
             let output = Command::new("git")
                 .args(["-C"])
                 .arg(root)
@@ -111,15 +111,12 @@ pub(super) fn compute_pin_digest(
                 bail!("cannot resolve HEAD for commit pin");
             }
             let digest = String::from_utf8(output.stdout)?.trim().to_owned();
-            let object = format!("{}:{}", digest, target.location.path);
-            let blob = Command::new("git")
-                .args(["-C"])
-                .arg(root)
-                .args(["cat-file", "blob"])
-                .arg(object)
-                .output()?;
-            if !blob.status.success() || blob.stdout != std::fs::read(target_path)? {
-                bail!("target differs from HEAD and cannot be accepted as a commit pin");
+            if crate::repository_anchor::verify_repository_anchor(root, &digest)
+                != crate::repository_anchor::RepositoryAnchorState::Current
+            {
+                bail!(
+                    "tracked repository state differs from HEAD and cannot be accepted as a repo pin"
+                );
             }
             Ok(digest)
         }

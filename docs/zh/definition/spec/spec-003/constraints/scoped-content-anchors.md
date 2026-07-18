@@ -11,7 +11,7 @@ status: baselined
 | --- | --- | --- | --- |
 | `file` | `sha256` | 禁止 | 完整 canonical 目标的精确字节 |
 | `block` | `sha256` | 必需的标题 slug | canonical 中一个 ATX 标题段的精确 UTF-8 字节 |
-| `commit` | `git` | 禁止 | 当前目标字节等于完整 Git commit OID 中的对应 blob |
+| `repo` | `git` | 禁止 | 完整 tracked repository state 等于完整 Git commit OID |
 
 `file` 是兼容默认值。JSON 会省略其 `scope` 和不存在的 `locator`，因此既有文件锚边记录
 保持 schema 兼容。既有 `[[ID#selector@sha256:<digest>]]` 内联语法仍然是“选择标题，
@@ -33,7 +33,7 @@ anchors:
   - target: TERM-3
     algorithm: git
     digest: <完整的-40-或-64-hex-commit-oid>
-    scope: commit
+    scope: repo
 ```
 
 每个列表项按照 [C-012](reference-occurrence-ir.md) 产出一个
@@ -45,7 +45,7 @@ block 从唯一解析的 ATX 标题行开始，到下一个同级或更高级 AT
 标题时延伸到文件末尾。哈希覆盖这一精确原始字节范围，因此范围外变化不会使锚过期。
 标题寻址与歧义规则遵循 [C-011](selector-resolution.md)。
 
-commit 校验默认关闭，必须显式配置：
+repo 校验默认关闭，必须显式配置：
 
 ```yaml
 governance:
@@ -53,7 +53,8 @@ governance:
     verifyGitCommits: true
 ```
 
-启用后，检查器证明完整对象 ID 可解析为 commit，从本地仓库读取
-`<commit>:<governed-target-path>`，并与当前 canonical 目标逐字节比较。未 opt-in 的
-commit 锚直接报错且不会调用 Git。Git 仍只是物理审计证据；稳定治理 ID 与 canonical
-内容仍是语义权威。跨仓库对象、默认启用 commit 锚和自动 digest 迁移不属于本约束。
+启用后，检查器证明完整对象 ID 可解析为 commit，并把该 commit 与当前完整 tracked
+repository state 比较。任何 tracked path 的新增、删除、mode、暂存或内容变化都会使锚
+过期；untracked path 不影响结果。未 opt-in 的 repo 锚直接报错且不会调用 Git。Git 仍
+只是物理审计证据；稳定治理 ID 与 canonical 内容仍是语义权威。跨仓库对象、默认启用
+repo 锚和自动 digest 迁移不属于本约束；`scope: commit` 无效且不是兼容别名。

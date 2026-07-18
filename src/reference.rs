@@ -30,6 +30,8 @@ pub struct ReferenceAnchorPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locator: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_document_kind: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_by: Option<String>,

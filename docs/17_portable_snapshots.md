@@ -2,8 +2,8 @@
 
 Portable snapshots preserve commit evidence as registered local payloads. They
 extend SHA-256 file and block anchors without requiring the producing repository,
-a network connection, or Git during `check`. Existing `scope: commit` anchors
-remain the local-repository mechanism.
+a network connection, or Git during `check`. `scope: repo` anchors remain the
+local full-repository mechanism.
 
 ## Registration
 
@@ -51,7 +51,7 @@ repository, while `payload` is relative to the manifest in this project.
 
 File entries hash the complete payload bytes. Block entries retain the complete
 source payload but hash only the uniquely resolved ATX section named by
-`locator`, using the same normalization as ordinary block anchors. Commit scope
+`locator`, using the same normalization as ordinary block anchors. Repo scope
 is intentionally not valid inside a portable manifest.
 
 ## Anchor Provenance

@@ -76,8 +76,9 @@ Docs Hygiene 当前提供确定性的项目级治理检查：
 - 带版本的引用 occurrence IR、共享 collector，以及语义边规范化前的显式语法与上下文策略；
 - YAML frontmatter、身份 Manifest 和递归 Package 结构；
 - 跨资产与 Package 身份的生命周期状态义务、终止目标拒绝和显式 `supersededBy` 权威迁移；
-- 带标题 selector、block/file/opt-in commit 锚的规范化语义、锁定、派生和投影治理边，
-  以及确定性的传递影响、Fan-In/Fan-Out、循环组和可选拓扑阈值；
+- 带类型化 expectation/resolution、标题 selector、block/file/opt-in repo 锚的规范化
+  语义、锁定、派生和投影治理边，以及确定性的传递影响、桥连通社区、跨社区边、
+  Fan-In/Fan-Out、循环组和可选拓扑阈值/基线；
 - 带版本的多维文档卫生画像，分别报告目标、检测结果、N/A 和不变量证据，同时保留独立
   规则执行状态；
 - 对 markdownlint 等外部工具的 Adapter 编排。

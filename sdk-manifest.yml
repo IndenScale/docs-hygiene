@@ -82,6 +82,7 @@ members:
   - src/profile/registry.rs
   - src/profile/tests.rs
   - src/project_io.rs
+  - src/repository_anchor.rs
   - src/reference.rs
   - src/report.rs
   - src/report/output.rs

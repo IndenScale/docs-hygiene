@@ -122,6 +122,7 @@ snapshot 登记、repository、commit、path、digest、签名和生命周期故
 
 `DH_TOPOLOGY_003` 至 `DH_TOPOLOGY_005` 报告审计超级节点例外无效/过期、闲置清理候选
 及度数历史缺失或无效；超过自身预算的例外恢复 `DH_TOPOLOGY_001`。
+只有显式启用 `enforceCommunityBaseline` 时，`DH_TOPOLOGY_006` 才报告检测到的社区成员变化。
 
 ## Adapter
 

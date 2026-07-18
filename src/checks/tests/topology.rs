@@ -3,6 +3,7 @@
             identity: identity.to_owned(),
             refinement_level: RefinementLevel::Intent,
             reference_relation: ReferenceRelation::Body,
+            document_kind: None,
             lifecycle_status: "current".to_owned(),
             location: GovernanceLocation {
                 path: format!("{identity}.yml"),
@@ -26,6 +27,13 @@
                 source_status: "current".to_owned(),
                 target_status: Some("current".to_owned()),
             },
+            expectation: ReferenceExpectation::new(
+                GovernanceEdgeKind::SemanticReference,
+                vec![RefinementLevel::Intent],
+                vec![ReferenceRelation::Body],
+                Vec::new(),
+            ),
+            resolution: ReferenceResolution::unresolved(),
         }
     }
 
@@ -71,6 +79,31 @@
             diagnostic.message.contains("Fan-Out 2")
                 && diagnostic.message.contains("maxFanOut 1")
         }));
+    }
+
+    #[test]
+    fn community_baseline_is_reported_advisory_until_explicitly_enforced() {
+        let mut graph = GovernanceGraph::new(
+            vec![topology_node("A"), topology_node("B")],
+            vec![topology_edge("A", "B")],
+        );
+        let advisory: Config = serde_yaml::from_str(
+            "governance:\n  topology:\n    communityBaseline:\n      A: community:A\n      B: community:A\n",
+        )
+        .unwrap();
+        graph.compare_community_baseline(&advisory.governance.topology.community_baseline);
+        assert_eq!(graph.community_changes.len(), 1);
+        let mut diagnostics = Vec::new();
+        check_topology_policy(&advisory, &graph, &mut diagnostics);
+        assert!(diagnostics.is_empty());
+
+        let enforced: Config = serde_yaml::from_str(
+            "governance:\n  topology:\n    communityBaseline:\n      A: community:A\n      B: community:A\n    enforceCommunityBaseline: true\n",
+        )
+        .unwrap();
+        check_topology_policy(&enforced, &graph, &mut diagnostics);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].code, "DH_TOPOLOGY_006");
     }
 
     #[test]

@@ -33,7 +33,7 @@ pub fn scan_library_claim_candidates(
 ) -> Result<LibraryClaimScanReport> {
     let assets = load_claim_scan_assets(root, config)?;
     let mut ignored = Vec::new();
-    let targets = build_library_target_index(root, &assets, &mut ignored);
+    let targets = build_library_target_index(root, config, &assets, &mut ignored);
     if let Some(diagnostic) = ignored.first() {
         anyhow::bail!("cannot scan Library claims: {}", diagnostic.message);
     }

@@ -18,6 +18,12 @@ pub fn print_text_profile(report: &HygieneProfileReport) {
         report.document_templates.registry_valid,
         report.document_templates.proves_migration(),
     );
+    println!(
+        "Graph communities: {} bridge-connected communities, {} cross-community edges, {} baseline changes.",
+        report.governance_graph.communities.len(),
+        report.governance_graph.cross_community_edges.len(),
+        report.governance_graph.community_changes.len(),
+    );
     println!("Dimension    Applicable  Required  Target      Observed    Status");
     for dimension in &report.dimensions {
         println!(
@@ -48,11 +54,13 @@ pub fn print_text_profile(report: &HygieneProfileReport) {
         }
     }
     println!(
-        "\nGovernance graph: {} nodes, {} edges, {} resolved, {} unresolved, {} isolated; max Fan-In {}, max Fan-Out {}, {} cycle groups, max transitive impact {}.",
+        "\nGovernance graph: {} nodes, {} edges, {} resolved, {} unresolved, {} ambiguous, {} incompatible, {} isolated; max Fan-In {}, max Fan-Out {}, {} cycle groups, max transitive impact {}.",
         report.governance_graph.metrics.nodes,
         report.governance_graph.metrics.edges,
         report.governance_graph.metrics.resolved_edges,
         report.governance_graph.metrics.unresolved_edges,
+        report.governance_graph.metrics.ambiguous_edges,
+        report.governance_graph.metrics.incompatible_edges,
         report.governance_graph.metrics.isolated_nodes,
         maximum_degree(&report.governance_graph.metrics.fan_in),
         maximum_degree(&report.governance_graph.metrics.fan_out),

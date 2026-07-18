@@ -30,10 +30,10 @@ governance:
 不受当前边是否已有 Pin 影响。路径是项目相对 glob，身份列表使用稳定治理 ID。
 
 `algorithms` 接受 `sha256` 和 `git`。按内容范围从小到大，scope 统一列为
-`block | file | commit`。策略强度与该展示顺序分开：`minimumScope: file` 接受三种 scope，
-`minimumScope: commit` 接受 block 或 commit，`minimumScope: block` 只接受 block。也就是说，
-commit provenance 强于工作树文件快照，而 block 隔离是最严格要求。
-`forbidWholeFile` 同时拒绝 file 和 commit，因此要求 SHA-256 block anchor。
+`block | file | repo`。策略强度与该展示顺序分开：`minimumScope: file` 接受三种 scope，
+`minimumScope: repo` 接受 block 或 repo，`minimumScope: block` 只接受 block。也就是说，
+完整仓库 commit provenance 强于工作树文件快照，而 block 隔离是最严格要求。
+`forbidWholeFile` 同时拒绝 file 和 repo，因此要求 SHA-256 block anchor。
 配置 `maxAgeDays` 后还要求合法 `updatedAt`、非空 `updatedBy` 和非空 `reason`。
 
 ## 诊断
@@ -86,12 +86,12 @@ docs-hygiene update-pins . \
 默认只读。版本化 `docs-hygiene.pin-update.v1` 计划包含旧/新 digest、policy、source、
 target、relation、selector、actor、reason 和日期。重复 `--policy`、`--target` 可选择
 子集。未知选择、selector 无法解析、anchor 损坏、不安全路径、不支持的算法/scope 组合
-或未提交的 commit 目标都会在任何写入前阻止整个选中计划。
+或 tracked state 与 `HEAD` 不一致都会在任何写入前阻止整个选中计划。
 
 `--apply` 以带回滚保护的原子批次更新 frontmatter anchor，并把同一记录追加到
 `governance.pinAuditLog`。当所需 scope 可解析时，缺失的 reference 或垂直边 Pin 可在
-受管 Markdown 内容中生成；scope 或算法已不再满足要求的既有 Pin 会被迁移。commit 更新
-只在 `HEAD` 目标 blob 与工作树相等时执行。`docs-hygiene check` 永不修改或接受指纹。
+受管 Markdown 内容中生成；scope 或算法已不再满足要求的既有 Pin 会被迁移。repo 更新
+只在完整 tracked repository state 与 `HEAD` 相等时执行。`docs-hygiene check` 永不修改或接受指纹。
 
 画像中的 `dependency.scoped-anchor` 继续证明机制可用；
 `dependency.critical-pins` 只在至少配置一条关键依赖策略时适用，并独立证明策略全满足。

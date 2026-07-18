@@ -51,7 +51,7 @@ governance:
         targetIds: [TERM-1, TERM-2]
       require:
         algorithms: [sha256]
-        minimumScope: commit
+        minimumScope: repo
         forbidWholeFile: false
         maxAgeDays: 30
 rules:

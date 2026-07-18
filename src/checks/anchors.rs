@@ -4,19 +4,21 @@ fn validate_edge_anchor(
     edge: &GovernanceEdge,
     target: &SemanticTarget,
     diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> bool {
     let Some(anchor) = &edge.content_anchor else {
-        return;
+        return true;
     };
+    let before = diagnostics.len();
     match anchor.scope {
         ContentAnchorScope::File => validate_file_anchor(root, edge, target, anchor, diagnostics),
         ContentAnchorScope::Block => {
             validate_block_anchor(root, edge, target, anchor, diagnostics)
         }
-        ContentAnchorScope::Commit => {
-            validate_commit_anchor(root, config, edge, target, anchor, diagnostics)
+        ContentAnchorScope::Repo => {
+            validate_repo_anchor(root, config, edge, target, anchor, diagnostics)
         }
     }
+    diagnostics.len() == before
 }
 
 fn validate_file_anchor(
@@ -73,7 +75,7 @@ fn validate_block_anchor(
     }
 }
 
-fn validate_commit_anchor(
+fn validate_repo_anchor(
     root: &Path,
     config: &Config,
     edge: &GovernanceEdge,
@@ -86,91 +88,33 @@ fn validate_commit_anchor(
             edge,
             target,
             diagnostics,
-            "Commit anchor verification requires governance.contentAnchors.verifyGitCommits: true."
+            "Repo anchor verification requires governance.contentAnchors.verifyGitCommits: true."
                 .to_owned(),
         );
         return;
     }
-    let commit_object = format!("{}^{{commit}}", anchor.digest);
-    let commit_status = Command::new("git")
-        .args(["-C"])
-        .arg(root)
-        .args(["cat-file", "-e"])
-        .arg(&commit_object)
-        .output();
-    match commit_status {
-        Ok(output) if output.status.success() => {}
-        Ok(output) => {
-            let detail = String::from_utf8_lossy(&output.stderr);
-            push_anchor_diagnostic(
-                edge,
-                target,
-                diagnostics,
-                format!(
-                    "Commit anchor '{}' is not a resolvable Git commit: {}.",
-                    anchor.digest,
-                    detail.trim()
-                ),
-            );
-            return;
-        }
-        Err(error) => {
-            push_anchor_diagnostic(
-                edge,
-                target,
-                diagnostics,
-                format!("Commit anchor verification cannot run Git: {error}."),
-            );
-            return;
-        }
-    }
-    let object = format!("{}:{}", anchor.digest, target.path);
-    let output = Command::new("git")
-        .args(["-C"])
-        .arg(root)
-        .args(["cat-file", "blob"])
-        .arg(&object)
-        .output();
-    let pinned_bytes = match output {
-        Ok(output) if output.status.success() => output.stdout,
-        Ok(output) => {
-            let detail = String::from_utf8_lossy(&output.stderr);
-            push_anchor_diagnostic(
-                edge,
-                target,
-                diagnostics,
-                format!(
-                    "Commit anchor '{}' cannot resolve governed target '{}': {}.",
-                    anchor.digest,
-                    target.path,
-                    detail.trim()
-                ),
-            );
-            return;
-        }
-        Err(error) => {
-            push_anchor_diagnostic(
-                edge,
-                target,
-                diagnostics,
-                format!("Commit anchor verification cannot run Git: {error}."),
-            );
-            return;
-        }
-    };
-    let Some(current_bytes) = read_anchor_target(root, edge, target, diagnostics) else {
-        return;
-    };
-    if pinned_bytes != current_bytes {
-        push_anchor_diagnostic(
+    match crate::repository_anchor::verify_repository_anchor(root, &anchor.digest) {
+        crate::repository_anchor::RepositoryAnchorState::Current => {}
+        crate::repository_anchor::RepositoryAnchorState::Stale => push_anchor_diagnostic(
             edge,
             target,
             diagnostics,
             format!(
-                "Commit-pinned target '{}' differs from Git object '{}:{}'.",
-                edge.target, anchor.digest, target.path
+                "Repo anchor for '{}' is stale: tracked repository state differs from Git commit '{}'.",
+                edge.target, anchor.digest
             ),
-        );
+        ),
+        crate::repository_anchor::RepositoryAnchorState::Invalid(detail) => {
+            push_anchor_diagnostic(
+                edge,
+                target,
+                diagnostics,
+                format!(
+                    "Repo anchor '{}' is not a verifiable Git commit: {detail}.",
+                    anchor.digest
+                ),
+            );
+        }
     }
 }
 

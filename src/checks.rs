@@ -27,8 +27,10 @@ use crate::date::{
 };
 use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
-    GovernanceLocation, GovernanceNode, LifecycleProvenance, LifecycleStatus, ReferenceRelation,
-    RefinementLevel, SnapshotProvenance,
+    GovernanceLocation, GovernanceNode, LifecycleProvenance, LifecycleStatus,
+    ReferenceCompatibilityIssue, ReferenceEndpoint, ReferenceExpectation, ReferenceRelation,
+    ReferenceResolution, ReferenceResolutionOutcome, RefinementLevel, SnapshotProvenance,
+    resolve_reference,
 };
 use crate::markdown::{
     heading_block as markdown_heading_block, heading_slug,

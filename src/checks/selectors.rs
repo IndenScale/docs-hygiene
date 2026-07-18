@@ -3,9 +3,9 @@ fn validate_edge_selector(
     edge: &GovernanceEdge,
     target: &SemanticTarget,
     diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> bool {
     let Some(selector) = edge.selector.as_deref() else {
-        return;
+        return true;
     };
     let text = match std::fs::read_to_string(root.join(&target.path)) {
         Ok(text) => text,
@@ -19,13 +19,14 @@ fn validate_edge_selector(
                     edge.target
                 ),
             );
-            return;
+            return false;
         }
     };
     let slugs = markdown_heading_slug_counts(&text);
     match slugs.get(selector).copied().unwrap_or_default() {
-        1 => {}
-        0 => push_selector_diagnostic(
+        1 => true,
+        0 => {
+            push_selector_diagnostic(
             edge,
             target,
             diagnostics,
@@ -33,8 +34,11 @@ fn validate_edge_selector(
                 "Selector '#{selector}' does not resolve to an ATX heading in Wiki Link target '{}'.",
                 edge.target
             ),
-        ),
-        matches => push_selector_diagnostic(
+            );
+            false
+        }
+        matches => {
+            push_selector_diagnostic(
             edge,
             target,
             diagnostics,
@@ -42,7 +46,9 @@ fn validate_edge_selector(
                 "Selector '#{selector}' is ambiguous because Wiki Link target '{}' contains {matches} headings with that slug.",
                 edge.target
             ),
-        ),
+            );
+            false
+        }
     }
 }
 

@@ -60,7 +60,7 @@ Wiki Link、`formalizes`、`realizes` 和 `projects` 输入现已规范化到该
 公开语法和诊断契约。画像会序列化有序边记录、反向传递影响集合及关系图指标；标题
 selector、影响与 Fan/循环策略已经消费同一模型，预算和趋势仍属于后续层次。
 
-ATX block、file 与 opt-in commit 锚现已共享同一边模型。块级局部 hash、多锚声明和
+ATX block、file 与 opt-in repo 锚现已共享同一边模型。块级局部 hash、多锚声明和
 确定性传递影响已经交付，因此本仓库依赖维度现已达到治理级。
 
 生命周期状态义务和显式 `supersededBy` 映射现已覆盖资产、Package 领域及叶子。终止

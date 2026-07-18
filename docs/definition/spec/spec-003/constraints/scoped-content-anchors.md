@@ -12,7 +12,7 @@ optional `locator`. Supported combinations are:
 | --- | --- | --- | --- |
 | `file` | `sha256` | forbidden | exact bytes of the complete canonical target |
 | `block` | `sha256` | required heading slug | exact UTF-8 bytes of one canonical ATX heading section |
-| `commit` | `git` | forbidden | current target bytes equal the blob at the full Git commit OID |
+| `repo` | `git` | forbidden | complete tracked repository state equals the full Git commit OID |
 
 `file` is the compatibility default. Its `scope` and absent `locator` are
 omitted from JSON, so existing file-anchor edge records remain schema
@@ -36,7 +36,7 @@ anchors:
   - target: TERM-3
     algorithm: git
     digest: <full-40-or-64-hex-commit-oid>
-    scope: commit
+    scope: repo
 ```
 
 Each list item emits one `frontmatter` / `governedAnchor` reference occurrence
@@ -51,7 +51,7 @@ The hash covers that exact raw byte span. Changes outside the span do not stale
 the anchor. Heading lookup and ambiguity follow
 [C-011](selector-resolution.md).
 
-Commit verification is disabled by default. It requires:
+Repo verification is disabled by default. It requires:
 
 ```yaml
 governance:
@@ -60,9 +60,10 @@ governance:
 ```
 
 When enabled, the checker proves that the supplied full object ID resolves to a
-commit, loads `<commit>:<governed-target-path>` from the local repository, and
-compares its bytes with the current canonical target. A commit anchor without
-opt-in is an error and never invokes Git. Git remains physical audit evidence;
-stable governance IDs and canonical content remain semantic authority.
-Cross-repository objects, default commit anchoring, and automatic digest
-migration are outside this constraint.
+commit and compares that commit with the complete current tracked repository
+state. Added, deleted, mode-changed, staged, or modified tracked paths stale the
+anchor; untracked paths do not. A repo anchor without opt-in is an error and
+never invokes Git. Git remains physical audit evidence; stable governance IDs
+and canonical content remain semantic authority. Cross-repository objects,
+default repo anchoring, and automatic digest migration are outside this
+constraint. `scope: commit` is invalid and is not a compatibility alias.

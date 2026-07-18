@@ -14,6 +14,8 @@ members:
   - transitive-impact.md
   - identity-lifecycle.md
   - ownership-review.md
+  - typed-reference-resolution.md
+  - graph-communities.md
   - topology-policy.md
   - supernode-exceptions.md
   - template-registry.md

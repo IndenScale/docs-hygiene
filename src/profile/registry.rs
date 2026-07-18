@@ -359,6 +359,14 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         ],
     },
     InvariantSpec {
+        id: "topology.communities",
+        dimension: Topology,
+        minimum_maturity: Controlled,
+        delivery: Delivered,
+        checkers: &[GovernanceTopology],
+        diagnostic_codes: &["DH_TOPOLOGY_006"],
+    },
+    InvariantSpec {
         id: "topology.thresholds",
         dimension: Topology,
         minimum_maturity: Controlled,

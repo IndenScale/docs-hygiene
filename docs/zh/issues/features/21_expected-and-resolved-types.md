@@ -2,7 +2,7 @@
 id: FEATURE-021
 epic: EPIC-006
 status: baselined
-delivery_status: partial
+delivery_status: delivered
 depends_on: [FEATURE-020]
 ---
 
@@ -19,7 +19,9 @@ resolved endpoint type、位置和 lifecycle；未解析也产生显式 resoluti
 - 横向引用、纵向派生、claim 和 Pin 共用端点类型表达；
 - unresolved、ambiguous 和 resolved 状态不由空字段隐式区分。
 
-## 当前差距
+## 交付证据
 
-现有代码会在具体 checker 中比较 expected refinement/relation，但 `GovernanceEdge` 没有
-期待类型、解析类型或显式 resolution outcome，因此仅能证明部分交付。
+`ReferenceExpectation`、`ReferenceEndpoint`、`ReferenceResolution` 与
+`ReferenceResolutionOutcome` 是 `GovernanceEdge` 的可序列化一等字段；Reference IR、
+垂直 Manifest 和 Pin 共用该端点模型。governance/reference IR 测试覆盖 resolved、
+unresolved、ambiguous、incompatible 及 Document Kind。

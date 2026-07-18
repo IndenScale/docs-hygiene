@@ -2,7 +2,7 @@
 id: FEATURE-022
 epic: EPIC-006
 status: baselined
-delivery_status: partial
+delivery_status: delivered
 depends_on: [FEATURE-021]
 ---
 
@@ -19,6 +19,9 @@ depends_on: [FEATURE-021]
 - 一次解析结果可被诊断、画像、影响和图分析复用；
 - 新 relation 只扩展策略表而非复制 checker 分支。
 
-## 当前差距
+## 交付证据
 
-现有垂直派生和 Wiki/claim 检查具有局部兼容判断，但尚未收敛为共享矩阵。
+`resolve_reference` 集中比较 refinement level、reference relation、Document Kind 和
+lifecycle；selector/anchor 结果进入同一 `ReferenceResolution.incompatibilities`。
+诊断、画像、传递影响、Fan、循环和社区分析复用该结果，相关治理图与 Reference IR
+测试覆盖稳定分类和不兼容边隔离。

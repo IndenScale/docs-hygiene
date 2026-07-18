@@ -145,6 +145,8 @@ cycle group when `forbidCycles` is enabled.
 `DH_TOPOLOGY_003` through `DH_TOPOLOGY_005` report invalid/expired audited
 supernode exceptions, idle cleanup candidates, and missing or invalid degree
 history. An exception over its own budget returns `DH_TOPOLOGY_001`.
+`DH_TOPOLOGY_006` reports a detected community membership change only when
+`enforceCommunityBaseline` is explicitly enabled.
 
 ## Adapters
 
