@@ -6,14 +6,7 @@ fn check_package_members(
 ) {
     let manifest_rel = Path::new(&asset.path);
     let is_directory_package = manifest_rel.file_name().and_then(|value| value.to_str())
-        == Some("manifest.yml")
-        && asset.refinement_level != RefinementLevel::Implementation;
-    if asset.refinement_level == RefinementLevel::Implementation
-        && asset.reference_relation == ReferenceRelation::Body
-    {
-        check_implementation_body_members(root, asset, diagnostics);
-        return;
-    }
+        == Some("manifest.yml");
     if asset.reference_relation != ReferenceRelation::Library && !is_directory_package {
         return;
     }
@@ -94,108 +87,6 @@ fn check_package_members(
         &canonical_nodes,
         diagnostics,
     );
-}
-
-fn check_implementation_body_members(
-    root: &Path,
-    asset: &GovernanceAsset,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let Some(members) = &asset.members else {
-        return;
-    };
-    let serde_yaml::Value::Mapping(groups) = members else {
-        diagnostics.push(Diagnostic::new(
-            "DH_BODY_001",
-            Severity::Error,
-            asset.path.clone(),
-            "Implementation Body members must map member kinds to non-empty path lists.",
-        ));
-        return;
-    };
-    if groups.is_empty() {
-        diagnostics.push(Diagnostic::new(
-            "DH_BODY_001",
-            Severity::Error,
-            asset.path.clone(),
-            "Implementation Body members cannot be empty when declared.",
-        ));
-        return;
-    }
-
-    let mut declared_paths = BTreeSet::new();
-    for (kind, values) in groups {
-        let Some(kind) = kind.as_str() else {
-            diagnostics.push(Diagnostic::new(
-                "DH_BODY_001",
-                Severity::Error,
-                asset.path.clone(),
-                "Implementation Body member kinds must be strings.",
-            ));
-            continue;
-        };
-        let Some(values) = values.as_sequence() else {
-            diagnostics.push(Diagnostic::new(
-                "DH_BODY_001",
-                Severity::Error,
-                asset.path.clone(),
-                format!("Implementation Body member kind '{kind}' must contain a path list."),
-            ));
-            continue;
-        };
-        if values.is_empty() {
-            diagnostics.push(Diagnostic::new(
-                "DH_BODY_001",
-                Severity::Error,
-                asset.path.clone(),
-                format!("Implementation Body member kind '{kind}' cannot be empty."),
-            ));
-        }
-        for value in values {
-            let Some(member) = value.as_str() else {
-                diagnostics.push(Diagnostic::new(
-                    "DH_BODY_001",
-                    Severity::Error,
-                    asset.path.clone(),
-                    format!("Implementation Body member kind '{kind}' must contain path strings."),
-                ));
-                continue;
-            };
-            let member_path = Path::new(member);
-            let is_safe = !member_path.as_os_str().is_empty()
-                && !member_path.is_absolute()
-                && member_path
-                    .components()
-                    .all(|component| matches!(component, Component::Normal(_)));
-            if !is_safe {
-                diagnostics.push(Diagnostic::new(
-                    "DH_BODY_001",
-                    Severity::Error,
-                    asset.path.clone(),
-                    format!(
-                        "Implementation Body member '{member}' must be a project-root-relative path without traversal."
-                    ),
-                ));
-                continue;
-            }
-            if !declared_paths.insert(member.to_owned()) {
-                diagnostics.push(Diagnostic::new(
-                    "DH_BODY_001",
-                    Severity::Error,
-                    asset.path.clone(),
-                    format!("Implementation Body member '{member}' is declared more than once."),
-                ));
-            }
-            if !root.join(member_path).is_file() {
-                diagnostics.push(Diagnostic::new(
-                    "DH_BODY_001",
-                    Severity::Error,
-                    asset.path.clone(),
-                    format!("Implementation Body member '{member}' does not exist."),
-                ));
-            }
-        }
-    }
 }
 
 fn package_diagnostic_code(reference_relation: ReferenceRelation) -> &'static str {

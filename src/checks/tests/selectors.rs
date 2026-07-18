@@ -5,7 +5,7 @@
         fs::create_dir_all(&library).unwrap();
         fs::write(
             library.join("manifest.yml"),
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
         )
         .unwrap();
         fs::write(
@@ -18,7 +18,7 @@
             fs::create_dir_all(&package).unwrap();
             fs::write(
                 package.join("manifest.yml"),
-                "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+                "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
             )
             .unwrap();
             fs::write(

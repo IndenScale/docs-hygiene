@@ -1,0 +1,10 @@
+id: PRD-002
+type: product-requirement
+status: proposed
+referenceRelation: body
+members:
+  - index.md
+  - problem.md
+  - roles.md
+  - requirements
+  - non-goals.md

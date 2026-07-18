@@ -52,8 +52,10 @@ pub(super) fn scaffold(args: ScaffoldArgs) -> Result<()> {
 }
 
 fn scaffold_starter(path: PathBuf, force: bool) -> Result<()> {
-    std::fs::create_dir_all(path.join("docs/zh"))
-        .with_context(|| format!("failed to create {}", path.join("docs/zh").display()))?;
+    std::fs::create_dir_all(path.join("docs/zh/guide"))
+        .with_context(|| format!("failed to create {}", path.join("docs/zh/guide").display()))?;
+    std::fs::create_dir_all(path.join("docs/guide"))
+        .with_context(|| format!("failed to create {}", path.join("docs/guide").display()))?;
     std::fs::create_dir_all(path.join("concept"))
         .with_context(|| format!("failed to create {}", path.join("concept").display()))?;
 
@@ -74,8 +76,18 @@ fn scaffold_starter(path: PathBuf, force: bool) -> Result<()> {
         force,
     )?;
     write_scaffold_file(&path.join("CHANGELOG.md"), "# Changelog\n", force)?;
-    write_scaffold_file(&path.join("docs/01_overview.md"), "# Overview\n", force)?;
-    write_scaffold_file(&path.join("docs/zh/01_overview.md"), "# 概览\n", force)?;
+    write_scaffold_file(
+        &path.join("docs/README.md"),
+        "# Documentation\n\n- [Overview](guide/overview.md)\n",
+        force,
+    )?;
+    write_scaffold_file(
+        &path.join("docs/zh/README.md"),
+        "# 文档\n\n- [概览](guide/overview.md)\n",
+        force,
+    )?;
+    write_scaffold_file(&path.join("docs/guide/overview.md"), "# Overview\n", force)?;
+    write_scaffold_file(&path.join("docs/zh/guide/overview.md"), "# 概览\n", force)?;
     write_scaffold_file(
         &path.join("concept/Policy Engine.md"),
         "# Policy Engine\n",

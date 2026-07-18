@@ -1,12 +1,10 @@
-    fn governance_config(manifests: &[&str], require_complete: bool) -> Config {
+    fn governance_config(manifests: &[&str], _require_complete: bool) -> Config {
         let manifest_lines = manifests
             .iter()
             .map(|path| format!("    - {path}"))
             .collect::<Vec<_>>()
             .join("\n");
-        serde_yaml::from_str(&format!(
-            "governance:\n  manifests:\n{manifest_lines}\n  requireCompleteVerticalDerivation: {require_complete}\n"
-        ))
+        serde_yaml::from_str(&format!("governance:\n  manifests:\n{manifest_lines}\n"))
         .unwrap()
     }
 
@@ -33,79 +31,30 @@
     }
 
     #[test]
-    fn accepts_complete_horizontal_and_vertical_governance_graph() {
+    fn accepts_ul_and_prd_governance_graph_without_refinement_layers() {
         let temp = tempdir().unwrap();
-        let manifests = [
-            "ul.yml",
-            "prd/manifest.yml",
-            "glossary.yml",
-            "spec/manifest.yml",
-            "sdk.yml",
-            "impl.yml",
-        ];
+        let manifests = ["ul.yml", "prd/manifest.yml"];
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd/manifest.yml",
-            "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: baselined\nmembers: [index.md]\n",
+            "id: PRD-1\nreferenceRelation: body\nstatus: baselined\nmembers: [index.md]\n",
         );
         fs::write(
             temp.path().join("prd/index.md"),
             "---\nid: PRD-1-INDEX\nstatus: baselined\n---\n\n# PRD\n\n[[UL-1]]\n[Navigation only](../ul.yml)\n",
         )
         .unwrap();
-        write_asset(
-            temp.path(),
-            "glossary.yml",
-            "id: GLOSSARY-1\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\nprojects: { id: UL-1 }\n",
-        );
-        fs::write(
-            temp.path().join("glossary-term.md"),
-            "---\nid: TERM-glossary\nstatus: baselined\n---\n\n# Term\n\n[[UL-1]]\n",
-        )
-        .unwrap();
-        write_asset(
-            temp.path(),
-            "spec/manifest.yml",
-            "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: baselined\nformalizes: PRD-1\nmembers: [index.md]\n",
-        );
-        fs::write(
-            temp.path().join("spec/index.md"),
-            "---\nid: SPEC-1-INDEX\nstatus: baselined\n---\n\n# Spec\n\n[[GLOSSARY-1]]\n",
-        )
-        .unwrap();
-        write_asset(
-            temp.path(),
-            "sdk.yml",
-            "id: SDK-1\nrefinementLevel: implementation\nreferenceRelation: library\nstatus: current\nprojects: GLOSSARY-1\n",
-        );
-        fs::write(
-            temp.path().join("sdk-term.md"),
-            "---\nid: TERM-sdk\nstatus: baselined\n---\n\n# Term\n\n[[GLOSSARY-1]]\n",
-        )
-        .unwrap();
-        fs::create_dir_all(temp.path().join("src")).unwrap();
-        fs::write(
-            temp.path().join("src/main.rs"),
-            "// [[SDK-1]]\nconst EXAMPLE: &str = \"[[NOT-A-DEPENDENCY]]\";\nfn main() {}\n",
-        )
-        .unwrap();
-        write_asset(
-            temp.path(),
-            "impl.yml",
-            "id: IMPL-1\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nrealizes: SPEC-1\nmembers:\n  code: [src/main.rs]\n",
-        );
-
         let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
 
         assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
-        assert_eq!(report.governance_graph.metrics.nodes, 6);
-        assert_eq!(report.governance_graph.metrics.edges, 7);
-        assert_eq!(report.governance_graph.metrics.resolved_edges, 7);
+        assert_eq!(report.governance_graph.metrics.nodes, 2);
+        assert_eq!(report.governance_graph.metrics.edges, 1);
+        assert_eq!(report.governance_graph.metrics.resolved_edges, 1);
         assert_eq!(report.governance_graph.metrics.unresolved_edges, 0);
         assert_eq!(report.governance_graph.metrics.isolated_nodes, 0);
         assert_eq!(
@@ -114,12 +63,12 @@
                 .metrics
                 .relation_counts
                 .get(&GovernanceEdgeKind::SemanticReference),
-            Some(&3)
+            Some(&1)
         );
         assert!(report.governance_graph.edges.iter().any(|edge| {
-            edge.source == "SPEC-1"
-                && edge.target == "PRD-1"
-                && edge.relation == GovernanceEdgeKind::Formalizes
+            edge.source == "PRD-1"
+                && edge.target == "UL-1"
+                && edge.relation == GovernanceEdgeKind::SemanticReference
         }));
         assert!(!report
             .governance_graph
@@ -134,57 +83,34 @@
     }
 
     #[test]
-    fn validates_declared_implementation_body_members() {
+    fn rejects_legacy_refinement_and_projection_metadata() {
         let temp = tempdir().unwrap();
-        fs::create_dir_all(temp.path().join("src")).unwrap();
-        fs::write(temp.path().join("src/main.rs"), "fn main() {}\n").unwrap();
         write_asset(
             temp.path(),
-            "impl-valid.yml",
-            "id: IMPL-VALID\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nrealizes: { id: SPEC-1 }\nmembers:\n  code: [src/main.rs]\n",
-        );
-        write_asset(
-            temp.path(),
-            "impl-invalid.yml",
-            "id: IMPL-INVALID\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nrealizes: { id: SPEC-1 }\nmembers:\n  code: [src/missing.rs, ../escaped.rs, src/main.rs]\n  configuration: [src/main.rs]\n",
+            "legacy.yml",
+            "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: baselined\nformalizes: PRD-1\n",
         );
 
-        let config = governance_config(&["impl-valid.yml", "impl-invalid.yml"], false);
+        let config = governance_config(&["legacy.yml"], false);
         let report = run_checks(temp.path(), &config).unwrap();
-        let member_diagnostics = report
+        let legacy = report
             .diagnostics
             .iter()
-            .filter(|diagnostic| diagnostic.code == "DH_BODY_001")
+            .filter(|diagnostic| diagnostic.code == "DH_GOVERNANCE_001")
             .collect::<Vec<_>>();
 
-        assert_eq!(member_diagnostics.len(), 3, "{:?}", report.diagnostics);
-        assert!(member_diagnostics.iter().any(|diagnostic| {
-            diagnostic.message.contains("src/missing.rs")
-                && diagnostic.message.contains("does not exist")
-        }));
-        assert!(member_diagnostics.iter().any(|diagnostic| {
-            diagnostic.message.contains("../escaped.rs")
-                && diagnostic.message.contains("without traversal")
-        }));
-        assert!(member_diagnostics.iter().any(|diagnostic| {
-            diagnostic.message.contains("src/main.rs")
-                && diagnostic.message.contains("more than once")
-        }));
-        assert!(
-            member_diagnostics
-                .iter()
-                .all(|diagnostic| diagnostic.path == "impl-invalid.yml")
-        );
+        assert_eq!(legacy.len(), 1, "{:?}", report.diagnostics);
+        assert!(legacy[0].message.contains("Legacy refinement metadata"));
     }
 
     #[test]
     fn validates_library_directory_members_and_term_frontmatter() {
         let temp = tempdir().unwrap();
-        let library = temp.path().join("docs/intent/ul");
+        let library = temp.path().join("docs/engineering/ul");
         fs::create_dir_all(&library).unwrap();
         fs::write(
             library.join("manifest.yml"),
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [declared.md, ../escaped.md]\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [declared.md, ../escaped.md]\n",
         )
         .unwrap();
         fs::write(
@@ -200,7 +126,7 @@
 
         let report = run_checks(
             temp.path(),
-            &governance_config(&["docs/intent/ul/manifest.yml"], false),
+            &governance_config(&["docs/engineering/ul/manifest.yml"], false),
         )
         .unwrap();
         let members = report
@@ -226,7 +152,7 @@
                 .any(|diagnostic| diagnostic.message.contains("not declared"))
         );
 
-        let localized = temp.path().join("docs/zh/intent/ul");
+        let localized = temp.path().join("docs/zh/engineering/ul");
         fs::create_dir_all(&localized).unwrap();
         fs::write(
             localized.join("declared.md"),
@@ -238,14 +164,14 @@
 docs:
   bases:
     - id: ul
-      root: docs/intent/ul
+      root: docs/engineering/ul
       localizedRoots:
-        zh: docs/zh/intent/ul
+        zh: docs/zh/engineering/ul
       patterns:
         - id: term
           regex: "^[a-z0-9-]+\\.md$"
 governance:
-  manifests: [docs/intent/ul/manifest.yml]
+  manifests: [docs/engineering/ul/manifest.yml]
 "#,
         )
         .unwrap();
@@ -261,12 +187,12 @@ governance:
     #[test]
     fn validates_recursive_body_package_and_localized_domain_members() {
         let temp = tempdir().unwrap();
-        for root in ["docs/intent/prd/example", "docs/zh/intent/prd/example"] {
+        for root in ["docs/engineering/prd/example", "docs/zh/engineering/prd/example"] {
             let package = temp.path().join(root);
             fs::create_dir_all(package.join("stories")).unwrap();
             fs::write(
                 package.join("manifest.yml"),
-                "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [stories]\n",
+                "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [stories]\n",
             )
             .unwrap();
             fs::write(
@@ -285,14 +211,14 @@ governance:
 docs:
   bases:
     - id: prd
-      root: docs/intent/prd/example
+      root: docs/engineering/prd/example
       localizedRoots:
-        zh: docs/zh/intent/prd/example
+        zh: docs/zh/engineering/prd/example
       patterns:
         - id: item
           regex: "^[a-z0-9-]+\\.md$"
 governance:
-  manifests: [docs/intent/prd/example/manifest.yml]
+  manifests: [docs/engineering/prd/example/manifest.yml]
 "#,
         )
         .unwrap();
@@ -309,7 +235,7 @@ governance:
 
         fs::write(
             temp.path()
-                .join("docs/zh/intent/prd/example/stories/manifest.yml"),
+                .join("docs/zh/engineering/prd/example/stories/manifest.yml"),
             "id: PRD-1-STORIES\nkind: domain\nstatus: proposed\nmembers: []\n",
         )
         .unwrap();
@@ -320,11 +246,11 @@ governance:
 
         fs::write(
             temp.path()
-                .join("docs/zh/intent/prd/example/stories/manifest.yml"),
+                .join("docs/zh/engineering/prd/example/stories/manifest.yml"),
             "id: PRD-1-STORIES\nkind: domain\nstatus: proposed\nmembers: [story.md]\n",
         )
         .unwrap();
-        let extra = temp.path().join("docs/zh/intent/prd/example/extra");
+        let extra = temp.path().join("docs/zh/engineering/prd/example/extra");
         fs::create_dir_all(&extra).unwrap();
         fs::write(
             extra.join("manifest.yml"),

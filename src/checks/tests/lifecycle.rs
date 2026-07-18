@@ -7,7 +7,7 @@ fn validates_leaf_authority_migration_and_rejects_stale_consumers() {
     fs::create_dir_all(&body).unwrap();
     fs::write(
         library.join("manifest.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [old.md, new.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [old.md, new.md]\n",
     )
     .unwrap();
     fs::write(
@@ -22,7 +22,7 @@ fn validates_leaf_authority_migration_and_rejects_stale_consumers() {
     .unwrap();
     fs::write(
         body.join("manifest.yml"),
-        "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+        "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
     )
     .unwrap();
     fs::write(
@@ -79,22 +79,22 @@ fn lifecycle_status_obligations_reject_missing_misplaced_and_unready_successors(
     write_asset(
         temp.path(),
         "missing.yml",
-        "id: OLD-MISSING\nrefinementLevel: intent\nreferenceRelation: library\nstatus: superseded\n",
+        "id: OLD-MISSING\nreferenceRelation: library\nstatus: superseded\n",
     );
     write_asset(
         temp.path(),
         "misplaced.yml",
-        "id: ACTIVE\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nsupersededBy: DRAFT\n",
+        "id: ACTIVE\nreferenceRelation: library\nstatus: baselined\nsupersededBy: DRAFT\n",
     );
     write_asset(
         temp.path(),
         "old.yml",
-        "id: OLD\nrefinementLevel: intent\nreferenceRelation: library\nstatus: superseded\nsupersededBy: DRAFT\n",
+        "id: OLD\nreferenceRelation: library\nstatus: superseded\nsupersededBy: DRAFT\n",
     );
     write_asset(
         temp.path(),
         "draft.yml",
-        "id: DRAFT\nrefinementLevel: intent\nreferenceRelation: library\nstatus: draft\n",
+        "id: DRAFT\nreferenceRelation: library\nstatus: draft\n",
     );
     let config = governance_config(
         &["missing.yml", "misplaced.yml", "old.yml", "draft.yml"],

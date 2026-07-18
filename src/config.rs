@@ -295,19 +295,30 @@ impl Config {
 
 docs:
   bases:
-    - id: main
+    - id: docs-index
       root: docs
-      requireContinuousNumbering: true
+      requireContinuousNumbering: false
+      maxLines: 500
+      forbidAsciiArt: true
+      ignore:
+        - docs/guide/**
+        - docs/zh/guide/**
+      patterns:
+        - id: docs-index
+          regex: "^README\\.md$"
+          documentKind: index
+          numbered: false
+    - id: guide
+      root: docs/guide
+      localizedRoots:
+        zh: docs/zh/guide
+      requireContinuousNumbering: false
       maxLines: 500
       forbidAsciiArt: true
       patterns:
-        - id: numbered
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          documentKind: numbered
-          numbered: true
-        - id: index
-          regex: "^INDEX\\.md$"
-          documentKind: index
+        - id: guide-page
+          regex: "^[a-z][a-z0-9-]*\\.md$"
+          documentKind: guide
           numbered: false
 
 languageRepresentations:

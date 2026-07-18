@@ -220,8 +220,6 @@ pub const RULE_SPECS: [RuleSpec; 9] = [
         applicability: RuleApplicability::GovernanceTraceability,
         checker: RuleChecker::GovernanceTraceability,
         diagnostic_codes: &[
-            "DH_DERIVATION_001",
-            "DH_DERIVATION_002",
             "DH_PIN_001",
             "DH_PIN_002",
             "DH_PIN_003",
@@ -236,7 +234,7 @@ pub const RULE_SPECS: [RuleSpec; 9] = [
             "DH_SNAPSHOT_006",
             "DH_SNAPSHOT_007",
         ],
-        rationale: "Typed adjacent-level edges show whether intent reaches definition and implementation.",
+        rationale: "Pinned dependencies and durable evidence make governed change traceable.",
         remediation: "Configure rules.governance.traceability.mode as auto, required, or disabled.",
         exception_behavior: ExceptionBehavior::LegacySuppression,
     },

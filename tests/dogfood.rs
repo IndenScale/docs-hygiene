@@ -36,7 +36,7 @@ fn repository_profile_meets_configured_targets() {
     );
     assert_eq!(
         report.dimensions[2].observed,
-        Some(HygieneMaturity::Governed)
+        Some(HygieneMaturity::Controlled)
     );
     assert_eq!(
         report.dimensions[3].target,
@@ -65,10 +65,10 @@ fn repository_profile_meets_configured_targets() {
         .iter()
         .find(|evidence| evidence.invariant == "dependency.transitive-impact")
         .unwrap();
-    assert_eq!(transitive_impact.outcome, InvariantOutcome::Passed);
+    assert_eq!(transitive_impact.outcome, InvariantOutcome::Unverified);
     assert_eq!(
         report.governance_graph.transitive_impact["DH-HYGIENE-PROFILE"],
-        ["IMPL-002", "IMPL-003", "PRD-004", "SPEC-003"]
+        ["PRD-004"]
     );
     let lifecycle = report.dimensions[1]
         .evidence

@@ -102,7 +102,7 @@ fn topology_controlled_requires_explicit_policy_not_graph_presence_alone() {
     fs::create_dir(temp.path().join("prd")).unwrap();
     fs::write(
         temp.path().join("ul.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     fs::write(
@@ -112,7 +112,7 @@ fn topology_controlled_requires_explicit_policy_not_graph_presence_alone() {
     .unwrap();
     fs::write(
         temp.path().join("prd/manifest.yml"),
-        "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+        "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
     )
     .unwrap();
     fs::write(
@@ -242,7 +242,6 @@ fn ownership_profile_exposes_coverage_and_suppression_is_not_knowledge_evidence(
     fs::write(
         temp.path().join("asset.yml"),
         r#"id: ASSET-1
-refinementLevel: intent
 referenceRelation: body
 status: current
 ownership:

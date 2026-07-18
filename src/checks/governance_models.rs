@@ -1,71 +1,11 @@
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct GovernanceTarget {
-    id: String,
-    #[serde(default)]
-    document_kind: Option<String>,
-}
-
-#[derive(Clone, Debug, Default)]
-struct GovernanceTargets(Vec<GovernanceTarget>);
-
-impl GovernanceTargets {
-    fn iter(&self) -> impl Iterator<Item = &GovernanceTarget> {
-        self.0.iter()
-    }
-
-}
-
-impl<'de> Deserialize<'de> for GovernanceTargets {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum OneOrMany {
-            OneId(String),
-            ManyIds(Vec<String>),
-            Many(Vec<GovernanceTarget>),
-            One(GovernanceTarget),
-        }
-
-        Ok(match OneOrMany::deserialize(deserializer)? {
-            OneOrMany::OneId(id) => Self(vec![GovernanceTarget {
-                id,
-                document_kind: None,
-            }]),
-            OneOrMany::One(target) => Self(vec![target]),
-            OneOrMany::ManyIds(ids) => {
-                Self(
-                    ids.into_iter()
-                        .map(|id| GovernanceTarget {
-                            id,
-                            document_kind: None,
-                        })
-                        .collect(),
-                )
-            }
-            OneOrMany::Many(targets) => Self(targets),
-        })
-    }
-}
-
-#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GovernanceAsset {
     id: String,
-    refinement_level: RefinementLevel,
     reference_relation: ReferenceRelation,
     status: String,
     #[serde(default)]
     superseded_by: Option<String>,
-    #[serde(default)]
-    formalizes: GovernanceTargets,
-    #[serde(default)]
-    realizes: GovernanceTargets,
-    #[serde(default)]
-    projects: GovernanceTargets,
     #[serde(default)]
     members: Option<serde_yaml::Value>,
     #[serde(skip)]
@@ -180,6 +120,23 @@ fn check_governance(
             ));
             continue;
         }
+        if [
+            "refinementLevel",
+            "formalizes",
+            "realizes",
+            "projects",
+        ]
+        .into_iter()
+        .any(|field| yaml_declares_field(yaml, field))
+        {
+            diagnostics.push(Diagnostic::new(
+                "DH_GOVERNANCE_001",
+                Severity::Error,
+                rel.display().to_string(),
+                "Legacy refinement metadata is not supported; use UL/PRD semantic references and Issue evidence.",
+            ));
+            continue;
+        }
         match serde_yaml::from_str::<GovernanceAsset>(yaml) {
             Ok(mut asset) => {
                 asset.path = rel.display().to_string();
@@ -228,7 +185,6 @@ fn check_governance(
         .iter()
         .map(|asset| GovernanceNode {
             identity: asset.id.clone(),
-            refinement_level: asset.refinement_level,
             reference_relation: asset.reference_relation,
             document_kind: None,
             lifecycle_status: asset.status.clone(),
@@ -238,19 +194,13 @@ fn check_governance(
             },
         })
         .collect::<Vec<_>>();
-    let mut edges = collect_vertical_edges(&assets, &index);
     let wiki = check_governed_references(root, config, &assets, diagnostics);
     nodes.extend(wiki.nodes);
-    edges.extend(wiki.edges);
-    let mut graph = GovernanceGraph::new(nodes, edges);
+    let mut graph = GovernanceGraph::new(nodes, wiki.edges);
     graph.compare_community_baseline(&config.governance.topology.community_baseline);
 
     for asset in &assets {
         check_package_members(root, config, asset, diagnostics);
-        check_vertical_derivation(asset, &graph, diagnostics);
-    }
-    if config.governance.require_complete_vertical_derivation {
-        check_vertical_derivation_completeness(&assets, &graph, diagnostics);
     }
     let identities = collect_governed_identity_records(root, &assets);
     graph.authority_migrations = check_identity_lifecycle(&identities, &graph, diagnostics);
@@ -258,75 +208,4 @@ fn check_governance(
     check_critical_dependencies(root, config, &graph, diagnostics);
     check_portable_snapshots(root, config, &graph, diagnostics);
     (graph, ownership)
-}
-
-fn collect_vertical_edges(
-    assets: &[GovernanceAsset],
-    index: &BTreeMap<&str, usize>,
-) -> Vec<GovernanceEdge> {
-    let mut edges = Vec::new();
-    for asset in assets {
-        for (relation, targets) in [
-            (GovernanceEdgeKind::Formalizes, &asset.formalizes),
-            (GovernanceEdgeKind::Realizes, &asset.realizes),
-            (GovernanceEdgeKind::Projects, &asset.projects),
-        ] {
-            edges.extend(targets.iter().map(|target| GovernanceEdge {
-                source: asset.id.clone(),
-                target: target.id.clone(),
-                relation,
-                source_location: GovernanceLocation {
-                    path: asset.path.clone(),
-                    line: None,
-                },
-                selector: None,
-                content_anchor: None,
-                lifecycle: LifecycleProvenance {
-                    source_status: asset.status.clone(),
-                    target_status: index
-                        .get(target.id.as_str())
-                        .map(|position| assets[*position].status.clone()),
-                },
-                expectation: vertical_reference_expectation(
-                    asset,
-                    relation,
-                    target.document_kind.clone(),
-                ),
-                resolution: ReferenceResolution::unresolved(),
-            }));
-        }
-    }
-    edges
-}
-
-fn vertical_reference_expectation(
-    asset: &GovernanceAsset,
-    relation: GovernanceEdgeKind,
-    document_kind: Option<String>,
-) -> ReferenceExpectation {
-    let (levels, target_relation) = match relation {
-        GovernanceEdgeKind::Formalizes => {
-            (vec![RefinementLevel::Intent], ReferenceRelation::Body)
-        }
-        GovernanceEdgeKind::Realizes => {
-            (vec![RefinementLevel::Definition], ReferenceRelation::Body)
-        }
-        GovernanceEdgeKind::Projects => (
-            match asset.refinement_level {
-                RefinementLevel::Intent => Vec::new(),
-                RefinementLevel::Definition => vec![RefinementLevel::Intent],
-                RefinementLevel::Implementation => vec![RefinementLevel::Definition],
-            },
-            ReferenceRelation::Library,
-        ),
-        GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
-            unreachable!("vertical manifests emit only derivation relations")
-        }
-    };
-    ReferenceExpectation::new(
-        relation,
-        levels,
-        vec![target_relation],
-        document_kind.into_iter().collect(),
-    )
 }

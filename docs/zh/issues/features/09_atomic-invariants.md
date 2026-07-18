@@ -20,4 +20,4 @@ depends_on: [FEATURE-001, FEATURE-002, FEATURE-003, FEATURE-004, FEATURE-005]
 
 ## 交付证据
 
-`src/profile/registry.rs`、`src/activation.rs`、SPEC-003 C-002/C-007 及 profile 测试。
+`src/profile/registry.rs`、`src/activation.rs`、PRD-003/PRD-004 及 profile 测试。

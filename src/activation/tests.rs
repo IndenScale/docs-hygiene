@@ -43,9 +43,7 @@ fn rule_registry_is_ordered_unique_and_complete_for_compatibility_families() {
     }));
     assert!(RULE_SPECS.iter().any(|spec| spec.capabilities.len() > 1));
     assert_eq!(
-        rule_spec_for_diagnostic("DH_DERIVATION_001")
-            .unwrap()
-            .checker,
+        rule_spec_for_diagnostic("DH_PIN_001").unwrap().checker,
         RuleChecker::GovernanceTraceability
     );
 }
@@ -93,15 +91,9 @@ fn structural_signals_strengthen_decisions() {
     .unwrap();
     fs::write(
         temp.path().join("docs/manifest.yml"),
-        "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: draft\n",
+        "id: PRD-1\nreferenceRelation: body\nstatus: draft\n",
     )
     .unwrap();
-    fs::write(
-        temp.path().join("implementation-manifest.yml"),
-        "id: IMPL-1\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\n",
-    )
-    .unwrap();
-
     let report = evaluate_rule_activation(temp.path(), &Config::default()).unwrap();
 
     assert_eq!(
@@ -114,7 +106,7 @@ fn structural_signals_strengthen_decisions() {
     );
     assert_eq!(
         report.decision("governance.traceability").state,
-        RuleState::Warning
+        RuleState::Inactive
     );
 }
 

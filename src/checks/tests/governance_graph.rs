@@ -1,20 +1,20 @@
     #[test]
-    fn reports_missing_and_cross_refinement_level_horizontal_references() {
+    fn reports_missing_and_non_library_body_references() {
         let temp = tempdir().unwrap();
         let manifests = [
             "ul.yml",
             "prd-missing/manifest.yml",
-            "spec-wrong/manifest.yml",
+            "issue-wrong/manifest.yml",
         ];
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd-missing/manifest.yml",
-            "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+            "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
         );
         fs::write(
             temp.path().join("prd-missing/index.md"),
@@ -23,12 +23,12 @@
         .unwrap();
         write_asset(
             temp.path(),
-            "spec-wrong/manifest.yml",
-            "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\nformalizes: PRD-1\nmembers: [index.md]\n",
+            "issue-wrong/manifest.yml",
+            "id: ISSUE-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
         );
         fs::write(
-            temp.path().join("spec-wrong/index.md"),
-            "---\nid: SPEC-1-INDEX\nstatus: proposed\n---\n\n# Spec\n\n[[UL-1]]\n",
+            temp.path().join("issue-wrong/index.md"),
+            "---\nid: ISSUE-1-INDEX\nstatus: proposed\n---\n\n# Issue\n\n[[PRD-1]]\n",
         )
         .unwrap();
 
@@ -48,7 +48,7 @@
         assert!(
             references
                 .iter()
-                .any(|diagnostic| diagnostic.path == "spec-wrong/manifest.yml")
+                .any(|diagnostic| diagnostic.path == "issue-wrong/manifest.yml")
         );
     }
 
@@ -59,7 +59,7 @@
         fs::create_dir_all(&library).unwrap();
         fs::write(
             library.join("manifest.yml"),
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
         )
         .unwrap();
         let term = "---\nid: TERM-1\nstatus: baselined\n---\n\n# Term\n";
@@ -71,7 +71,7 @@
             fs::create_dir_all(&package).unwrap();
             fs::write(
                 package.join("manifest.yml"),
-                "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+                "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
             )
             .unwrap();
             fs::write(
@@ -159,12 +159,12 @@ governance:
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nversion: 1.0.0\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
+            "id: UL-1\nversion: 1.0.0\nreferenceRelation: library\nstatus: baselined\n",
         );
         write_asset(
             temp.path(),
             "prd.yml",
-            "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nreferences: UL-1\n",
+            "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nreferences: UL-1\n",
         );
 
         let report = run_checks(
@@ -182,80 +182,5 @@ governance:
         assert!(report.diagnostics.iter().any(|diagnostic| {
             diagnostic.code == "DH_GOVERNANCE_001"
                 && diagnostic.message.contains("Manifest-level 'references'")
-        }));
-    }
-
-    #[test]
-    fn reports_missing_and_invalid_vertical_body_derivation() {
-        let temp = tempdir().unwrap();
-        let manifests = ["ul.yml", "glossary.yml", "spec.yml", "impl.yml"];
-        write_asset(
-            temp.path(),
-            "ul.yml",
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
-        );
-        write_asset(
-            temp.path(),
-            "glossary.yml",
-            "id: GLOSSARY-1\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\nprojects: { id: UL-1 }\n",
-        );
-        write_asset(
-            temp.path(),
-            "spec.yml",
-            "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\n",
-        );
-        write_asset(
-            temp.path(),
-            "impl.yml",
-            "id: IMPL-1\nrefinementLevel: implementation\nreferenceRelation: body\nstatus: current\nrealizes: { id: GLOSSARY-1 }\n",
-        );
-
-        let report = run_checks(temp.path(), &governance_config(&manifests, false)).unwrap();
-        let derivations = report
-            .diagnostics
-            .iter()
-            .filter(|diagnostic| diagnostic.code == "DH_DERIVATION_001")
-            .collect::<Vec<_>>();
-
-        assert_eq!(derivations.len(), 2, "{:?}", report.diagnostics);
-        assert!(
-            derivations
-                .iter()
-                .any(|diagnostic| diagnostic.path == "spec.yml")
-        );
-        assert!(
-            derivations
-                .iter()
-                .any(|diagnostic| diagnostic.path == "impl.yml")
-        );
-    }
-
-    #[test]
-    fn reports_library_projection_and_reverse_completeness_gaps() {
-        let temp = tempdir().unwrap();
-        let manifests = ["ul.yml", "prd.yml", "glossary.yml"];
-        write_asset(
-            temp.path(),
-            "ul.yml",
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
-        );
-        write_asset(
-            temp.path(),
-            "prd.yml",
-            "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: baselined\n",
-        );
-        write_asset(
-            temp.path(),
-            "glossary.yml",
-            "id: GLOSSARY-1\nrefinementLevel: definition\nreferenceRelation: library\nstatus: baselined\n",
-        );
-
-        let report = run_checks(temp.path(), &governance_config(&manifests, true)).unwrap();
-
-        assert!(report.diagnostics.iter().any(|diagnostic| {
-            diagnostic.code == "DH_DERIVATION_002" && diagnostic.path == "glossary.yml"
-        }));
-        assert!(report.diagnostics.iter().any(|diagnostic| {
-            diagnostic.code == "DH_DERIVATION_001" && diagnostic.path == "prd.yml"
         }));
     }

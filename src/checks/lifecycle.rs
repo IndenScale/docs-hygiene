@@ -3,7 +3,6 @@ struct GovernedIdentityRecord {
     id: String,
     status: String,
     superseded_by: Option<String>,
-    refinement_level: RefinementLevel,
     reference_relation: ReferenceRelation,
     path: String,
 }
@@ -18,13 +17,11 @@ fn collect_governed_identity_records(
             id: asset.id.clone(),
             status: asset.status.clone(),
             superseded_by: asset.superseded_by.clone(),
-            refinement_level: asset.refinement_level,
             reference_relation: asset.reference_relation,
             path: asset.path.clone(),
         });
         let manifest = Path::new(&asset.path);
         if manifest.file_name().and_then(|value| value.to_str()) != Some("manifest.yml")
-            || asset.refinement_level == RefinementLevel::Implementation
         {
             continue;
         }
@@ -40,7 +37,6 @@ fn collect_governed_identity_records(
             package,
             Path::new(""),
             &members,
-            asset.refinement_level,
             asset.reference_relation,
             &mut records,
         );
@@ -54,7 +50,6 @@ fn collect_package_identity_records(
     package: &Path,
     directory: &Path,
     members: &[String],
-    refinement_level: RefinementLevel,
     reference_relation: ReferenceRelation,
     records: &mut Vec<GovernedIdentityRecord>,
 ) {
@@ -76,7 +71,6 @@ fn collect_package_identity_records(
                     id: identity.id,
                     status: identity.status,
                     superseded_by: identity.superseded_by,
-                    refinement_level,
                     reference_relation,
                     path: package.join(&relative).display().to_string(),
                 });
@@ -95,7 +89,6 @@ fn collect_package_identity_records(
                 id: domain.id,
                 status: domain.status,
                 superseded_by: domain.superseded_by,
-                refinement_level,
                 reference_relation,
                 path: package.join(&manifest).display().to_string(),
             });
@@ -104,7 +97,6 @@ fn collect_package_identity_records(
                 package,
                 &relative,
                 &domain.members,
-                refinement_level,
                 reference_relation,
                 records,
             );
@@ -217,14 +209,12 @@ fn validate_authority_successor(
         );
         return;
     };
-    if successor.refinement_level != record.refinement_level
-        || successor.reference_relation != record.reference_relation
-    {
+    if successor.reference_relation != record.reference_relation {
         push_lifecycle_diagnostic(
             record,
             diagnostics,
             format!(
-                "Authority successor '{}' for '{}' must preserve refinementLevel and referenceRelation.",
+                "Authority successor '{}' for '{}' must preserve referenceRelation.",
                 successor_id, record.id
             ),
         );

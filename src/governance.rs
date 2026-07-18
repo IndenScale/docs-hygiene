@@ -12,24 +12,6 @@ use topology::analyze_topology;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum RefinementLevel {
-    Intent,
-    Definition,
-    Implementation,
-}
-
-impl RefinementLevel {
-    pub(crate) fn label(self) -> &'static str {
-        match self {
-            Self::Intent => "intent",
-            Self::Definition => "definition",
-            Self::Implementation => "implementation",
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-#[serde(rename_all = "lowercase")]
 pub enum ReferenceRelation {
     Body,
     Library,
@@ -89,9 +71,6 @@ impl ReferenceRelation {
 pub enum GovernanceEdgeKind {
     SemanticReference,
     PinnedReference,
-    Formalizes,
-    Realizes,
-    Projects,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -178,8 +157,6 @@ pub struct LifecycleProvenance {
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceEndpointExpectation {
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub refinement_levels: Vec<RefinementLevel>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub reference_relations: Vec<ReferenceRelation>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub document_kinds: Vec<String>,
@@ -195,12 +172,9 @@ pub struct ReferenceExpectation {
 impl ReferenceExpectation {
     pub(crate) fn new(
         relation: GovernanceEdgeKind,
-        mut refinement_levels: Vec<RefinementLevel>,
         mut reference_relations: Vec<ReferenceRelation>,
         mut document_kinds: Vec<String>,
     ) -> Self {
-        refinement_levels.sort();
-        refinement_levels.dedup();
         reference_relations.sort();
         reference_relations.dedup();
         document_kinds.sort();
@@ -208,7 +182,6 @@ impl ReferenceExpectation {
         Self {
             relation,
             endpoint: ReferenceEndpointExpectation {
-                refinement_levels,
                 reference_relations,
                 document_kinds,
             },
@@ -219,7 +192,6 @@ impl ReferenceExpectation {
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceEndpoint {
-    pub refinement_level: RefinementLevel,
     pub reference_relation: ReferenceRelation,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document_kind: Option<String>,
@@ -241,7 +213,6 @@ pub enum ReferenceResolutionOutcome {
 pub enum ReferenceCompatibilityIssue {
     MissingTarget,
     AmbiguousTarget,
-    RefinementLevel,
     ReferenceRelation,
     DocumentKind,
     Lifecycle,
@@ -304,7 +275,6 @@ pub struct GovernanceEdge {
 #[serde(rename_all = "camelCase")]
 pub struct GovernanceNode {
     pub identity: String,
-    pub refinement_level: RefinementLevel,
     pub reference_relation: ReferenceRelation,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document_kind: Option<String>,
@@ -508,7 +478,6 @@ impl GovernanceGraph {
 impl From<&GovernanceNode> for ReferenceEndpoint {
     fn from(node: &GovernanceNode) -> Self {
         Self {
-            refinement_level: node.refinement_level,
             reference_relation: node.reference_relation,
             document_kind: node.document_kind.clone(),
             lifecycle_status: node.lifecycle_status.clone(),
@@ -533,14 +502,6 @@ pub(crate) fn resolve_reference(
     }
     let endpoint = &candidates[0];
     let mut incompatibilities = Vec::new();
-    if !expectation.endpoint.refinement_levels.is_empty()
-        && !expectation
-            .endpoint
-            .refinement_levels
-            .contains(&endpoint.refinement_level)
-    {
-        incompatibilities.push(ReferenceCompatibilityIssue::RefinementLevel);
-    }
     if !expectation.endpoint.reference_relations.is_empty()
         && !expectation
             .endpoint
@@ -579,7 +540,6 @@ mod tests {
     fn node(identity: &str) -> GovernanceNode {
         GovernanceNode {
             identity: identity.to_owned(),
-            refinement_level: RefinementLevel::Intent,
             reference_relation: ReferenceRelation::Body,
             document_kind: None,
             lifecycle_status: "current".to_owned(),
@@ -594,7 +554,7 @@ mod tests {
         GovernanceEdge {
             source: source.to_owned(),
             target: target.to_owned(),
-            relation: GovernanceEdgeKind::Formalizes,
+            relation: GovernanceEdgeKind::SemanticReference,
             source_location: GovernanceLocation {
                 path: format!("{source}.yml"),
                 line: None,
@@ -606,8 +566,7 @@ mod tests {
                 target_status: Some("current".to_owned()),
             },
             expectation: ReferenceExpectation::new(
-                GovernanceEdgeKind::Formalizes,
-                vec![RefinementLevel::Intent],
+                GovernanceEdgeKind::SemanticReference,
                 vec![ReferenceRelation::Body],
                 Vec::new(),
             ),

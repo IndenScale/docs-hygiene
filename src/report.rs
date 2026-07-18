@@ -312,12 +312,6 @@ impl Report {
             "DH_SNAPSHOT_007" => {
                 Some("A portable snapshot lifecycle, replacement, or retention policy is invalid.")
             }
-            "DH_DERIVATION_001" => {
-                Some("A Body has a missing or invalid adjacent-refinement-level derivation.")
-            }
-            "DH_DERIVATION_002" => {
-                Some("A Library has a missing or invalid adjacent-refinement-level projection.")
-            }
             "DH_TOPOLOGY_001" => {
                 Some("A governed identity exceeds an explicit Fan-In or Fan-Out threshold.")
             }

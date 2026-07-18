@@ -1,9 +1,0 @@
-id: GLOSSARY-DOMAIN-RELATIONSHIPS
-kind: domain
-status: baselined
-members:
-  - edge-references.md
-  - edge-formalizes.md
-  - edge-realizes.md
-  - edge-projects.md
-  - governance-edge.md

@@ -4,7 +4,6 @@ fn ownership_policy_reports_complete_coverage_for_two_current_people() {
     fs::write(
         temp.path().join("asset.yml"),
         r#"id: ASSET-1
-refinementLevel: intent
 referenceRelation: body
 status: current
 ownership:
@@ -60,7 +59,6 @@ fn expired_review_inactive_person_and_group_confirmation_reduce_coverage() {
     fs::write(
         temp.path().join("asset.yml"),
         r#"id: ASSET-1
-refinementLevel: intent
 referenceRelation: body
 status: baselined
 ownership:
@@ -76,7 +74,7 @@ review:
     .unwrap();
     fs::write(
         temp.path().join("archived.yml"),
-        "id: ARCHIVED-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: archived\n",
+        "id: ARCHIVED-1\nreferenceRelation: body\nstatus: archived\n",
     )
     .unwrap();
     let config: Config = serde_yaml::from_str(
@@ -121,12 +119,12 @@ fn authority_successor_must_supply_fresh_ownership_review_and_understanding() {
     let temp = tempdir().unwrap();
     fs::write(
         temp.path().join("old.yml"),
-        "id: OLD\nrefinementLevel: intent\nreferenceRelation: body\nstatus: superseded\nsupersededBy: NEW\n",
+        "id: OLD\nreferenceRelation: body\nstatus: superseded\nsupersededBy: NEW\n",
     )
     .unwrap();
     fs::write(
         temp.path().join("new.yml"),
-        "id: NEW\nrefinementLevel: intent\nreferenceRelation: body\nstatus: current\n",
+        "id: NEW\nreferenceRelation: body\nstatus: current\n",
     )
     .unwrap();
     let config: Config = serde_yaml::from_str(
@@ -163,7 +161,6 @@ fn due_review_warns_and_expired_confirmation_immediately_reduces_bus_factor() {
         temp.path().join("asset.yml"),
         format!(
             r#"id: ASSET-1
-refinementLevel: intent
 referenceRelation: body
 status: current
 ownership:
@@ -219,7 +216,7 @@ review: { reviewBy: 2099-12-31 }
     fs::write(
         temp.path().join("lib/manifest.yml"),
         format!(
-            "id: LIB-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [domain]\n{evidence}"
+            "id: LIB-1\nreferenceRelation: library\nstatus: baselined\nmembers: [domain]\n{evidence}"
         ),
     )
     .unwrap();
@@ -266,7 +263,6 @@ fn duplicate_principals_unexpanded_groups_and_duplicate_confirmations_are_reject
     fs::write(
         temp.path().join("asset.yml"),
         r#"id: ASSET-1
-refinementLevel: intent
 referenceRelation: body
 status: current
 ownership:

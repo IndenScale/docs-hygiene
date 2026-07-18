@@ -7,7 +7,7 @@ fn frontmatter_multi_anchors_validate_file_and_block_scopes_independently() {
     fs::create_dir_all(&body).unwrap();
     fs::write(
         library.join("manifest.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term-1.md, term-2.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term-1.md, term-2.md]\n",
     )
     .unwrap();
     let term_one = "---\nid: TERM-1\nstatus: baselined\n---\n\n# Term One\n\n## Watched\nkeep\n\n## Other\noutside\n";
@@ -21,7 +21,7 @@ fn frontmatter_multi_anchors_validate_file_and_block_scopes_independently() {
     let file_hash = format!("{:x}", Sha256::digest(term_two.as_bytes()));
     fs::write(
         body.join("manifest.yml"),
-        "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+        "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
     )
     .unwrap();
     let body_text = format!(
@@ -143,12 +143,12 @@ fn repo_anchor_requires_opt_in_and_compares_all_tracked_state_to_git() {
 
     fs::write(
         library.join("manifest.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     fs::write(
         body.join("manifest.yml"),
-        "id: PRD-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
+        "id: PRD-1\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n",
     )
     .unwrap();
     fs::write(

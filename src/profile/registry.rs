@@ -251,7 +251,7 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         minimum_maturity: Basic,
         delivery: Delivered,
         checkers: &[GovernanceIdentity, GovernanceTraceability],
-        diagnostic_codes: &["DH_REFERENCE_001", "DH_DERIVATION_001", "DH_DERIVATION_002"],
+        diagnostic_codes: &["DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "dependency.typed-edges",
@@ -259,7 +259,7 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         minimum_maturity: Controlled,
         delivery: Delivered,
         checkers: &[GovernanceIdentity, GovernanceTraceability],
-        diagnostic_codes: &["DH_REFERENCE_001", "DH_DERIVATION_001", "DH_DERIVATION_002"],
+        diagnostic_codes: &["DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "dependency.content-anchor",
@@ -330,7 +330,7 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         minimum_maturity: Governed,
         delivery: Delivered,
         checkers: &[GovernanceTraceability],
-        diagnostic_codes: &["DH_DERIVATION_001", "DH_DERIVATION_002"],
+        diagnostic_codes: &["DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "topology.metrics",
@@ -338,12 +338,7 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         minimum_maturity: Basic,
         delivery: Delivered,
         checkers: &[GovernanceIdentity, GovernanceTraceability],
-        diagnostic_codes: &[
-            "DH_GOVERNANCE_001",
-            "DH_REFERENCE_001",
-            "DH_DERIVATION_001",
-            "DH_DERIVATION_002",
-        ],
+        diagnostic_codes: &["DH_GOVERNANCE_001", "DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "topology.fan-and-cycles",
@@ -351,12 +346,7 @@ pub const INVARIANTS: &[InvariantSpec] = &[
         minimum_maturity: Controlled,
         delivery: Delivered,
         checkers: &[GovernanceIdentity, GovernanceTraceability],
-        diagnostic_codes: &[
-            "DH_GOVERNANCE_001",
-            "DH_REFERENCE_001",
-            "DH_DERIVATION_001",
-            "DH_DERIVATION_002",
-        ],
+        diagnostic_codes: &["DH_GOVERNANCE_001", "DH_REFERENCE_001"],
     },
     InvariantSpec {
         id: "topology.communities",

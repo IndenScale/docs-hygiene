@@ -20,7 +20,7 @@
         fs::write(
             temp.path().join("docs/ul/manifest.yml"),
             format!(
-                "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [{}]\n",
+                "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [{}]\n",
                 members.join(", ")
             ),
         )
@@ -32,7 +32,7 @@
         }
         fs::write(
             temp.path().join("docs/prd/manifest.yml"),
-            "id: BODY-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
+            "id: BODY-1\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
         )
         .unwrap();
         fs::write(

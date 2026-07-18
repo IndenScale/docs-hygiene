@@ -21,4 +21,4 @@ depends_on: [FEATURE-009]
 
 ## 交付证据
 
-`src/profile.rs`、`src/profile/`、`profile-implementation-manifest.yml` 及 profile 测试。
+`src/profile.rs`、`src/profile/`、`docs-hygiene.yml` 及 profile 测试。

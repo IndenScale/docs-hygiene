@@ -5,7 +5,7 @@ use std::process::Command;
 use anyhow::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use regex::Regex;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use walkdir::WalkDir;
 
@@ -29,8 +29,7 @@ use crate::governance::{
     ContentAnchor, ContentAnchorScope, GovernanceEdge, GovernanceEdgeKind, GovernanceGraph,
     GovernanceLocation, GovernanceNode, LifecycleProvenance, LifecycleStatus,
     ReferenceCompatibilityIssue, ReferenceEndpoint, ReferenceExpectation, ReferenceRelation,
-    ReferenceResolution, ReferenceResolutionOutcome, RefinementLevel, SnapshotProvenance,
-    resolve_reference,
+    ReferenceResolutionOutcome, SnapshotProvenance, resolve_reference,
 };
 use crate::markdown::{
     heading_block as markdown_heading_block, heading_slug,
@@ -427,7 +426,6 @@ include!("checks/reference_normalization.rs");
 include!("checks/selectors.rs");
 include!("checks/anchors.rs");
 include!("checks/wiki_references.rs");
-include!("checks/derivation.rs");
 include!("checks/topology.rs");
 include!("checks/document_templates.rs");
 include!("checks/document_contracts.rs");

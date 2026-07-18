@@ -104,7 +104,6 @@ fn normalize_reference_edges_with_policies(
                 .get(&occurrence.raw_target)
                 .map(|target| {
                     let mut candidates = vec![ReferenceEndpoint {
-                        refinement_level: target.refinement_level,
                         reference_relation: target.reference_relation,
                         document_kind: target.document_kind.clone(),
                         lifecycle_status: target.status.clone(),
@@ -115,7 +114,6 @@ fn normalize_reference_edges_with_policies(
                     }];
                     candidates.extend(target.alternates.iter().map(|candidate| {
                         ReferenceEndpoint {
-                            refinement_level: candidate.refinement_level,
                             reference_relation: candidate.reference_relation,
                             document_kind: candidate.document_kind.clone(),
                             lifecycle_status: candidate.status.clone(),
@@ -148,64 +146,14 @@ fn normalize_reference_edges_with_policies(
 }
 
 fn reference_expectation(
-    asset: &GovernanceAsset,
-    target: &str,
+    _asset: &GovernanceAsset,
+    _target: &str,
     relation: GovernanceEdgeKind,
     expected_document_kind: Option<String>,
 ) -> ReferenceExpectation {
     let document_kinds = expected_document_kind.into_iter().collect::<Vec<_>>();
-    let vertical = [
-        (
-            GovernanceEdgeKind::Formalizes,
-            &asset.formalizes,
-            RefinementLevel::Intent,
-            ReferenceRelation::Body,
-        ),
-        (
-            GovernanceEdgeKind::Realizes,
-            &asset.realizes,
-            RefinementLevel::Definition,
-            ReferenceRelation::Body,
-        ),
-    ]
-    .into_iter()
-    .find(|(_, targets, _, _)| targets.iter().any(|candidate| candidate.id == target));
-    if let Some((_, _, level, target_relation)) = vertical {
-        return ReferenceExpectation::new(
-            relation,
-            vec![level],
-            vec![target_relation],
-            document_kinds,
-        );
-    }
-    if asset.projects.iter().any(|candidate| candidate.id == target) {
-        let levels = match asset.refinement_level {
-            RefinementLevel::Intent => Vec::new(),
-            RefinementLevel::Definition => vec![RefinementLevel::Intent],
-            RefinementLevel::Implementation => vec![RefinementLevel::Definition],
-        };
-        return ReferenceExpectation::new(
-            relation,
-            levels,
-            vec![ReferenceRelation::Library],
-            document_kinds,
-        );
-    }
-    let levels = match asset.reference_relation {
-        ReferenceRelation::Body => vec![asset.refinement_level],
-        ReferenceRelation::Library => match asset.refinement_level {
-            RefinementLevel::Intent => vec![RefinementLevel::Intent],
-            RefinementLevel::Definition => {
-                vec![RefinementLevel::Intent, RefinementLevel::Definition]
-            }
-            RefinementLevel::Implementation => {
-                vec![RefinementLevel::Definition, RefinementLevel::Implementation]
-            }
-        },
-    };
     ReferenceExpectation::new(
         relation,
-        levels,
         vec![ReferenceRelation::Library],
         document_kinds,
     )

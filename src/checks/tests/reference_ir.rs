@@ -36,22 +36,6 @@ fn collectors_emit_one_versioned_reference_ir_and_explicit_policies() {
 }
 
 #[test]
-fn governance_target_lists_do_not_alias_the_second_id_as_a_document_kind() {
-    let targets: GovernanceTargets = serde_yaml::from_str("- SPEC-001\n- SPEC-002\n").unwrap();
-    let targets = targets.iter().collect::<Vec<_>>();
-    assert_eq!(targets.len(), 2);
-    assert_eq!(targets[0].id, "SPEC-001");
-    assert_eq!(targets[1].id, "SPEC-002");
-    assert!(targets.iter().all(|target| target.document_kind.is_none()));
-
-    let typed: GovernanceTargets =
-        serde_yaml::from_str("id: SPEC-001\ndocumentKind: specification\n").unwrap();
-    let typed = typed.iter().next().unwrap();
-    assert_eq!(typed.id, "SPEC-001");
-    assert_eq!(typed.document_kind.as_deref(), Some("specification"));
-}
-
-#[test]
 fn a_fourth_syntax_connects_through_collector_output_and_policy_only() {
     fn collect_hypothetical_reference(rel: &Path, target: &str) -> ReferenceOccurrence {
         ReferenceOccurrence::new(
@@ -73,13 +57,9 @@ fn a_fourth_syntax_connects_through_collector_output_and_policy_only() {
     }];
     let asset = GovernanceAsset {
         id: "PRD-1".to_owned(),
-        refinement_level: RefinementLevel::Intent,
         reference_relation: ReferenceRelation::Body,
         status: "proposed".to_owned(),
         superseded_by: None,
-        formalizes: GovernanceTargets::default(),
-        realizes: GovernanceTargets::default(),
-        projects: GovernanceTargets::default(),
         members: None,
         path: "prd.yml".to_owned(),
     };
@@ -111,7 +91,6 @@ fn a_fourth_syntax_connects_through_collector_output_and_policy_only() {
             "expectation": {
                 "relation": "semanticReference",
                 "endpoint": {
-                    "refinementLevels": ["intent"],
                     "referenceRelations": ["library"]
                 }
             },
@@ -127,13 +106,9 @@ fn a_fourth_syntax_connects_through_collector_output_and_policy_only() {
 fn normalization_preserves_expected_kind_and_explicit_resolution_outcomes() {
     let asset = GovernanceAsset {
         id: "PRD-1".to_owned(),
-        refinement_level: RefinementLevel::Intent,
         reference_relation: ReferenceRelation::Body,
         status: "current".to_owned(),
         superseded_by: None,
-        formalizes: GovernanceTargets::default(),
-        realizes: GovernanceTargets::default(),
-        projects: GovernanceTargets::default(),
         members: None,
         path: "prd.yml".to_owned(),
     };
@@ -161,7 +136,6 @@ fn normalization_preserves_expected_kind_and_explicit_resolution_outcomes() {
         },
     );
     let alternate = SemanticTarget {
-        refinement_level: RefinementLevel::Intent,
         reference_relation: ReferenceRelation::Library,
         status: "current".to_owned(),
         superseded_by: None,
@@ -170,7 +144,6 @@ fn normalization_preserves_expected_kind_and_explicit_resolution_outcomes() {
         alternates: Vec::new(),
     };
     let incompatible_target = SemanticTarget {
-        refinement_level: RefinementLevel::Intent,
         reference_relation: ReferenceRelation::Library,
         status: "current".to_owned(),
         superseded_by: None,

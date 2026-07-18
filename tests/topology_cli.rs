@@ -13,7 +13,7 @@ fn explicit_topology_threshold_blocks_until_an_audited_exception_applies() {
     .unwrap();
     std::fs::write(
         temp.path().join("ul.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(
@@ -26,7 +26,7 @@ fn explicit_topology_threshold_blocks_until_an_audited_exception_applies() {
         std::fs::write(
             temp.path().join(format!("{name}/manifest.yml")),
             format!(
-                "id: PRD-{name}\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n"
+                "id: PRD-{name}\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n"
             ),
         )
         .unwrap();

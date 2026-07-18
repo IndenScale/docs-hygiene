@@ -1,8 +1,7 @@
 //! Public implementation reference for Docs Hygiene policies.
 //!
-//! This crate is governed as `SDK-001` by `sdk-manifest.yml`. The manifest declares
-//! its Glossary projection. The CLI is one consumer of this API.
-//! Semantic source: [[GLOSSARY-001]].
+//! The CLI is one consumer of this API. Code layout is implementation evidence,
+//! not a prescribed documentation refinement level.
 
 pub mod activation;
 pub mod checks;
@@ -58,7 +57,7 @@ pub use governance::{
     GovernanceGraphMetrics, GovernanceLocation, GovernanceNode, LifecycleProvenance,
     ReferenceCompatibilityIssue, ReferenceEndpoint, ReferenceEndpointExpectation,
     ReferenceExpectation, ReferenceRelation, ReferenceResolution, ReferenceResolutionOutcome,
-    RefinementLevel, SnapshotProvenance,
+    SnapshotProvenance,
 };
 pub use kind_migration::{
     KindMigrationBlock, KindMigrationChange, KindMigrationReport, KindTemplateMigrationChange,

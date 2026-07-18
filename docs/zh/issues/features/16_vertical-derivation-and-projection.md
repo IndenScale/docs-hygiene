@@ -1,12 +1,15 @@
 ---
 id: FEATURE-016
 epic: EPIC-005
-status: baselined
+status: superseded
 delivery_status: delivered
 depends_on: [FEATURE-015]
+superseded_by: FEATURE-027
 ---
 
 # FEATURE-016 相邻层派生与 Library 投影
+
+> 历史交付记录：该固定精化层契约已由 FEATURE-027 替代，不再代表当前产品模型。
 
 ## 能力边界
 

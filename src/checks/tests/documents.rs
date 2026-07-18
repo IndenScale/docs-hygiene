@@ -341,16 +341,16 @@ docs:
     #[test]
     fn localized_roots_keep_locale_and_semantic_hierarchies_orthogonal() {
         let temp = tempdir().unwrap();
-        fs::create_dir_all(temp.path().join("docs/intent")).unwrap();
-        fs::create_dir_all(temp.path().join("docs/zh/intent")).unwrap();
+        fs::create_dir_all(temp.path().join("docs/engineering")).unwrap();
+        fs::create_dir_all(temp.path().join("docs/zh/engineering")).unwrap();
         fs::write(temp.path().join("README.md"), "# Example\n").unwrap();
         fs::write(
-            temp.path().join("docs/intent/01_language.md"),
+            temp.path().join("docs/engineering/01_language.md"),
             "# Language\n",
         )
         .unwrap();
         fs::write(
-            temp.path().join("docs/zh/intent/01_language.md"),
+            temp.path().join("docs/zh/engineering/01_language.md"),
             "# 语言\n",
         )
         .unwrap();
@@ -362,9 +362,9 @@ entryDocs:
 docs:
   bases:
     - id: intent
-      root: docs/intent
+      root: docs/engineering
       localizedRoots:
-        zh: docs/zh/intent
+        zh: docs/zh/engineering
       requireContinuousNumbering: true
       patterns:
         - id: numbered

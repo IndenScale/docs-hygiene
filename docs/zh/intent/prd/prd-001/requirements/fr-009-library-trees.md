@@ -1,8 +1,0 @@
----
-id: PRD-001-FR-009
-status: baselined
----
-
-# FR-009 递归 Library Tree
-
-UL 与 Glossary 是支持任意深度领域树的 [[DH-LIBRARY|Library]]。每个领域由 Manifest 枚举直属术语或子领域；每个术语是具有稳定身份的单独 Markdown 叶子。

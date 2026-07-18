@@ -1,0 +1,8 @@
+id: UL-DOMAIN-ARCHITECTURE
+kind: domain
+status: baselined
+members:
+  - cognitive-asset-governance-model.md
+  - open-engineering-asset-model.md
+  - reference-relation.md
+  - language-representation.md

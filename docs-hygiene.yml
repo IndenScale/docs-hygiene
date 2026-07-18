@@ -5,10 +5,6 @@ entryDocs:
     - CHANGELOG.md
     - ROADMAP.md
     - LICENSE
-    - sdk-manifest.yml
-    - implementation-manifest.yml
-    - profile-implementation-manifest.yml
-    - governance-edge-implementation-manifest.yml
   optional:
     - AGENTS.md
     - CLAUDE.md
@@ -18,71 +14,110 @@ entryDocs:
 
 docs:
   bases:
-    - id: main
+    - id: docs-index
       root: docs
-      requireContinuousNumbering: true
+      requireContinuousNumbering: false
       maxLines: 200
       ignore:
-        - docs/intent/**
-        - docs/definition/**
+        - docs/guide/**
+        - docs/governance/**
+        - docs/capabilities/**
+        - docs/migration/**
+        - docs/decisions/**
+        - docs/engineering/**
         - docs/position/**
-        - docs/zh/intent/**
-        - docs/zh/definition/**
+        - docs/zh/guide/**
+        - docs/zh/governance/**
+        - docs/zh/capabilities/**
+        - docs/zh/migration/**
+        - docs/zh/decisions/**
+        - docs/zh/engineering/**
         - docs/zh/position/**
         - docs/zh/issues/**
       patterns:
-        - id: numbered
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          documentKind: numbered
-          numbered: true
-        - id: index
-          regex: "^INDEX\\.md$"
-          documentKind: index
-          numbered: false
-    - id: intent
-      root: docs/intent
-      localizedRoots:
-        zh: docs/zh/intent
-      requireContinuousNumbering: true
-      maxLines: 200
-      ignore:
-        - docs/intent/ul/**
-        - docs/zh/intent/ul/**
-        - docs/intent/prd/**
-        - docs/zh/intent/prd/**
-      patterns:
-        - id: numbered-intent
-          regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
-          documentKind: numbered
-          numbered: true
-        - id: intent-index
+        - id: docs-index
           regex: "^README\\.md$"
           documentKind: index
           numbered: false
-    - id: definition
-      root: docs/definition
+    - id: guide
+      root: docs/guide
       localizedRoots:
-        zh: docs/zh/definition
+        zh: docs/zh/guide
+      requireContinuousNumbering: false
+      maxLines: 200
+      patterns:
+        - id: guide-page
+          regex: "^[a-z][a-z0-9-]*\\.md$"
+          documentKind: guide
+          numbered: false
+    - id: governance-guide
+      root: docs/governance
+      localizedRoots:
+        zh: docs/zh/governance
+      requireContinuousNumbering: false
+      maxLines: 200
+      patterns:
+        - id: governance-page
+          regex: "^[a-z][a-z0-9-]*\\.md$"
+          documentKind: guide
+          numbered: false
+    - id: capability-guide
+      root: docs/capabilities
+      localizedRoots:
+        zh: docs/zh/capabilities
+      requireContinuousNumbering: false
+      maxLines: 200
+      patterns:
+        - id: capability-page
+          regex: "^[a-z][a-z0-9-]*\\.md$"
+          documentKind: guide
+          numbered: false
+    - id: migration-guide
+      root: docs/migration
+      localizedRoots:
+        zh: docs/zh/migration
+      requireContinuousNumbering: false
+      maxLines: 200
+      patterns:
+        - id: migration-page
+          regex: "^[a-z][a-z0-9-]*\\.md$"
+          documentKind: guide
+          numbered: false
+    - id: decisions
+      root: docs/decisions
+      localizedRoots:
+        zh: docs/zh/decisions
+      requireContinuousNumbering: false
+      maxLines: 200
+      patterns:
+        - id: architecture-decision
+          regex: "^ADR-\\d{4}_[a-z0-9-]+\\.md$"
+          documentKind: decision
+          numbered: false
+    - id: engineering
+      root: docs/engineering
+      localizedRoots:
+        zh: docs/zh/engineering
       requireContinuousNumbering: true
       maxLines: 200
       ignore:
-        - docs/definition/glossary/**
-        - docs/zh/definition/glossary/**
-        - docs/definition/spec/**
-        - docs/zh/definition/spec/**
+        - docs/engineering/ul/**
+        - docs/zh/engineering/ul/**
+        - docs/engineering/prd/**
+        - docs/zh/engineering/prd/**
       patterns:
-        - id: numbered-definition
+        - id: numbered-engineering
           regex: "^\\d{2}_[a-z0-9_-]+\\.md$"
           documentKind: numbered
           numbered: true
-        - id: definition-index
+        - id: engineering-index
           regex: "^README\\.md$"
           documentKind: index
           numbered: false
-    - id: intent-library
-      root: docs/intent/ul
+    - id: engineering-library
+      root: docs/engineering/ul
       localizedRoots:
-        zh: docs/zh/intent/ul
+        zh: docs/zh/engineering/ul
       requireContinuousNumbering: false
       maxLines: 80
       patterns:
@@ -90,32 +125,10 @@ docs:
           regex: "^[a-z0-9-]+\\.md$"
           documentKind: library-term
           numbered: false
-    - id: definition-library
-      root: docs/definition/glossary
+    - id: engineering-prd-packages
+      root: docs/engineering/prd
       localizedRoots:
-        zh: docs/zh/definition/glossary
-      requireContinuousNumbering: false
-      maxLines: 80
-      patterns:
-        - id: term
-          regex: "^[a-z0-9-]+\\.md$"
-          documentKind: library-term
-          numbered: false
-    - id: intent-body-packages
-      root: docs/intent/prd
-      localizedRoots:
-        zh: docs/zh/intent/prd
-      requireContinuousNumbering: false
-      maxLines: 80
-      patterns:
-        - id: body-item
-          regex: "^[a-z0-9-]+\\.md$"
-          documentKind: body-item
-          numbered: false
-    - id: definition-body-packages
-      root: docs/definition/spec
-      localizedRoots:
-        zh: docs/zh/definition/spec
+        zh: docs/zh/engineering/prd
       requireContinuousNumbering: false
       maxLines: 80
       patterns:
@@ -198,8 +211,8 @@ documentContracts:
       requiredSections:
         - id: position-statement
           headings: [Position, 立场主张]
-        - id: refinement-level
-          headings: [Refinement Level, 精化层级]
+        - id: asset-roles
+          headings: [Asset Roles, 资产角色]
         - id: reference-relation
           headings: [Reference Relation, 引用关系]
         - id: language-representation
@@ -216,10 +229,8 @@ documentContracts:
       templateRevision: 1
       match:
         paths:
-          - docs/intent/prd/**/*.md
-          - docs/zh/intent/prd/**/*.md
-          - docs/definition/spec/**/*.md
-          - docs/zh/definition/spec/**/*.md
+          - docs/engineering/prd/**/*.md
+          - docs/zh/engineering/prd/**/*.md
         filenames: ["^[a-z0-9-]+\\.md$"]
       requiredFields:
         - id: member-id
@@ -266,20 +277,11 @@ documentContracts:
 
 governance:
   manifests:
-    - docs/intent/ul/manifest.yml
-    - docs/intent/prd/prd-001/manifest.yml
-    - docs/intent/prd/prd-002/manifest.yml
-    - docs/intent/prd/prd-003/manifest.yml
-    - docs/intent/prd/prd-004/manifest.yml
-    - docs/definition/glossary/manifest.yml
-    - docs/definition/spec/spec-001/manifest.yml
-    - docs/definition/spec/spec-002/manifest.yml
-    - docs/definition/spec/spec-003/manifest.yml
-    - sdk-manifest.yml
-    - implementation-manifest.yml
-    - profile-implementation-manifest.yml
-    - governance-edge-implementation-manifest.yml
-  requireCompleteVerticalDerivation: true
+    - docs/engineering/ul/manifest.yml
+    - docs/engineering/prd/prd-001/manifest.yml
+    - docs/engineering/prd/prd-002/manifest.yml
+    - docs/engineering/prd/prd-003/manifest.yml
+    - docs/engineering/prd/prd-004/manifest.yml
   topology:
     maxFanIn: 8
     maxFanOut: 12

@@ -1,7 +1,8 @@
+    use crate::governance::ReferenceResolution;
+
     fn topology_node(identity: &str) -> GovernanceNode {
         GovernanceNode {
             identity: identity.to_owned(),
-            refinement_level: RefinementLevel::Intent,
             reference_relation: ReferenceRelation::Body,
             document_kind: None,
             lifecycle_status: "current".to_owned(),
@@ -29,7 +30,6 @@
             },
             expectation: ReferenceExpectation::new(
                 GovernanceEdgeKind::SemanticReference,
-                vec![RefinementLevel::Intent],
                 vec![ReferenceRelation::Body],
                 Vec::new(),
             ),
@@ -275,14 +275,14 @@ governance:
         write_asset(
             temp.path(),
             "ul.yml",
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\n",
         );
         for name in ["a", "b"] {
             write_asset(
                 temp.path(),
                 &format!("{name}/manifest.yml"),
                 &format!(
-                    "id: PRD-{name}\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n"
+                    "id: PRD-{name}\nreferenceRelation: body\nstatus: proposed\nmembers: [index.md]\n"
                 ),
             );
             fs::write(

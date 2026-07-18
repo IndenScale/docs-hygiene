@@ -46,13 +46,13 @@ fn explicit_import_materializes_payload_then_check_remains_offline() {
     }
     std::fs::write(
         project.path().join("docs/ul/manifest.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(project.path().join("docs/ul/term.md"), term).unwrap();
     std::fs::write(
         project.path().join("docs/prd/manifest.yml"),
-        "id: BODY-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
+        "id: BODY-1\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
     )
     .unwrap();
     std::fs::write(

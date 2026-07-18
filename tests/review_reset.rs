@@ -19,7 +19,6 @@ fn policy() -> &'static str {
 fn identity(id: &str, review_by: &str) -> String {
     format!(
         r#"id: {id}
-refinementLevel: intent
 referenceRelation: body
 status: current
 ownership:

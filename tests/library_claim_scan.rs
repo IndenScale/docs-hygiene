@@ -29,7 +29,7 @@ rules:
     .unwrap();
     std::fs::write(
         temp.path().join("docs/ul/manifest.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(
@@ -39,7 +39,7 @@ rules:
     .unwrap();
     std::fs::write(
         temp.path().join("docs/prd/manifest.yml"),
-        "id: BODY-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
+        "id: BODY-1\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
     )
     .unwrap();
     std::fs::write(

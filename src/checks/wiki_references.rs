@@ -1,6 +1,5 @@
 #[derive(Clone)]
 struct SemanticTarget {
-    refinement_level: RefinementLevel,
     reference_relation: ReferenceRelation,
     status: String,
     superseded_by: Option<String>,
@@ -41,9 +40,6 @@ fn check_governed_references(
         );
         edges.extend(canonical_edges);
 
-        if asset.refinement_level == RefinementLevel::Implementation {
-            continue;
-        }
         let package_rel = Path::new(&asset.path)
             .parent()
             .unwrap_or_else(|| Path::new(""));
@@ -93,7 +89,6 @@ fn check_governed_references(
             candidates.extend(target.alternates);
             candidates.into_iter().map(move |candidate| GovernanceNode {
                 identity: identity.clone(),
-                refinement_level: candidate.refinement_level,
                 reference_relation: candidate.reference_relation,
                 document_kind: candidate.document_kind,
                 lifecycle_status: candidate.status,
@@ -119,7 +114,6 @@ fn build_library_target_index(
             &mut targets,
             asset.id.clone(),
             SemanticTarget {
-                refinement_level: asset.refinement_level,
                 reference_relation: asset.reference_relation,
                 status: asset.status.clone(),
                 superseded_by: asset.superseded_by.clone(),
@@ -134,7 +128,6 @@ fn build_library_target_index(
         }
         let manifest_rel = Path::new(&asset.path);
         if manifest_rel.file_name().and_then(|value| value.to_str()) != Some("manifest.yml")
-            || asset.refinement_level == RefinementLevel::Implementation
         {
             continue;
         }
@@ -150,7 +143,6 @@ fn build_library_target_index(
             package_rel,
             Path::new(""),
             &members,
-            asset.refinement_level,
             config,
             &mut targets,
             diagnostics,
@@ -165,7 +157,6 @@ fn collect_declared_library_targets(
     package_rel: &Path,
     directory_rel: &Path,
     members: &[String],
-    refinement_level: RefinementLevel,
     config: &Config,
     targets: &mut BTreeMap<String, SemanticTarget>,
     diagnostics: &mut Vec<Diagnostic>,
@@ -190,7 +181,6 @@ fn collect_declared_library_targets(
                     targets,
                     identity.id,
                     SemanticTarget {
-                        refinement_level,
                         reference_relation: ReferenceRelation::Library,
                         status: identity.status,
                         superseded_by: identity.superseded_by,
@@ -219,7 +209,6 @@ fn collect_declared_library_targets(
                 targets,
                 domain.id,
                 SemanticTarget {
-                    refinement_level,
                     reference_relation: ReferenceRelation::Library,
                     status: domain.status,
                     superseded_by: domain.superseded_by,
@@ -237,7 +226,6 @@ fn collect_declared_library_targets(
                 package_rel,
                 &node_rel,
                 &domain.members,
-                refinement_level,
                 config,
                 targets,
                 diagnostics,
@@ -291,23 +279,6 @@ fn insert_library_target(
 }
 
 fn asset_content_paths(root: &Path, asset: &GovernanceAsset) -> Vec<PathBuf> {
-    if asset.refinement_level == RefinementLevel::Implementation {
-        let members = match &asset.members {
-            Some(serde_yaml::Value::Mapping(groups)) => groups
-                .values()
-                .filter_map(serde_yaml::Value::as_sequence)
-                .flatten()
-                .collect::<Vec<_>>(),
-            Some(serde_yaml::Value::Sequence(members)) => members.iter().collect(),
-            _ => Vec::new(),
-        };
-        return members
-            .into_iter()
-            .filter_map(serde_yaml::Value::as_str)
-            .map(PathBuf::from)
-            .filter(|path| root.join(path).is_file())
-            .collect();
-    }
     let package_rel = Path::new(&asset.path)
         .parent()
         .unwrap_or_else(|| Path::new(""));
@@ -372,9 +343,7 @@ fn validate_asset_wiki_references(
     let mut satisfies_required_relation = false;
     let mut attempted_horizontal_reference = false;
     for edge in edges {
-        let declared_vertical_pin = edge.relation == GovernanceEdgeKind::PinnedReference
-            && asset_declares_vertical_target(asset, &edge.target);
-        attempted_horizontal_reference |= !declared_vertical_pin;
+        attempted_horizontal_reference = true;
         let Some(target) = targets.get(&edge.target) else {
             diagnostics.push(Diagnostic::new(
                 "DH_REFERENCE_001",
@@ -400,9 +369,6 @@ fn validate_asset_wiki_references(
             ));
             continue;
         }
-        let same_refinement = target.refinement_level == asset.refinement_level;
-        let adjacent_upstream =
-            refinement_rank(target.refinement_level) + 1 == refinement_rank(asset.refinement_level);
         let type_issues = edge
             .resolution
             .incompatibilities
@@ -411,8 +377,7 @@ fn validate_asset_wiki_references(
             .filter(|issue| {
                 matches!(
                     issue,
-                    ReferenceCompatibilityIssue::RefinementLevel
-                        | ReferenceCompatibilityIssue::ReferenceRelation
+                    ReferenceCompatibilityIssue::ReferenceRelation
                         | ReferenceCompatibilityIssue::DocumentKind
                 )
             })
@@ -437,11 +402,7 @@ fn validate_asset_wiki_references(
             );
             continue;
         }
-        satisfies_required_relation |= target.reference_relation == ReferenceRelation::Library
-            && match asset.reference_relation {
-            ReferenceRelation::Body => same_refinement,
-            ReferenceRelation::Library => adjacent_upstream,
-        };
+        satisfies_required_relation |= target.reference_relation == ReferenceRelation::Library;
         if !validate_edge_selector(root, edge, target, diagnostics) {
             edge.resolution
                 .add_incompatibility(ReferenceCompatibilityIssue::Selector);
@@ -451,28 +412,16 @@ fn validate_asset_wiki_references(
                 .add_incompatibility(ReferenceCompatibilityIssue::Anchor);
         }
     }
-    let missing_required_reference = match asset.reference_relation {
-        ReferenceRelation::Body => {
-            !satisfies_required_relation && !attempted_horizontal_reference
-        }
-        ReferenceRelation::Library => {
-            asset.refinement_level != RefinementLevel::Intent && !satisfies_required_relation
-        }
-    };
+    let missing_required_reference = asset.reference_relation == ReferenceRelation::Body
+        && !satisfies_required_relation
+        && !attempted_horizontal_reference;
     if missing_required_reference {
-        let expected = match asset.reference_relation {
-            ReferenceRelation::Body => format!(
-                "a Library at the same {} refinement level",
-                asset.refinement_level.label()
-            ),
-            ReferenceRelation::Library => "an adjacent upstream Library".to_owned(),
-        };
         diagnostics.push(Diagnostic::new(
             "DH_REFERENCE_001",
             Severity::Error,
             asset.path.clone(),
             format!(
-                "Asset '{}' must contain a Wiki Link to {expected}.",
+                "Body '{}' must contain a Wiki Link to a governed Library identity.",
                 asset.id
             ),
         ));
@@ -518,8 +467,7 @@ fn validate_optional_governed_pins(
             .filter(|issue| {
                 matches!(
                     issue,
-                    ReferenceCompatibilityIssue::RefinementLevel
-                        | ReferenceCompatibilityIssue::ReferenceRelation
+                    ReferenceCompatibilityIssue::ReferenceRelation
                         | ReferenceCompatibilityIssue::DocumentKind
                 )
             })
@@ -545,13 +493,4 @@ fn validate_optional_governed_pins(
                 .add_incompatibility(ReferenceCompatibilityIssue::Anchor);
         }
     }
-}
-
-fn asset_declares_vertical_target(asset: &GovernanceAsset, target: &str) -> bool {
-    asset
-        .formalizes
-        .iter()
-        .chain(asset.realizes.iter())
-        .chain(asset.projects.iter())
-        .any(|candidate| candidate.id == target)
 }

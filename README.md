@@ -38,22 +38,19 @@ impact, and lifecycle foundations. First-class Decision assets, general Agent
 Attestation, and Issue Review remain product directions. See the
 [Cognitive Asset Governance Model](docs/position/02_cognitive_asset_governance_model.md).
 
-## Built-In Software Documentation Profile
+## Built-In Open Engineering Profile
 
-| Profile direction | What Docs Hygiene preserves |
+| Asset role | What Docs Hygiene preserves |
 | --- | --- |
-| From intent to implementation | Progressive refinement and traceability from Intent through Definition to Implementation |
-| From project assertions to shared definitions | Body references to same-level Library identities and progressive Library projection |
-| From working language to distribution languages | Identity, structure, and governance parity between canonical and localized representations |
+| UL | Shared language and long-lived constraints |
+| PRD | Product intent, boundaries, and requirements |
+| Issue | Change-scoped acceptance, coordination, and delivery evidence |
+| Artifact | Location-independent implementation and evidence such as code, tests, config, SDK content, and commits |
 
-These directions correspond to three independent governance dimensions:
-refinement level, reference relation, and language representation. Together,
-they make intent-level decisions verifiably realizable in implementation, expose
-deviation early, and reduce the cost of repeatedly rediscovering terminology,
-document identity, authoritative representations, and implementation grounds.
-This is a built-in profile of the Cognitive Asset Governance Model, not the
-top-level product ontology. See the
-[Three-Dimensional Software Documentation Profile](docs/position/01_three_dimensional_governance_model.md).
+Only UL and PRD require durable documentation structures. Issues and Artifacts
+are connected through adapters and explicit relations, not fixed Definition,
+Implementation, Glossary, or SDK directories. See the
+[Open Engineering Asset Model](docs/position/01_open_engineering_asset_model.md).
 
 ## Project and Execution Boundaries
 
@@ -114,7 +111,7 @@ Docs Hygiene currently provides deterministic project-level governance checks:
 - YAML frontmatter, identity Manifests, and recursive Package structure;
 - lifecycle status obligations, terminal-target rejection, and explicit
   `supersededBy` authority migration across assets and package identities;
-- normalized semantic, pinned, derivation, and projection governance edges with
+- normalized semantic and pinned governance edges with
   typed expectation/resolution, heading selectors, block/file/opt-in repo anchors,
   deterministic transitive impact, bridge-connected communities, cross-community
   edges, Fan-In/Fan-Out, cycle groups, and opt-in topology thresholds/baselines;
@@ -131,7 +128,7 @@ coverage and symbol-level semantic mapping remain future work.
 
 DH activates governance progressively from project facts instead of requiring
 every project to select a global maturity up front. Structure-presence signals
-such as localized documents, governed Manifests, multiple refinement levels,
+such as localized documents, governed Manifests, UL/PRD packages,
 frontmatter, and semantic Wiki Links activate their corresponding rule families.
 Document and code scale can introduce non-blocking advice without unexpectedly
 turning CI red.
@@ -148,10 +145,10 @@ docs-hygiene profile --format json
 docs-hygiene migrate-templates --check
 ```
 
-See [Progressive Rule Activation](docs/10_progressive_rule_activation.md) for
+See [Progressive Rule Activation](docs/governance/progressive-rule-activation.md) for
 the fact model, rule IDs, override precedence, and severity contract.
 The profile evaluator now separates maturity, capability dimensions, and
-execution state. See the [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md).
+execution state. See the [Documentation Hygiene Governance Model](docs/governance/hygiene-governance-model.md).
 
 ## Quick Start
 
@@ -209,9 +206,9 @@ This repository dogfoods Docs Hygiene with its own
 software-documentation profile, but it is not a fixed directory template that every
 project must copy.
 
-See [Configuration](docs/02_configuration.md) for policy syntax. Shipped behavior
-is defined by [Rules](docs/03_rules.md) and the
-[Governance Graph](docs/07_governance_graph.md).
+See [Configuration](docs/guide/configuration.md) for policy syntax. Shipped behavior
+is defined by [Rules](docs/governance/rules.md) and the
+[Governance Graph](docs/governance/governance-graph.md).
 
 ## Adapters
 
@@ -231,25 +228,15 @@ adapters:
       - "docs/**/*.md"
 ```
 
-See [External Tool Adapters](docs/04_adapters.md) for the current contract.
+See [External Tool Adapters](docs/guide/adapters.md) for the current contract.
 
 ## Documentation
 
-- [Overview](docs/01_overview.md)
+- [Documentation Portal](docs/README.md)
+- [Overview](docs/guide/overview.md)
 - [Cognitive Asset Governance Model](docs/position/02_cognitive_asset_governance_model.md)
-- [Three-Dimensional Software Documentation Profile](docs/position/01_three_dimensional_governance_model.md)
-- [Configuration](docs/02_configuration.md)
-- [Rules](docs/03_rules.md)
-- [CI and JSON output](docs/05_ci.md)
-- [Document Contracts](docs/06_document_contracts.md)
-- [Governance Graph](docs/07_governance_graph.md)
-- [Library Claim Governance](docs/15_library_claims.md)
-- [Critical Dependency Pins](docs/16_critical_dependency_pins.md)
-- [Portable Commit Snapshots](docs/17_portable_snapshots.md)
-- [Audited Supernode Exceptions](docs/18_supernode_exceptions.md)
-- [Document Ownership And Review Sunset](docs/19_document_ownership.md)
-- [Progressive Rule Activation](docs/10_progressive_rule_activation.md)
-- [Documentation Hygiene Governance Model](docs/11_hygiene_governance_model.md)
-- [Hygiene Profiles](docs/12_hygiene_profile.md)
+- [Open Engineering Asset Model](docs/position/01_open_engineering_asset_model.md)
+- [Open Engineering UL and PRD](docs/engineering/README.md)
+- [Issue Archive](docs/zh/issues/README.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

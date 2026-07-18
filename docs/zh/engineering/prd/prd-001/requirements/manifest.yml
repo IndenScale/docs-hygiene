@@ -1,0 +1,10 @@
+id: PRD-001-DOMAIN-REQUIREMENTS
+kind: domain
+status: baselined
+members:
+  - fr-001-asset-roles.md
+  - fr-002-semantic-references.md
+  - fr-003-issue-delivery-contract.md
+  - fr-004-location-independent-artifacts.md
+  - fr-005-lifecycle.md
+  - fr-006-deterministic-checks.md

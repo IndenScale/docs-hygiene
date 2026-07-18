@@ -182,8 +182,10 @@ fn scaffold_creates_starter_docs_tree() {
 
     assert!(temp.path().join("docs-hygiene.yml").exists());
     assert!(temp.path().join(".markdownlint.yaml").exists());
-    assert!(temp.path().join("docs/01_overview.md").exists());
-    assert!(temp.path().join("docs/zh/01_overview.md").exists());
+    assert!(temp.path().join("docs/README.md").exists());
+    assert!(temp.path().join("docs/zh/README.md").exists());
+    assert!(temp.path().join("docs/guide/overview.md").exists());
+    assert!(temp.path().join("docs/zh/guide/overview.md").exists());
     assert!(temp.path().join("concept/Policy Engine.md").exists());
 }
 
@@ -201,7 +203,8 @@ fn lang_commands_update_config() {
     let initialized = std::fs::read_to_string(&config).unwrap();
     assert!(initialized.contains("languageRepresentations:"));
     assert!(initialized.contains("canonical: en"));
-    assert!(initialized.contains("documentKind: numbered"));
+    assert!(initialized.contains("documentKind: index"));
+    assert!(initialized.contains("documentKind: guide"));
 
     Command::cargo_bin("docs-hygiene")
         .unwrap()
@@ -411,12 +414,12 @@ fn governance_graph_failures_block_the_cli_gate() {
     let temp = tempdir().unwrap();
     std::fs::write(
         temp.path().join("docs-hygiene.yml"),
-        "governance:\n  manifests: [ul.yml, spec.yml]\n",
+        "governance:\n  manifests: [ul.yml, issue.yml]\n",
     )
     .unwrap();
     std::fs::write(
         temp.path().join("ul.yml"),
-        "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
+        "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md]\n",
     )
     .unwrap();
     std::fs::write(
@@ -425,8 +428,8 @@ fn governance_graph_failures_block_the_cli_gate() {
     )
     .unwrap();
     std::fs::write(
-        temp.path().join("spec.yml"),
-        "id: SPEC-1\nrefinementLevel: definition\nreferenceRelation: body\nstatus: proposed\n",
+        temp.path().join("issue.yml"),
+        "id: ISSUE-1\nreferenceRelation: body\nstatus: proposed\n",
     )
     .unwrap();
 
@@ -435,6 +438,5 @@ fn governance_graph_failures_block_the_cli_gate() {
         .args(["check", temp.path().to_str().unwrap()])
         .assert()
         .failure()
-        .stdout(predicate::str::contains("DH_REFERENCE_001 Error"))
-        .stdout(predicate::str::contains("DH_DERIVATION_001 Error"));
+        .stdout(predicate::str::contains("DH_REFERENCE_001 Error"));
 }

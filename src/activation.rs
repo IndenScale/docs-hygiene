@@ -1,4 +1,3 @@
-use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
@@ -20,7 +19,7 @@ pub use registry::{
     rule_spec_for_diagnostic,
 };
 
-// Governance Library: [[GLOSSARY-RULE-ACTIVATION-DECISION]]
+// Governance Library: [[DH-RULE-ACTIVATION]]
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -65,8 +64,6 @@ pub struct ProjectFacts {
     pub configured_portable_snapshots: usize,
     pub configured_topology_policies: usize,
     pub configured_ownership_principals: usize,
-    pub configured_refinement_levels: Vec<String>,
-    pub detected_refinement_levels: Vec<String>,
     pub enabled_adapters: usize,
 }
 
@@ -161,7 +158,6 @@ fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
         enabled_adapters: usize::from(config.adapters.markdownlint.enabled),
         ..ProjectFacts::default()
     };
-    let mut detected_levels = BTreeSet::new();
     for rel in &files {
         let extension = rel
             .extension()
@@ -181,13 +177,8 @@ fn collect_project_facts(root: &Path, config: &Config) -> Result<ProjectFacts> {
         }
         if is_manifest_path(rel) {
             facts.manifest_files += 1;
-            if let Some(level) = refinement_level(&text) {
-                detected_levels.insert(level);
-            }
         }
     }
-    facts.detected_refinement_levels = detected_levels.into_iter().collect();
-    facts.configured_refinement_levels = configured_refinement_levels(root, config);
     Ok(facts)
 }
 
@@ -197,25 +188,6 @@ fn build_activation_ignore(patterns: &[String]) -> Result<GlobSet> {
         builder.add(Glob::new(pattern)?);
     }
     Ok(builder.build()?)
-}
-
-fn configured_refinement_levels(root: &Path, config: &Config) -> Vec<String> {
-    let mut levels = BTreeSet::new();
-    for rel in &config.governance.manifests {
-        let text = std::fs::read_to_string(root.join(rel)).unwrap_or_default();
-        if let Some(level) = refinement_level(&text) {
-            levels.insert(level);
-        }
-    }
-    levels.into_iter().collect()
-}
-
-fn refinement_level(text: &str) -> Option<String> {
-    let value = serde_yaml::from_str::<serde_yaml::Value>(text).ok()?;
-    value
-        .get("refinementLevel")
-        .and_then(serde_yaml::Value::as_str)
-        .map(str::to_owned)
 }
 
 fn is_manifest_path(path: &Path) -> bool {

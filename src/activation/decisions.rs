@@ -247,33 +247,9 @@ fn infer_automatic_decision(
                 )],
             )
         }
-        RuleApplicability::GovernanceTraceability
-            if facts.configured_refinement_levels.len() >= 2 =>
-        {
-            (
-                RuleState::Error,
-                vec![format!(
-                    "configured assets span {} refinement levels: {}",
-                    facts.configured_refinement_levels.len(),
-                    facts.configured_refinement_levels.join(", ")
-                )],
-            )
-        }
-        RuleApplicability::GovernanceTraceability
-            if facts.detected_refinement_levels.len() >= 2 =>
-        {
-            (
-                RuleState::Warning,
-                vec![format!(
-                    "detected Manifests span {} refinement levels: {}",
-                    facts.detected_refinement_levels.len(),
-                    facts.detected_refinement_levels.join(", ")
-                )],
-            )
-        }
         RuleApplicability::GovernanceTraceability => (
             RuleState::Inactive,
-            vec!["fewer than two refinement levels detected".into()],
+            vec!["no critical dependency or portable snapshot policy configured".into()],
         ),
         RuleApplicability::GovernanceTopology if facts.configured_topology_policies > 0 => (
             RuleState::Error,

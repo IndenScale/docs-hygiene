@@ -1,0 +1,11 @@
+id: PRD-001
+type: product-requirement
+status: baselined
+referenceRelation: body
+members:
+  - index.md
+  - problem.md
+  - roles
+  - user-stories
+  - requirements
+  - non-goals.md

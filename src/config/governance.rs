@@ -6,12 +6,10 @@ use serde::{Deserialize, Serialize};
 use crate::governance::{ContentAnchorScope, GovernanceEdgeKind, ReferenceRelation};
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GovernanceConfig {
     #[serde(default)]
     pub manifests: Vec<PathBuf>,
-    #[serde(default)]
-    pub require_complete_vertical_derivation: bool,
     #[serde(default)]
     pub topology: GovernanceTopologyConfig,
     #[serde(default)]
@@ -32,7 +30,6 @@ impl Default for GovernanceConfig {
     fn default() -> Self {
         Self {
             manifests: Vec::new(),
-            require_complete_vertical_derivation: false,
             topology: GovernanceTopologyConfig::default(),
             content_anchors: GovernanceContentAnchorConfig::default(),
             portable_snapshots: PortableSnapshotConfig::default(),
@@ -146,9 +143,6 @@ pub struct CriticalDependencyMatcherConfig {
 #[serde(rename_all = "camelCase")]
 pub enum CriticalDependencyRelation {
     References,
-    Formalizes,
-    Realizes,
-    Projects,
 }
 
 impl CriticalDependencyRelation {
@@ -157,9 +151,6 @@ impl CriticalDependencyRelation {
             GovernanceEdgeKind::SemanticReference | GovernanceEdgeKind::PinnedReference => {
                 Self::References
             }
-            GovernanceEdgeKind::Formalizes => Self::Formalizes,
-            GovernanceEdgeKind::Realizes => Self::Realizes,
-            GovernanceEdgeKind::Projects => Self::Projects,
         }
     }
 }

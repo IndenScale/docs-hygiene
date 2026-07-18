@@ -4,7 +4,7 @@
         fs::create_dir_all(temp.path().join("docs/prd")).unwrap();
         fs::write(
             temp.path().join("docs/ul/manifest.yml"),
-            "id: UL-1\nrefinementLevel: intent\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md, other.md]\n",
+            "id: UL-1\nreferenceRelation: library\nstatus: baselined\nmembers: [term.md, other.md]\n",
         )
         .unwrap();
         fs::write(
@@ -19,7 +19,7 @@
         .unwrap();
         fs::write(
             temp.path().join("docs/prd/manifest.yml"),
-            "id: BODY-1\nrefinementLevel: intent\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
+            "id: BODY-1\nreferenceRelation: body\nstatus: proposed\nmembers: [body.md]\n",
         )
         .unwrap();
         fs::write(temp.path().join("docs/prd/body.md"), body).unwrap();
